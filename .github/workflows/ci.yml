@@ -30,7 +30,7 @@ jobs:
       - run: npm run build
 
   collection-service:
-    name: Tests du service Java
+    name: Tests et Docker du service Java
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -42,9 +42,18 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Tests Maven
+      - name: Tests et rapport JaCoCo
         working-directory: backend/microservices/collection-service
-        run: ./mvnw -B test
+        run: ./mvnw -B verify
+
+      - name: Publier le rapport JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rapport-jacoco-collection-service
+          path: backend/microservices/collection-service/target/site/jacoco/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Build image Docker
         working-directory: backend/microservices/collection-service
