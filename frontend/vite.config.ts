@@ -9,8 +9,12 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       proxy: {
-        "/api": {
-          target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8000",
+        "/api/auth": {
+          target: env.VITE_USER_SERVICE_URL || "http://127.0.0.1:8082",
+          changeOrigin: true,
+        },
+        "/api/collectibles": {
+          target: env.VITE_COLLECTION_SERVICE_URL || "http://127.0.0.1:8081",
           changeOrigin: true,
         },
       },

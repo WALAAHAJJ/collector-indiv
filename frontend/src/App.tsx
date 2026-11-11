@@ -6,18 +6,17 @@ import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
 
 type ApiListing = {
-  id: number;
-  title: string;
-  description: string;
+  id: string;
+  name: string;
+  description: string | null;
   category: string;
   condition: string;
-  price: string;
-  image: string | null;
-  shipping_cost: string;
+  price: number;
+  shippingCost: number;
 };
 
 type Listing = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;
@@ -91,12 +90,8 @@ function App() {
 
     const params = new URLSearchParams();
 
-    const selectedCategory = Object.entries(categoryLabels).find(
-      ([, label]) => label === category,
-    )?.[0];
-
-    if (selectedCategory) {
-      params.set("category", selectedCategory);
+    if (category !== "Tout") {
+      params.set("category", category);
     }
 
     if (search.trim()) {
@@ -104,7 +99,9 @@ function App() {
     }
 
     const query = params.toString();
-    const url = query ? `/api/listings/?${query}` : "/api/listings/";
+    const url = query
+      ? `/api/collectibles/catalog?${query}`
+      : "/api/collectibles/catalog";
 
     fetch(url)
       .then(async (response) => {
@@ -118,18 +115,21 @@ function App() {
         if (cancelled) return;
 
         const convertedListings = data.map((item) => {
-          const key = item.category.toLowerCase();
+          const key =
+            Object.entries(categoryLabels).find(
+              ([, label]) => label === item.category,
+            )?.[0] ?? "other";
 
           return {
             id: item.id,
-            title: item.title,
-            description: item.description,
-            category: categoryLabels[key] ?? item.category,
+            title: item.name,
+            description: item.description ?? "",
+            category: item.category,
             condition:
               conditionLabels[item.condition.toLowerCase()] ?? item.condition,
-            price: Number(item.price),
-            image: item.image ?? "",
-            shippingCost: Number(item.shipping_cost),
+            price: item.price,
+            image: "",
+            shippingCost: item.shippingCost,
             ...(categoryVisuals[key] ?? { icon: "📦", tone: "green" }),
           };
         });
