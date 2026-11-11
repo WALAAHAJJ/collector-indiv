@@ -45,3 +45,7 @@ jobs:
       - name: Tests Maven
         working-directory: backend/microservices/collection-service
         run: ./mvnw -B test
+
+      - name: Build image Docker
+        working-directory: backend/microservices/collection-service
+        run: docker build -t collection-service:ci .
