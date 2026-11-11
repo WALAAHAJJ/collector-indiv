@@ -1,0 +1,1031 @@
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1180px;
+  margin: auto;
+  padding: 0 32px;
+}
+
+/* En-tête */
+
+.topbar {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  border-bottom: 1px solid #eee9e2;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #242a25;
+  text-decoration: none;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #263d32;
+  color: white;
+  font-family: Georgia, serif;
+}
+
+.brand-dot {
+  color: #d58b58;
+}
+
+.navigation {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+}
+
+.navigation a {
+  color: #797b75;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.navigation a.active {
+  color: #263d32;
+  font-weight: 650;
+}
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-left: 12px;
+}
+
+.account-greeting {
+  margin-right: 4px;
+  color: #263d32;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.sell-button,
+.my-listings-button,
+.login-button {
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sell-button {
+  border: 0;
+  background: #263d32;
+  color: white;
+}
+
+.sell-button:hover {
+  background: #345443;
+}
+
+.my-listings-button {
+  border: 1px solid #dce3dc;
+  background: #f5f7f3;
+  color: #263d32;
+}
+
+.my-listings-button:hover,
+.login-button:hover {
+  background: #eeefe9;
+}
+
+.login-button {
+  border: 1px solid #e5e2dc;
+  background: white;
+  color: #263d32;
+}
+
+/* Bannière d’accueil */
+
+.hero {
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 34px 0 36px;
+  padding: 56px 64px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #f1eee7;
+}
+
+.eyebrow {
+  color: #a66b45;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.8px;
+}
+
+.hero h1 {
+  margin: 18px 0 12px;
+  color: #263d32;
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 5vw, 58px);
+  font-weight: 500;
+  letter-spacing: -2px;
+  line-height: 1.05;
+}
+
+.hero p {
+  max-width: 430px;
+  color: #70736b;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.hero-link {
+  display: inline-flex;
+  gap: 14px;
+  margin-top: 14px;
+  color: #263d32;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hero-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 250px;
+  height: 250px;
+  margin-right: 30px;
+  border: 1px solid #d9d2c5;
+  border-radius: 50%;
+  background: #e9e3d8;
+}
+
+.hero-stamp {
+  display: grid;
+  place-items: center;
+  width: 130px;
+  height: 155px;
+  transform: rotate(8deg);
+  background: #fffaf0;
+  box-shadow: 0 12px 35px #5d4a3020;
+  font-size: 65px;
+}
+
+.hero-coin {
+  position: absolute;
+  right: 8px;
+  bottom: 26px;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  border: 5px double #bb9254;
+  border-radius: 50%;
+  background: #d9b875;
+  color: #fff7df;
+  font-size: 33px;
+}
+
+.hero-caption {
+  position: absolute;
+  bottom: 22px;
+  left: -28px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: white;
+  color: #565950;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Actions vendeur sous la bannière */
+
+.seller-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 0 0 58px;
+}
+
+.seller-actions .my-listings-button,
+.seller-actions .sell-button {
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Catalogue */
+
+.catalogue {
+  padding-bottom: 70px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.section-heading h2 {
+  margin: 8px 0 0;
+  color: #263d32;
+  font-family: Georgia, serif;
+  font-size: 36px;
+  font-weight: 500;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 270px;
+  padding: 11px 14px;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  color: #73766f;
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 25px 0;
+}
+
+.filter {
+  padding: 9px 15px;
+  border: 1px solid #e7e4df;
+  border-radius: 30px;
+  background: white;
+  color: #6d7069;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter.selected {
+  border-color: #263d32;
+  background: #263d32;
+  color: white;
+}
+
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.listing-card {
+  overflow: hidden;
+  border: 1px solid #eeeae4;
+  border-radius: 12px;
+  background: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.listing-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px #253b2d12;
+}
+
+.item-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 190px;
+}
+
+.item-visual.rose {
+  background: #f4e5df;
+}
+
+.item-visual.gold {
+  background: #f2ecd9;
+}
+
+.item-visual.blue {
+  background: #e5edf0;
+}
+
+.item-visual.green {
+  background: #e8ece3;
+}
+
+.item-icon {
+  font-size: 70px;
+  filter: drop-shadow(0 9px 7px #00000014);
+}
+
+.listing-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffffd9;
+  color: #555;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.item-details {
+  padding: 15px;
+}
+
+.item-category {
+  color: #a66b45;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.item-details h3 {
+  min-height: 42px;
+  margin: 7px 0 13px;
+  color: #30372f;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid #f0eee9;
+}
+
+.condition {
+  color: #777b73;
+  font-size: 11px;
+}
+
+.item-bottom strong {
+  color: #263d32;
+  font-size: 15px;
+}
+
+.shipping-cost {
+  margin: 8px 0 0;
+  color: #6b7169;
+  font-size: 0.9rem;
+}
+
+.details-button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid #f0eee9;
+  background: transparent;
+  color: #263d32;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.details-button span {
+  float: right;
+}
+
+.empty-state {
+  padding: 35px 0;
+  color: #777;
+  text-align: center;
+}
+
+/* Pied de page */
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 0;
+  border-top: 1px solid #eee9e2;
+  color: #777b73;
+  font-size: 12px;
+}
+
+footer span:first-child {
+  color: #263d32;
+  font-weight: 750;
+}
+
+/* Fenêtres modales */
+
+.modal-backdrop,
+.auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #17221dcc;
+}
+
+.auth-backdrop {
+  z-index: 20;
+}
+
+.listing-modal {
+  position: relative;
+  width: min(100%, 480px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 16px;
+  background: white;
+}
+
+.modal-close,
+.auth-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 1;
+  border: 0;
+  background: white;
+  color: #263d32;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.modal-visual {
+  height: 190px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.listing-modal h2 {
+  margin: 8px 0;
+  color: #263d32;
+  font-family: Georgia, serif;
+}
+
+.listing-modal p {
+  color: #70736b;
+  line-height: 1.6;
+}
+
+.modal-price {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eeeae4;
+}
+
+.modal-price strong {
+  color: #263d32;
+}
+
+/* Détail d’annonce agrandi */
+
+.listing-detail-modal {
+  width: min(900px, calc(100vw - 40px));
+  max-height: 92vh;
+  padding: 36px;
+}
+
+.listing-detail-modal .modal-visual {
+  height: 400px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: #f5f1eb;
+}
+
+.listing-detail-modal .modal-visual .listing-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.listing-detail-modal h2 {
+  margin: 10px 0 16px;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.2;
+}
+
+.listing-detail-modal > p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.listing-detail-modal .modal-price {
+  margin-top: 24px;
+  font-size: 1.15rem;
+}
+
+.listing-detail-modal .modal-price strong {
+  font-size: 1.8rem;
+}
+
+/* Connexion et inscription */
+
+.auth-card {
+  position: relative;
+  width: min(100%, 430px);
+  padding: 32px;
+  border-radius: 16px;
+  background: white;
+}
+
+.auth-modal {
+  max-width: 440px;
+}
+
+.auth-card h2 {
+  margin: 10px 0;
+  color: #263d32;
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.auth-card > p {
+  color: #70736b;
+  line-height: 1.5;
+}
+
+.auth-close {
+  right: 16px;
+}
+
+.auth-card form,
+.auth-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.auth-card label,
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: #30372f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-card input,
+.auth-form input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.auth-form input:focus {
+  border-color: #263d32;
+  outline: 2px solid #263d3220;
+}
+
+.auth-submit {
+  margin-top: 4px;
+  padding: 13px;
+  border: 0;
+  border-radius: 8px;
+  background: #263d32;
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.auth-error {
+  margin: 0;
+  color: #a33030;
+  font-size: 13px;
+}
+
+.auth-switch {
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.auth-switch button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #263d32;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.registration-message {
+  padding: 12px;
+  border-radius: 8px;
+  background: #e8ece3;
+  color: #263d32;
+}
+
+/* Formulaire de dépôt */
+
+.listing-form-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.listing-form {
+  display: grid;
+  gap: 14px;
+}
+
+.listing-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.listing-form input,
+.listing-form textarea,
+.listing-form select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  background: white;
+  color: #30372f;
+  font: inherit;
+}
+
+.listing-form textarea {
+  resize: vertical;
+}
+
+/* Mes annonces */
+
+.my-listings-modal {
+  width: min(760px, calc(100vw - 32px));
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+.my-listings-modal h2 {
+  margin: 8px 0 24px;
+}
+
+.my-listings-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.my-listing-card {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  padding: 16px;
+  border: 1px solid #e8e2da;
+  border-radius: 14px;
+  background: white;
+}
+
+.my-listings-modal .my-listing-card > .listing-photo,
+.my-listing-placeholder {
+  width: 100%;
+  height: 155px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.my-listing-placeholder {
+  display: grid;
+  place-items: center;
+  background: #f3eee7;
+  font-size: 42px;
+}
+
+.my-listing-info {
+  min-width: 0;
+}
+
+.my-listing-info h3 {
+  margin: 6px 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.my-listing-info p {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.listing-status {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #f2efe9;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.status-approved {
+  background: #e5f3e8;
+  color: #246337;
+}
+
+.status-rejected {
+  background: #fbe9e7;
+  color: #9b2c2c;
+}
+
+.status-pending_review {
+  background: #fff3d9;
+  color: #805b12;
+}
+
+.my-listing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.my-listing-actions button {
+  padding: 9px 13px;
+  border: 1px solid #e5e2dc;
+  border-radius: 8px;
+  background: white;
+  color: #263d32;
+  font: inherit;
+  cursor: pointer;
+}
+
+.my-listing-actions .delete-listing-button {
+  border-color: #f0d4d1;
+  color: #9b2c2c;
+}
+
+.my-listing-edit-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e2da;
+}
+
+.my-listing-edit-form label {
+  display: grid;
+  gap: 6px;
+  color: #30372f;
+  font-weight: 600;
+}
+
+.my-listing-edit-form input,
+.my-listing-edit-form textarea,
+.my-listing-edit-form select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d8d1c8;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.my-listing-edit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Tablette */
+
+@media (max-width: 800px) {
+  .app {
+    padding: 0 18px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    min-height: 70px;
+    padding: 12px 0;
+  }
+
+  .navigation {
+    display: none;
+  }
+
+  .account-actions {
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 38px 28px;
+  }
+
+  .hero-art {
+    width: 180px;
+    height: 180px;
+    margin: 0 10px 0 20px;
+  }
+
+  .hero-stamp {
+    width: 95px;
+    height: 115px;
+    font-size: 48px;
+  }
+
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .listing-detail-modal {
+    padding: 28px;
+  }
+
+  .listing-detail-modal .modal-visual {
+    height: 340px;
+  }
+}
+
+/* Téléphone */
+
+@media (max-width: 560px) {
+  .app {
+    padding: 0 18px;
+  }
+
+  .topbar {
+    min-height: 70px;
+  }
+
+  .account-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .account-greeting {
+    display: none;
+  }
+
+  .account-actions .sell-button,
+  .account-actions .my-listings-button,
+  .account-actions .login-button {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .hero {
+    margin: 22px 0 28px;
+    padding: 32px 24px;
+  }
+
+  .hero-art {
+    display: none;
+  }
+
+  .seller-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 42px;
+  }
+
+  .seller-actions button {
+    flex: 1 1 150px;
+  }
+
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .search {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .listing-grid {
+    gap: 12px;
+  }
+
+  .item-visual {
+    height: 145px;
+  }
+
+  .item-icon {
+    font-size: 54px;
+  }
+
+  .item-details {
+    padding: 12px;
+  }
+
+  .item-details h3 {
+    font-size: 13px;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .listing-detail-modal {
+    width: calc(100vw - 24px);
+    padding: 22px 16px;
+  }
+
+  .listing-detail-modal .modal-visual {
+    height: 260px;
+  }
+
+  .my-listings-modal {
+    padding: 24px 16px;
+  }
+
+  .my-listing-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .my-listings-modal .my-listing-card > .listing-photo,
+  .my-listing-placeholder {
+    width: 100%;
+    height: 210px;
+  }
+
+  .auth-card {
+    padding: 26px 20px;
+  }
+}
+.seller-actions {
+  gap: 24px;
+}
+
+.seller-actions .my-listings-button,
+.seller-actions .sell-button {
+  min-height: 56px;
+  padding: 0 30px;
+  font-size: 16px;
+}
+
+@media (max-width: 560px) {
+  .seller-actions {
+    gap: 14px;
+  }
+
+  .seller-actions .my-listings-button,
+  .seller-actions .sell-button {
+    min-height: 50px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+}

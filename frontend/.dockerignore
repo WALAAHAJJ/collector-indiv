@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+.npmrc
+*.pem
+*.key
+*.crt
+*.sqlite3
+node_modules/
+dist/
+coverage/
+.venv/
+**/__pycache__/
+.DS_Store
