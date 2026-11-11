@@ -1,12 +1,15 @@
 package com.collector.collection;
 
 import com.collector.collection.domain.Collectible;
+import com.collector.collection.domain.ItemCondition;
+import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.repository.CollectibleRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,13 +31,17 @@ class CollectibleRepositoryTests {
                 ownerId,
                 "Carte de collection",
                 "Carte",
-                "Première édition"
+                "Première édition",
+                new BigDecimal("12.50"),
+                new BigDecimal("2.00"),
+                ItemCondition.GOOD
         ));
 
         List<Collectible> result = repository.findByOwnerId(ownerId);
 
         assertEquals(1, result.size());
         assertEquals("Carte de collection", result.get(0).getName());
+        assertEquals(ListingStatus.PENDING_REVIEW, result.get(0).getStatus());
         assertNotNull(result.get(0).getId());
     }
 }

@@ -26,7 +26,10 @@ public class CollectibleService {
                 request.ownerId(),
                 request.name(),
                 request.category(),
-                request.description()
+                request.description(),
+                request.price(),
+                request.shippingCost(),
+                request.condition()
         );
 
         return toResponse(repository.save(collectible));
@@ -48,7 +51,10 @@ public class CollectibleService {
         collectible.updateDetails(
                 request.name(),
                 request.category(),
-                request.description()
+                request.description(),
+                request.price(),
+                request.shippingCost(),
+                request.condition()
         );
 
         return toResponse(repository.save(collectible));
@@ -73,7 +79,11 @@ public class CollectibleService {
                 collectible.getOwnerId(),
                 collectible.getName(),
                 collectible.getCategory(),
-                collectible.getDescription()
+                collectible.getDescription(),
+                collectible.getPrice(),
+                collectible.getShippingCost(),
+                collectible.getCondition(),
+                collectible.getStatus()
         );
     }
 }

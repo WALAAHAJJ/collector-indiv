@@ -38,11 +38,18 @@ class CollectibleControllerTests {
                                   "ownerId": "%s",
                                   "name": "Vinyle",
                                   "category": "Musique",
-                                  "description": "Un disque de collection"
+                                  "description": "Un disque de collection",
+                                  "price": 25.00,
+                                  "shippingCost": 4.50,
+                                  "condition": "VERY_GOOD"
                                 }
                                 """.formatted(ownerId)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Vinyle"))
+                .andExpect(jsonPath("$.price").value(25.0))
+                .andExpect(jsonPath("$.shippingCost").value(4.5))
+                .andExpect(jsonPath("$.condition").value("VERY_GOOD"))
+                .andExpect(jsonPath("$.status").value("PENDING_REVIEW"))
                 .andReturn();
 
         String id = extractId(createResult);
@@ -58,13 +65,18 @@ class CollectibleControllerTests {
                                 {
                                   "name": "Vinyle jazz",
                                   "category": "Jazz",
-                                  "description": "Édition remasterisée"
+                                  "description": "Édition remasterisée",
+                                  "price": 30.00,
+                                  "shippingCost": 5.00,
+                                  "condition": "GOOD"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ownerId").value(ownerId))
                 .andExpect(jsonPath("$.name").value("Vinyle jazz"))
-                .andExpect(jsonPath("$.category").value("Jazz"));
+                .andExpect(jsonPath("$.category").value("Jazz"))
+                .andExpect(jsonPath("$.price").value(30.0))
+                .andExpect(jsonPath("$.status").value("PENDING_REVIEW"));
 
         mockMvc.perform(get("/api/collectibles").param("ownerId", ownerId))
                 .andExpect(status().isOk())
@@ -90,7 +102,10 @@ class CollectibleControllerTests {
                                 {
                                   "name": "Vinyle",
                                   "category": "Musique",
-                                  "description": "Description"
+                                  "description": "Description",
+                                  "price": 10.00,
+                                  "shippingCost": 0.00,
+                                  "condition": "GOOD"
                                 }
                                 """))
                 .andExpect(status().isNotFound());
@@ -108,7 +123,45 @@ class CollectibleControllerTests {
                                   "ownerId": "%s",
                                   "name": " ",
                                   "category": "Musique",
-                                  "description": "Un disque de collection"
+                                  "description": "Un disque de collection",
+                                  "price": 25.00,
+                                  "shippingCost": 4.50,
+                                  "condition": "GOOD"
+                                }
+                                """.formatted(UUID.randomUUID())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectCollectibleWithZeroPrice() throws Exception {
+        mockMvc.perform(post("/api/collectibles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "ownerId": "%s",
+                                  "name": "Vinyle",
+                                  "category": "Musique",
+                                  "description": "Un disque de collection",
+                                  "price": 0,
+                                  "shippingCost": 4.50,
+                                  "condition": "GOOD"
+                                }
+                                """.formatted(UUID.randomUUID())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectCollectibleWithoutCondition() throws Exception {
+        mockMvc.perform(post("/api/collectibles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "ownerId": "%s",
+                                  "name": "Vinyle",
+                                  "category": "Musique",
+                                  "description": "Un disque de collection",
+                                  "price": 25.00,
+                                  "shippingCost": 4.50
                                 }
                                 """.formatted(UUID.randomUUID())))
                 .andExpect(status().isBadRequest());
