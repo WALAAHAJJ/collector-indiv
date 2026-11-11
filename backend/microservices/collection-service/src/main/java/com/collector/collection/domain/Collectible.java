@@ -48,6 +48,12 @@ public class Collectible {
         this.description = description;
     }
 
+    public void updateDetails(String name, String category, String description) {
+        this.name = name;
+        this.category = category;
+        this.description = description;
+    }
+
     public UUID getId() {
         return id;
     }
