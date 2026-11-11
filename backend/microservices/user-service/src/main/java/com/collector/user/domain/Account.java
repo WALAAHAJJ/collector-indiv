@@ -2,6 +2,8 @@ package com.collector.user.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,6 +39,10 @@ public class Account {
     @Column(nullable = false, length = 100)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_role", nullable = false, columnDefinition = "varchar(20) default 'USER'")
+    private Role role = Role.USER;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -70,6 +76,10 @@ public class Account {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     public Instant getCreatedAt() {

@@ -87,6 +87,7 @@ public class AuthService {
                 .subject(account.getId().toString())
                 .claim("username", account.getUsername())
                 .claim("email", account.getEmail())
+                .claim("role", account.getRole().name())
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
