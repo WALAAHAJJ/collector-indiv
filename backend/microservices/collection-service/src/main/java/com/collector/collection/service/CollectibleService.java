@@ -16,9 +16,14 @@ import java.util.UUID;
 public class CollectibleService {
 
     private final CollectibleRepository repository;
+    private final ModerationService moderationService;
 
-    public CollectibleService(CollectibleRepository repository) {
+    public CollectibleService(
+            CollectibleRepository repository,
+            ModerationService moderationService
+    ) {
         this.repository = repository;
+        this.moderationService = moderationService;
     }
 
     public CollectibleResponse create(CreateCollectibleRequest request) {
@@ -31,6 +36,7 @@ public class CollectibleService {
                 request.shippingCost(),
                 request.condition()
         );
+        moderate(collectible);
 
         return toResponse(repository.save(collectible));
     }
@@ -56,6 +62,7 @@ public class CollectibleService {
                 request.shippingCost(),
                 request.condition()
         );
+        moderate(collectible);
 
         return toResponse(repository.save(collectible));
     }
@@ -63,6 +70,15 @@ public class CollectibleService {
     public void delete(UUID id) {
         Collectible collectible = findEntityById(id);
         repository.delete(collectible);
+    }
+
+    private void moderate(Collectible collectible) {
+        ModerationResult result = moderationService.evaluate(
+                collectible.getName(),
+                collectible.getDescription(),
+                collectible.getPrice()
+        );
+        collectible.applyModeration(result.status(), result.reason());
     }
 
     private Collectible findEntityById(UUID id) {
@@ -83,7 +99,8 @@ public class CollectibleService {
                 collectible.getPrice(),
                 collectible.getShippingCost(),
                 collectible.getCondition(),
-                collectible.getStatus()
+                collectible.getStatus(),
+                collectible.getModerationReason()
         );
     }
 }

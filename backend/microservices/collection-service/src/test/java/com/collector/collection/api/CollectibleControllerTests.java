@@ -49,7 +49,7 @@ class CollectibleControllerTests {
                 .andExpect(jsonPath("$.price").value(25.0))
                 .andExpect(jsonPath("$.shippingCost").value(4.5))
                 .andExpect(jsonPath("$.condition").value("VERY_GOOD"))
-                .andExpect(jsonPath("$.status").value("PENDING_REVIEW"))
+                .andExpect(jsonPath("$.status").value("APPROVED"))
                 .andReturn();
 
         String id = extractId(createResult);
@@ -76,7 +76,7 @@ class CollectibleControllerTests {
                 .andExpect(jsonPath("$.name").value("Vinyle jazz"))
                 .andExpect(jsonPath("$.category").value("Jazz"))
                 .andExpect(jsonPath("$.price").value(30.0))
-                .andExpect(jsonPath("$.status").value("PENDING_REVIEW"));
+                .andExpect(jsonPath("$.status").value("APPROVED"));
 
         mockMvc.perform(get("/api/collectibles").param("ownerId", ownerId))
                 .andExpect(status().isOk())

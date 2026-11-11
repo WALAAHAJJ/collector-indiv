@@ -15,6 +15,7 @@ public record CollectibleResponse(
         BigDecimal price,
         BigDecimal shippingCost,
         ItemCondition condition,
-        ListingStatus status
+        ListingStatus status,
+        String moderationReason
 ) {
 }

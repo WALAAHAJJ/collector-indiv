@@ -55,6 +55,9 @@ public class Collectible {
     @Column(nullable = false, columnDefinition = "varchar(20) default 'PENDING_REVIEW'")
     private ListingStatus status = ListingStatus.PENDING_REVIEW;
 
+    @Column(length = 255)
+    private String moderationReason;
+
     protected Collectible() {
     }
 
@@ -126,5 +129,14 @@ public class Collectible {
 
     public ListingStatus getStatus() {
         return status;
+    }
+
+    public String getModerationReason() {
+        return moderationReason;
+    }
+
+    public void applyModeration(ListingStatus status, String reason) {
+        this.status = status;
+        this.moderationReason = reason;
     }
 }
