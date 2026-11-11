@@ -48,6 +48,17 @@ public class CollectibleService {
                 .toList();
     }
 
+    public List<CollectibleResponse> findCatalog(String category, String search) {
+        return repository.searchCatalog(
+                        com.collector.collection.domain.ListingStatus.APPROVED,
+                        category == null ? "" : category.trim(),
+                        search == null ? "" : search.trim()
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public CollectibleResponse findById(UUID id) {
         return toResponse(findEntityById(id));
     }

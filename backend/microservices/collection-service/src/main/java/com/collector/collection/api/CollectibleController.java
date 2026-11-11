@@ -36,6 +36,14 @@ public class CollectibleController {
         return service.create(request);
     }
 
+    @GetMapping("/catalog")
+    public List<CollectibleResponse> catalog(
+            @RequestParam(defaultValue = "") String category,
+            @RequestParam(defaultValue = "") String search
+    ) {
+        return service.findCatalog(category, search);
+    }
+
     @GetMapping
     public List<CollectibleResponse> findByOwnerId(@RequestParam UUID ownerId) {
         return service.findByOwnerId(ownerId);
