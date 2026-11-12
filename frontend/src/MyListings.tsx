@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken } from "./auth";
 import { collectibleUrl, myCollectiblesUrl } from "./api";
+import { visualForLabel } from "./categories";
+import ObjectArt from "./ObjectArt";
 import Modal from "./Modal";
 
 type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
@@ -189,9 +191,15 @@ export default function MyListings({ ownerId, onClose }: Readonly<MyListingsProp
         <div className="my-listings-list">
           {listings.map((listing) => (
             <article className="my-listing-card" key={listing.id}>
-              <div className="my-listing-placeholder" aria-hidden="true">
-                📦
-              </div>
+              <div
+                  className={`my-listing-placeholder ${visualForLabel(listing.category).tone}`}
+                  aria-hidden="true"
+                >
+                  <ObjectArt
+                    kind={visualForLabel(listing.category).art}
+                    size={96}
+                  />
+                </div>
 
               <div className="my-listing-info">
                 <span className="item-category">{listing.category}</span>
