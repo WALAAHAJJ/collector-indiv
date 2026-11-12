@@ -7,6 +7,7 @@ import "./styles/hero.css";
 import "./styles/catalogue.css";
 import "./styles/cards.css";
 import "./styles/modal.css";
+import "./styles/forms.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -278,6 +279,12 @@ function App() {
         </div>
       </header>
 
+      {registrationMessage && (
+        <output className="registration-message">
+          {registrationMessage}
+        </output>
+      )}
+
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
@@ -418,12 +425,6 @@ function App() {
         </span>
         <span>Les belles collections se partagent.</span>
       </footer>
-
-      {registrationMessage && (
-        <output className="registration-message">
-          {registrationMessage}
-        </output>
-      )}
 
       {showListingForm && sessionUser && (
         <ListingForm
