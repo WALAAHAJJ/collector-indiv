@@ -49,6 +49,7 @@ jobs:
         run: ./mvnw -B verify
 
       - name: Analyse SonarCloud
+        if: github.actor != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
