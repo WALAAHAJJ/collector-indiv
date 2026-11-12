@@ -1,0 +1,17 @@
+/* Fonds colorés des « photos » : timbres, pièces, cartes postales, autres objets */
+
+.sage {
+  background: var(--sage);
+}
+
+.rose {
+  background: var(--pink);
+}
+
+.gold {
+  background: var(--mustard);
+}
+
+.kraft {
+  background: var(--kraft-deep);
+}
