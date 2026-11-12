@@ -8,7 +8,7 @@ RUN chmod +x mvnw
 COPY src/ src/
 RUN ./mvnw -B package
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:24-jre
 WORKDIR /app
 
 COPY --from=build /workspace/target/collection-service-0.0.1-SNAPSHOT.jar app.jar
