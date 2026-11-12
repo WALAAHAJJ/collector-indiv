@@ -103,3 +103,20 @@ jobs:
       - name: Build image Docker
         working-directory: backend/microservices/user-service
         run: docker build -t user-service:ci .
+
+
+  security-scan:
+    name: Scan de sécurité (Trivy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Trivy - dépendances, secrets et configuration
+        run: |
+          docker run --rm -v "$PWD:/src" aquasec/trivy:0.70.0 fs \
+            --scanners vuln,secret,misconfig \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            /src
