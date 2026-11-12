@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import "./styles/layout.css";
 import "./styles/tones.css";
 import "./styles/header.css";
@@ -9,6 +8,7 @@ import "./styles/cards.css";
 import "./styles/modal.css";
 import "./styles/forms.css";
 import "./styles/my-listings.css";
+import "./styles/footer.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
