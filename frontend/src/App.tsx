@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import "./styles/layout.css";
+import "./styles/tones.css";
 import "./styles/header.css";
+import "./styles/hero.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -9,6 +11,7 @@ import MyListings from "./MyListings";
 import { clearToken, getToken } from "./auth";
 import { catalogUrl } from "./api";
 import Modal from "./Modal";
+import HeroArt from "./HeroArt";
 
 type ApiListing = {
   id: string;
@@ -276,9 +279,7 @@ function App() {
           <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
 
           <h1>
-            Les objets rares
-            <br />
-            trouvent leur place.
+            Les objets <em className="marker">rares</em> trouvent leur place.
           </h1>
 
           <p>
@@ -291,15 +292,7 @@ function App() {
           </a>
         </div>
 
-        <div className="hero-art" aria-hidden="true">
-          <span className="hero-stamp">✉️</span>
-          <span className="hero-coin">✦</span>
-          <span className="hero-caption">
-            Trouvailles choisies
-            <br />
-            avec passion
-          </span>
-        </div>
+        <HeroArt />
       </section>
 
       {sessionUser && (
