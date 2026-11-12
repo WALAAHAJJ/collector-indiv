@@ -1,0 +1,167 @@
+/* En-tête : marque, navigation et boutons du compte */
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 28px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--green);
+  text-decoration: none;
+}
+
+.brand-word {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.brand-dot {
+  color: var(--tomato);
+}
+
+.brand-underline {
+  width: 160px;
+  height: 10px;
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.navigation a {
+  padding-bottom: 4px;
+  border-bottom: 3px dotted transparent;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.navigation a:hover,
+.navigation a.active {
+  border-bottom-color: var(--tomato);
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.account-greeting {
+  color: var(--tomato-ink);
+  font-family: var(--font-hand);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.login-button,
+.sell-button,
+.my-listings-button {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.login-button {
+  border-style: dashed;
+  background: transparent;
+  color: var(--ink);
+}
+
+.login-button:hover {
+  background: var(--paper-warm);
+}
+
+.my-listings-button {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 3px 4px 0 var(--ink);
+}
+
+.my-listings-button:hover {
+  background: var(--paper-warm);
+}
+
+.sell-button {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--paper);
+  box-shadow: 3px 4px 0 var(--ink);
+}
+
+.sell-button:hover {
+  background: #2b6354;
+}
+
+/* Actions du vendeur, sous la bannière */
+
+.seller-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+
+.seller-actions .my-listings-button,
+.seller-actions .sell-button {
+  min-height: 56px;
+  padding: 0 30px;
+}
+
+@media (max-width: 800px) {
+  .navigation {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    padding-block: 18px;
+  }
+
+  .brand-word {
+    font-size: 32px;
+  }
+
+  .account-greeting {
+    display: none;
+  }
+
+  .account-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .seller-actions {
+    gap: 14px;
+    margin-bottom: 42px;
+  }
+
+  .seller-actions button {
+    flex: 1 1 150px;
+  }
+}
