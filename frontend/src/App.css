@@ -1,123 +1,3 @@
-#root {
-  min-height: 100vh;
-}
-
-.app {
-  max-width: 1180px;
-  margin: auto;
-  padding: 0 32px;
-}
-
-/* En-tête */
-
-.topbar {
-  min-height: 82px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 22px;
-  border-bottom: 1px solid #eee9e2;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #242a25;
-  text-decoration: none;
-  font-size: 21px;
-  font-weight: 750;
-  letter-spacing: -1px;
-  white-space: nowrap;
-}
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  background: #263d32;
-  color: white;
-  font-family: Georgia, serif;
-}
-
-.brand-dot {
-  color: #d58b58;
-}
-
-.navigation {
-  display: flex;
-  gap: 24px;
-  margin-left: auto;
-}
-
-.navigation a {
-  color: #797b75;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.navigation a.active {
-  color: #263d32;
-  font-weight: 650;
-}
-
-.account-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 9px;
-  margin-left: 12px;
-}
-
-.account-greeting {
-  margin-right: 4px;
-  color: #263d32;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.sell-button,
-.my-listings-button,
-.login-button {
-  min-height: 40px;
-  padding: 0 13px;
-  border-radius: 9px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 650;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.sell-button {
-  border: 0;
-  background: #263d32;
-  color: white;
-}
-
-.sell-button:hover {
-  background: #345443;
-}
-
-.my-listings-button {
-  border: 1px solid #dce3dc;
-  background: #f5f7f3;
-  color: #263d32;
-}
-
-.my-listings-button:hover,
-.login-button:hover {
-  background: #eeefe9;
-}
-
-.login-button {
-  border: 1px solid #e5e2dc;
-  background: white;
-  color: #263d32;
-}
-
 /* Bannière d’accueil */
 
 .hero {
@@ -214,24 +94,6 @@
   color: #565950;
   font-size: 11px;
   line-height: 1.5;
-}
-
-/* Actions vendeur sous la bannière */
-
-.seller-actions {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  margin: 0 0 58px;
-}
-
-.seller-actions .my-listings-button,
-.seller-actions .sell-button {
-  min-height: 46px;
-  padding: 0 22px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 /* Catalogue */
@@ -844,24 +706,13 @@ footer span:first-child {
 /* Tablette */
 
 @media (max-width: 800px) {
-  .app {
-    padding: 0 18px;
-  }
+  
 
-  .topbar {
-    flex-wrap: wrap;
-    min-height: 70px;
-    padding: 12px 0;
-  }
+  
 
-  .navigation {
-    display: none;
-  }
+  
 
-  .account-actions {
-    gap: 8px;
-    margin-left: auto;
-  }
+  
 
   .hero {
     min-height: auto;
@@ -896,32 +747,15 @@ footer span:first-child {
 /* Téléphone */
 
 @media (max-width: 560px) {
-  .app {
-    padding: 0 18px;
-  }
+  
 
-  .topbar {
-    min-height: 70px;
-  }
+  
 
-  .account-actions {
-    width: 100%;
-    justify-content: flex-end;
-    gap: 8px;
-    margin: 0;
-  }
+  
 
-  .account-greeting {
-    display: none;
-  }
+  
 
-  .account-actions .sell-button,
-  .account-actions .my-listings-button,
-  .account-actions .login-button {
-    min-height: 38px;
-    padding: 0 10px;
-    font-size: 11px;
-  }
+  
 
   .hero {
     margin: 22px 0 28px;
@@ -932,15 +766,9 @@ footer span:first-child {
     display: none;
   }
 
-  .seller-actions {
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 42px;
-  }
+  
 
-  .seller-actions button {
-    flex: 1 1 150px;
-  }
+  
 
   .section-heading {
     align-items: stretch;
@@ -1006,29 +834,7 @@ footer span:first-child {
     padding: 26px 20px;
   }
 }
-.seller-actions {
-  gap: 24px;
-}
 
-.seller-actions .my-listings-button,
-.seller-actions .sell-button {
-  min-height: 56px;
-  padding: 0 30px;
-  font-size: 16px;
-}
-
-@media (max-width: 560px) {
-  .seller-actions {
-    gap: 14px;
-  }
-
-  .seller-actions .my-listings-button,
-  .seller-actions .sell-button {
-    min-height: 50px;
-    padding: 0 20px;
-    font-size: 14px;
-  }
-}
 /* Fenêtres modales accessibles (élément <dialog>) */
 dialog.listing-modal,
 dialog.auth-card {

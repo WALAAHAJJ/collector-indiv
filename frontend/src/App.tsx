@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import "./styles/layout.css";
+import "./styles/header.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -208,13 +210,25 @@ function App() {
     <main className="app">
       <header className="topbar">
         <a className="brand" href="#" aria-label="Collector, accueil">
-          <span className="brand-mark">C</span>
-          <span>
+          <span className="brand-word">
             collector<span className="brand-dot">.</span>
           </span>
+          <svg
+            className="brand-underline"
+            viewBox="0 0 160 10"
+            aria-hidden="true"
+          >
+            <path
+              d="M2 6 C20 1 34 9 54 5 C74 1 90 9 110 5 C128 2 144 8 158 4"
+              fill="none"
+              stroke="#e9c46a"
+              strokeWidth="4"
+              strokeLinecap="round"
+            />
+          </svg>
         </a>
 
-        <nav className="navigation">
+        <nav className="navigation" aria-label="Navigation principale">
           <a className="active" href="#catalogue">
             Catalogue
           </a>
