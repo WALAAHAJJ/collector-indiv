@@ -1,100 +1,78 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getToken } from "./auth";
+
+type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 
 type Listing = {
-  id: number;
-  title: string;
-  description: string;
+  id: string;
+  name: string;
+  description: string | null;
   category: string;
   condition: string;
-  price: string | number;
-  image: string | null;
-  shipping_cost: string | number;
-  status: "pending_review" | "approved" | "rejected";
+  price: number;
+  shippingCost: number;
+  status: ListingStatus;
+  moderationReason: string | null;
 };
 
 type EditForm = {
-  title: string;
+  name: string;
   description: string;
   category: string;
   condition: string;
   price: string;
-  shipping_cost: string;
-  image: File | null;
+  shippingCost: string;
 };
 
 type MyListingsProps = {
+  ownerId: string;
   onClose: () => void;
 };
 
-const categoryLabels: Record<string, string> = {
-  postcards: "Cartes postales",
-  coins: "Pièces",
-  stamps: "Timbres",
-  other: "Autres objets",
-};
-
-const statusLabels: Record<string, string> = {
-  pending_review: "En attente de modération",
-  approved: "Approuvée",
-  rejected: "Refusée",
+const statusLabels: Record<ListingStatus, string> = {
+  PENDING_REVIEW: "En attente de vérification",
+  APPROVED: "Approuvée",
+  REJECTED: "Refusée",
 };
 
 const initialForm: EditForm = {
-  title: "",
+  name: "",
   description: "",
-  category: "other",
+  category: "Autres objets",
   condition: "good",
   price: "",
-  shipping_cost: "0",
-  image: null,
+  shippingCost: "0",
 };
 
-function formatEuros(value: string | number): string {
+function formatEuros(value: number): string {
   return `${Number(value).toFixed(2).replace(".", ",")} €`;
 }
 
-function getCookie(name: string): string | null {
-  const cookie = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${name}=`));
-
-  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function getCsrfToken(): Promise<string> {
-  const response = await fetch("/api/auth/csrf/", {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Impossible de préparer la requête.");
-  }
-
-  const token = getCookie("csrftoken");
-  if (!token) throw new Error("Jeton de sécurité introuvable.");
-
-  return token;
-}
-
-async function fetchMyListings(): Promise<Listing[]> {
-  const response = await fetch("/api/listings/mine/", {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Impossible de charger vos annonces.");
-  }
-
-  return (await response.json()) as Listing[];
-}
-
-export default function MyListings({ onClose }: MyListingsProps) {
+export default function MyListings({ ownerId, onClose }: MyListingsProps) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm>(initialForm);
+
+  const fetchMyListings = useCallback(async (): Promise<Listing[]> => {
+    const response = await fetch(
+      `/api/collectibles?ownerId=${encodeURIComponent(ownerId)}`,
+      { headers: authHeaders() },
+    );
+
+    if (!response.ok) {
+      throw new Error("Impossible de charger vos annonces.");
+    }
+
+    return (await response.json()) as Listing[];
+  }, [ownerId]);
 
   useEffect(() => {
     fetchMyListings()
@@ -107,18 +85,17 @@ export default function MyListings({ onClose }: MyListingsProps) {
         );
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchMyListings]);
 
   function startEditing(listing: Listing) {
     setEditingId(listing.id);
     setEditForm({
-      title: listing.title,
-      description: listing.description,
+      name: listing.name,
+      description: listing.description ?? "",
       category: listing.category,
-      condition: listing.condition,
+      condition: listing.condition.toLowerCase(),
       price: String(listing.price),
-      shipping_cost: String(listing.shipping_cost),
-      image: null,
+      shippingCost: String(listing.shippingCost),
     });
     setError("");
     setMessage("");
@@ -129,26 +106,18 @@ export default function MyListings({ onClose }: MyListingsProps) {
     if (editingId === null) return;
 
     try {
-      const csrfToken = await getCsrfToken();
-      const body = new FormData();
-
-      body.append("title", editForm.title);
-      body.append("description", editForm.description);
-      body.append("category", editForm.category);
-      body.append("condition", editForm.condition);
-      body.append("price", editForm.price);
-      body.append("shipping_cost", editForm.shipping_cost);
-      if (editForm.image) body.append("image", editForm.image);
-
-      const response = await fetch(
-        `/api/listings/${editingId}/manage/`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "X-CSRFToken": csrfToken },
-          body,
-        },
-      );
+      const response = await fetch(`/api/collectibles/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          name: editForm.name,
+          category: editForm.category,
+          description: editForm.description,
+          price: Number(editForm.price),
+          shippingCost: Number(editForm.shippingCost),
+          condition: editForm.condition.toUpperCase(),
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("La modification a échoué. Vérifie les champs.");
@@ -156,7 +125,8 @@ export default function MyListings({ onClose }: MyListingsProps) {
 
       setListings(await fetchMyListings());
       setEditingId(null);
-      setMessage("Annonce modifiée. Elle doit être approuvée à nouveau.");
+      setMessage("Annonce modifiée et contrôlée à nouveau.");
+      setError("");
     } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
@@ -167,18 +137,13 @@ export default function MyListings({ onClose }: MyListingsProps) {
   }
 
   async function deleteListing(listing: Listing) {
-    if (!window.confirm(`Supprimer l’annonce « ${listing.title} » ?`)) return;
+    if (!window.confirm(`Supprimer l’annonce « ${listing.name} » ?`)) return;
 
     try {
-      const csrfToken = await getCsrfToken();
-      const response = await fetch(
-        `/api/listings/${listing.id}/manage/`,
-        {
-          method: "DELETE",
-          credentials: "include",
-          headers: { "X-CSRFToken": csrfToken },
-        },
-      );
+      const response = await fetch(`/api/collectibles/${listing.id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error("La suppression a échoué.");
@@ -225,28 +190,25 @@ export default function MyListings({ onClose }: MyListingsProps) {
           <div className="my-listings-list">
             {listings.map((listing) => (
               <article className="my-listing-card" key={listing.id}>
-                {listing.image ? (
-                  <img
-                    className="listing-photo"
-                    src={listing.image}
-                    alt={listing.title}
-                  />
-                ) : (
-                  <div className="my-listing-placeholder" aria-hidden="true">
-                    📦
-                  </div>
-                )}
+                <div className="my-listing-placeholder" aria-hidden="true">
+                  📦
+                </div>
 
                 <div className="my-listing-info">
-                  <span className="item-category">
-                    {categoryLabels[listing.category] ?? listing.category}
-                  </span>
-                  <h3>{listing.title}</h3>
+                  <span className="item-category">{listing.category}</span>
+                  <h3>{listing.name}</h3>
                   <p>Prix : {formatEuros(listing.price)}</p>
-                  <p>Expédition : {formatEuros(listing.shipping_cost)}</p>
-                  <span className={`listing-status status-${listing.status}`}>
-                    {statusLabels[listing.status] ?? listing.status}
+                  <p>Expédition : {formatEuros(listing.shippingCost)}</p>
+                  <span
+                    className={`listing-status status-${listing.status.toLowerCase()}`}
+                  >
+                    {statusLabels[listing.status]}
                   </span>
+                  {listing.moderationReason && (
+                    <p className="moderation-reason">
+                      {listing.moderationReason}
+                    </p>
+                  )}
 
                   <div className="my-listing-actions">
                     <button onClick={() => startEditing(listing)}>
@@ -266,9 +228,10 @@ export default function MyListings({ onClose }: MyListingsProps) {
                         Titre
                         <input
                           required
-                          value={editForm.title}
+                          maxLength={120}
+                          value={editForm.name}
                           onChange={(event) =>
-                            setEditForm({ ...editForm, title: event.target.value })
+                            setEditForm({ ...editForm, name: event.target.value })
                           }
                         />
                       </label>
@@ -277,6 +240,7 @@ export default function MyListings({ onClose }: MyListingsProps) {
                         Description
                         <textarea
                           required
+                          maxLength={1000}
                           value={editForm.description}
                           onChange={(event) =>
                             setEditForm({
@@ -298,10 +262,10 @@ export default function MyListings({ onClose }: MyListingsProps) {
                             })
                           }
                         >
-                          <option value="postcards">Cartes postales</option>
-                          <option value="coins">Pièces</option>
-                          <option value="stamps">Timbres</option>
-                          <option value="other">Autres objets</option>
+                          <option value="Cartes postales">Cartes postales</option>
+                          <option value="Pièces">Pièces</option>
+                          <option value="Timbres">Timbres</option>
+                          <option value="Autres objets">Autres objets</option>
                         </select>
                       </label>
 
@@ -344,25 +308,11 @@ export default function MyListings({ onClose }: MyListingsProps) {
                           type="number"
                           min="0"
                           step="0.01"
-                          value={editForm.shipping_cost}
+                          value={editForm.shippingCost}
                           onChange={(event) =>
                             setEditForm({
                               ...editForm,
-                              shipping_cost: event.target.value,
-                            })
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Remplacer la photo (facultatif)
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              image: event.target.files?.[0] ?? null,
+                              shippingCost: event.target.value,
                             })
                           }
                         />

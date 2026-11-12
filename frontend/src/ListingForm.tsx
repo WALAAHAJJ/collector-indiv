@@ -1,29 +1,28 @@
 import { useState, type FormEvent } from "react";
+import { getToken } from "./auth";
 
 type ListingFormProps = {
+  ownerId: string;
   onClose: () => void;
   onSubmitted: () => void;
 };
 
-function getCookie(name: string): string | null {
-  const cookie = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${name}=`));
-
-  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
-}
+type CreatedListing = {
+  status: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+  moderationReason: string | null;
+};
 
 export default function ListingForm({
+  ownerId,
   onClose,
   onSubmitted,
 }: ListingFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("postcards");
+  const [category, setCategory] = useState("Cartes postales");
   const [condition, setCondition] = useState("good");
   const [price, setPrice] = useState("");
   const [shippingCost, setShippingCost] = useState("0.00");
-  const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,49 +32,37 @@ export default function ListingForm({
     setLoading(true);
 
     try {
-      const csrfResponse = await fetch("/api/auth/csrf/", {
-        credentials: "include",
-      });
+      const token = getToken();
 
-      if (!csrfResponse.ok) {
-        throw new Error("Impossible de préparer l’envoi du formulaire.");
-      }
-
-      const csrfToken = getCookie("csrftoken");
-
-      if (!csrfToken) {
-        throw new Error("Jeton de sécurité introuvable. Réessaie.");
-      }
-
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("category", category);
-      formData.append("condition", condition);
-      formData.append("price", price);
-      formData.append("shipping_cost", shippingCost);
-
-      if (image) {
-        formData.append("image", image);
-      }
-
-      const response = await fetch("/api/listings/submit/", {
+      const response = await fetch("/api/collectibles", {
         method: "POST",
-        credentials: "include",
         headers: {
-          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: formData,
+        body: JSON.stringify({
+          ownerId,
+          name: title,
+          category,
+          description,
+          price: Number(price),
+          shippingCost: Number(shippingCost),
+          condition: condition.toUpperCase(),
+        }),
       });
-
-      const payload = (await response.json().catch(() => ({}))) as {
-        detail?: string;
-      };
 
       if (!response.ok) {
         throw new Error(
-          payload.detail ??
-            "L’annonce n’a pas pu être envoyée. Vérifie les champs et ta connexion.",
+          "L’annonce n’a pas pu être envoyée. Vérifie les champs.",
+        );
+      }
+
+      const created = (await response.json()) as CreatedListing;
+
+      if (created.status === "REJECTED") {
+        throw new Error(
+          created.moderationReason ??
+            "Votre annonce a été refusée par la modération automatique.",
         );
       }
 
@@ -111,7 +98,7 @@ export default function ListingForm({
 
         <span className="eyebrow">PARTAGEZ VOTRE COLLECTION</span>
         <h2 id="listing-form-title">Déposer une annonce</h2>
-        <p>Votre annonce sera vérifiée avant sa publication.</p>
+        <p>Votre annonce est contrôlée automatiquement avant sa publication.</p>
 
         <form className="listing-form" onSubmit={handleSubmit}>
           <label>
@@ -129,6 +116,7 @@ export default function ListingForm({
             <textarea
               required
               rows={4}
+              maxLength={1000}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
@@ -140,10 +128,10 @@ export default function ListingForm({
               value={category}
               onChange={(event) => setCategory(event.target.value)}
             >
-              <option value="postcards">Cartes postales</option>
-              <option value="coins">Pièces</option>
-              <option value="stamps">Timbres</option>
-              <option value="other">Autres objets</option>
+              <option value="Cartes postales">Cartes postales</option>
+              <option value="Pièces">Pièces</option>
+              <option value="Timbres">Timbres</option>
+              <option value="Autres objets">Autres objets</option>
             </select>
           </label>
 
@@ -184,17 +172,6 @@ export default function ListingForm({
             />
           </label>
 
-          <label>
-            Photo de l’objet (facultative)
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) =>
-                setImage(event.target.files?.[0] ?? null)
-              }
-            />
-          </label>
-
           {error && (
             <p className="auth-error" role="alert">
               {error}
@@ -202,7 +179,7 @@ export default function ListingForm({
           )}
 
           <button className="auth-submit" type="submit" disabled={loading}>
-            {loading ? "Envoi…" : "Envoyer pour modération"}
+            {loading ? "Envoi…" : "Publier l’annonce"}
           </button>
         </form>
       </section>

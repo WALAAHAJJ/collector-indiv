@@ -436,20 +436,24 @@ function App() {
         </p>
       )}
 
-      {showListingForm && (
+      {showListingForm && sessionUser && (
         <ListingForm
+          ownerId={sessionUser.id}
           onClose={() => setShowListingForm(false)}
           onSubmitted={() => {
             setShowListingForm(false);
             setRegistrationMessage(
-              "Annonce envoyée. Elle sera visible après modération.",
+              "Annonce enregistrée. Elle apparaît dans le catalogue une fois approuvée.",
             );
           }}
         />
       )}
 
-      {showMyListings && (
-        <MyListings onClose={() => setShowMyListings(false)} />
+      {showMyListings && sessionUser && (
+        <MyListings
+          ownerId={sessionUser.id}
+          onClose={() => setShowMyListings(false)}
+        />
       )}
 
       {showRegistration && (
