@@ -1,14 +1,56 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
-
 :root {
-  font-family: "DM Sans", sans-serif;
-  color: #30372f;
-  background: #fff;
+  /* Palette « Album » : papier kraft, encre, vert profond, tomate, moutarde */
+  --kraft: #eadcc0;
+  --kraft-deep: #d9c6a0;
+  --paper: #fffdf8;
+  --paper-warm: #f4ead2;
+  --ink: #2b2118;
+  --ink-soft: #5b4b3b;
+  --green: #1f4a3e;
+  --tomato: #c23a22;
+  --tomato-ink: #a12f1a;
+  --mustard: #e9c46a;
+  --pink: #e8b4a6;
+  --sage: #8db09c;
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-hand: "Caveat Variable", cursive;
+  --font-body: "Karla Variable", system-ui, sans-serif;
+
+  --shadow-card: 0 12px 24px -12px rgb(43 33 24 / 50%);
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--kraft);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-* { box-sizing: border-box; }
-body { min-width: 320px; margin: 0; }
-button, input { font-family: inherit; }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background-color: var(--kraft);
+  background-image: radial-gradient(rgb(43 33 24 / 8%) 1px, transparent 1.4px);
+  background-size: 14px 14px;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+a {
+  color: var(--green);
+}
+
+a:hover {
+  color: var(--tomato-ink);
+}
