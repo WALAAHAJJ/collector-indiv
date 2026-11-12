@@ -4,6 +4,7 @@ import com.collector.collection.api.dto.CollectibleResponse;
 import com.collector.collection.api.dto.CreateCollectibleRequest;
 import com.collector.collection.api.dto.UpdateCollectibleRequest;
 import com.collector.collection.domain.Collectible;
+import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.repository.CollectibleRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,9 @@ public class CollectibleService {
         this.moderationService = moderationService;
     }
 
-    public CollectibleResponse create(CreateCollectibleRequest request) {
+    public CollectibleResponse create(UUID ownerId, CreateCollectibleRequest request) {
         Collectible collectible = new Collectible(
-                request.ownerId(),
+                ownerId,
                 request.name(),
                 request.category(),
                 request.description(),
@@ -50,7 +51,7 @@ public class CollectibleService {
 
     public List<CollectibleResponse> findCatalog(String category, String search) {
         return repository.searchCatalog(
-                        com.collector.collection.domain.ListingStatus.APPROVED,
+                        ListingStatus.APPROVED,
                         category == null ? "" : category.trim(),
                         search == null ? "" : search.trim()
                 )
@@ -59,12 +60,25 @@ public class CollectibleService {
                 .toList();
     }
 
-    public CollectibleResponse findById(UUID id) {
-        return toResponse(findEntityById(id));
+    public CollectibleResponse findById(UUID id, UUID currentUserId) {
+        Collectible collectible = findEntityById(id);
+
+        boolean isOwner = collectible.getOwnerId().equals(currentUserId);
+        boolean isPublic = collectible.getStatus() == ListingStatus.APPROVED;
+
+        if (!isOwner && !isPublic) {
+            throw notFound();
+        }
+
+        return toResponse(collectible);
     }
 
-    public CollectibleResponse update(UUID id, UpdateCollectibleRequest request) {
-        Collectible collectible = findEntityById(id);
+    public CollectibleResponse update(
+            UUID id,
+            UUID currentUserId,
+            UpdateCollectibleRequest request
+    ) {
+        Collectible collectible = findOwnedEntity(id, currentUserId);
         collectible.updateDetails(
                 request.name(),
                 request.category(),
@@ -78,8 +92,8 @@ public class CollectibleService {
         return toResponse(repository.save(collectible));
     }
 
-    public void delete(UUID id) {
-        Collectible collectible = findEntityById(id);
+    public void delete(UUID id, UUID currentUserId) {
+        Collectible collectible = findOwnedEntity(id, currentUserId);
         repository.delete(collectible);
     }
 
@@ -92,12 +106,22 @@ public class CollectibleService {
         collectible.applyModeration(result.status(), result.reason());
     }
 
+    private Collectible findOwnedEntity(UUID id, UUID currentUserId) {
+        Collectible collectible = findEntityById(id);
+
+        if (!collectible.getOwnerId().equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accès refusé");
+        }
+
+        return collectible;
+    }
+
     private Collectible findEntityById(UUID id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Objet introuvable"
-                ));
+        return repository.findById(id).orElseThrow(this::notFound);
+    }
+
+    private ResponseStatusException notFound() {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Objet introuvable");
     }
 
     private CollectibleResponse toResponse(Collectible collectible) {

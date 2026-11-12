@@ -8,7 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,7 +24,7 @@ class CatalogTests {
     private MockMvc mockMvc;
 
     @Test
-    void catalogShowsOnlyApprovedListings() throws Exception {
+    void catalogIsPublicAndShowsOnlyApprovedListings() throws Exception {
         String category = "cat" + UUID.randomUUID().toString().substring(0, 8);
 
         create(category, "Pièce ancienne", "Belle pièce de collection").andExpect(status().isCreated());
@@ -50,13 +52,12 @@ class CatalogTests {
                 .andExpect(jsonPath("$[0].name").value("Timbre rare"));
     }
 
-    private org.springframework.test.web.servlet.ResultActions create(
-            String category, String name, String description) throws Exception {
+    private ResultActions create(String category, String name, String description) throws Exception {
         return mockMvc.perform(post("/api/collectibles")
+                .with(jwt().jwt(token -> token.subject(UUID.randomUUID().toString())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
-                          "ownerId": "%s",
                           "name": "%s",
                           "category": "%s",
                           "description": "%s",
@@ -64,6 +65,6 @@ class CatalogTests {
                           "shippingCost": 3.00,
                           "condition": "GOOD"
                         }
-                        """.formatted(UUID.randomUUID(), name, category, description)));
+                        """.formatted(name, category, description)));
     }
 }

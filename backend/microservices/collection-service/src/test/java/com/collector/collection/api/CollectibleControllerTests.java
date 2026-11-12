@@ -11,8 +11,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -32,10 +34,10 @@ class CollectibleControllerTests {
         String ownerId = UUID.randomUUID().toString();
 
         MvcResult createResult = mockMvc.perform(post("/api/collectibles")
+                        .with(user(ownerId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "ownerId": "%s",
                                   "name": "Vinyle",
                                   "category": "Musique",
                                   "description": "Un disque de collection",
@@ -43,8 +45,9 @@ class CollectibleControllerTests {
                                   "shippingCost": 4.50,
                                   "condition": "VERY_GOOD"
                                 }
-                                """.formatted(ownerId)))
+                                """))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.ownerId").value(ownerId))
                 .andExpect(jsonPath("$.name").value("Vinyle"))
                 .andExpect(jsonPath("$.price").value(25.0))
                 .andExpect(jsonPath("$.shippingCost").value(4.5))
@@ -54,12 +57,13 @@ class CollectibleControllerTests {
 
         String id = extractId(createResult);
 
-        mockMvc.perform(get("/api/collectibles/{id}", id))
+        mockMvc.perform(get("/api/collectibles/{id}", id).with(user(ownerId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ownerId").value(ownerId))
                 .andExpect(jsonPath("$.name").value("Vinyle"));
 
         mockMvc.perform(put("/api/collectibles/{id}", id)
+                        .with(user(ownerId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -78,25 +82,29 @@ class CollectibleControllerTests {
                 .andExpect(jsonPath("$.price").value(30.0))
                 .andExpect(jsonPath("$.status").value("APPROVED"));
 
-        mockMvc.perform(get("/api/collectibles").param("ownerId", ownerId))
+        mockMvc.perform(get("/api/collectibles")
+                        .with(user(ownerId))
+                        .param("ownerId", ownerId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Vinyle jazz"));
 
-        mockMvc.perform(delete("/api/collectibles/{id}", id))
+        mockMvc.perform(delete("/api/collectibles/{id}", id).with(user(ownerId)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/collectibles/{id}", id))
+        mockMvc.perform(get("/api/collectibles/{id}", id).with(user(ownerId)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldReturnNotFoundForUnknownCollectible() throws Exception {
         String unknownId = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
 
-        mockMvc.perform(get("/api/collectibles/{id}", unknownId))
+        mockMvc.perform(get("/api/collectibles/{id}", unknownId).with(user(userId)))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(put("/api/collectibles/{id}", unknownId)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -110,61 +118,52 @@ class CollectibleControllerTests {
                                 """))
                 .andExpect(status().isNotFound());
 
-        mockMvc.perform(delete("/api/collectibles/{id}", unknownId))
+        mockMvc.perform(delete("/api/collectibles/{id}", unknownId).with(user(userId)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldRejectCollectibleWithBlankName() throws Exception {
         mockMvc.perform(post("/api/collectibles")
+                        .with(user(UUID.randomUUID().toString()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "ownerId": "%s",
-                                  "name": " ",
-                                  "category": "Musique",
-                                  "description": "Un disque de collection",
-                                  "price": 25.00,
-                                  "shippingCost": 4.50,
-                                  "condition": "GOOD"
-                                }
-                                """.formatted(UUID.randomUUID())))
+                        .content(body(" ", "25.00", "\"GOOD\"")))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void shouldRejectCollectibleWithZeroPrice() throws Exception {
         mockMvc.perform(post("/api/collectibles")
+                        .with(user(UUID.randomUUID().toString()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "ownerId": "%s",
-                                  "name": "Vinyle",
-                                  "category": "Musique",
-                                  "description": "Un disque de collection",
-                                  "price": 0,
-                                  "shippingCost": 4.50,
-                                  "condition": "GOOD"
-                                }
-                                """.formatted(UUID.randomUUID())))
+                        .content(body("Vinyle", "0", "\"GOOD\"")))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void shouldRejectCollectibleWithoutCondition() throws Exception {
         mockMvc.perform(post("/api/collectibles")
+                        .with(user(UUID.randomUUID().toString()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "ownerId": "%s",
-                                  "name": "Vinyle",
-                                  "category": "Musique",
-                                  "description": "Un disque de collection",
-                                  "price": 25.00,
-                                  "shippingCost": 4.50
-                                }
-                                """.formatted(UUID.randomUUID())))
+                        .content(body("Vinyle", "25.00", "null")))
                 .andExpect(status().isBadRequest());
+    }
+
+    private String body(String name, String price, String condition) {
+        return """
+                {
+                  "name": "%s",
+                  "category": "Musique",
+                  "description": "Un disque de collection",
+                  "price": %s,
+                  "shippingCost": 4.50,
+                  "condition": %s
+                }
+                """.formatted(name, price, condition);
+    }
+
+    private RequestPostProcessor user(String userId) {
+        return jwt().jwt(token -> token.subject(userId));
     }
 
     private String extractId(MvcResult result) throws Exception {
