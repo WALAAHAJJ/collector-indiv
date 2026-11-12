@@ -17,6 +17,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -27,8 +30,14 @@ updates:
     directory: "/backend/microservices/collection-service"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "eclipse-temurin"
+      - dependency-name: "maven"
 
   - package-ecosystem: "docker"
     directory: "/backend/microservices/user-service"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "eclipse-temurin"
+      - dependency-name: "maven"
