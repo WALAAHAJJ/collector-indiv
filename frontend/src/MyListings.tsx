@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken } from "./auth";
+import { collectibleUrl, myCollectiblesUrl } from "./api";
 
 type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 
@@ -62,10 +63,9 @@ export default function MyListings({ ownerId, onClose }: MyListingsProps) {
   const [editForm, setEditForm] = useState<EditForm>(initialForm);
 
   const fetchMyListings = useCallback(async (): Promise<Listing[]> => {
-    const response = await fetch(
-      `/api/collectibles?ownerId=${encodeURIComponent(ownerId)}`,
-      { headers: authHeaders() },
-    );
+    const response = await fetch(myCollectiblesUrl(ownerId), {
+      headers: authHeaders(),
+    });
 
     if (!response.ok) {
       throw new Error("Impossible de charger vos annonces.");
@@ -106,7 +106,7 @@ export default function MyListings({ ownerId, onClose }: MyListingsProps) {
     if (editingId === null) return;
 
     try {
-      const response = await fetch(`/api/collectibles/${editingId}`, {
+      const response = await fetch(collectibleUrl(editingId), {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
@@ -140,7 +140,7 @@ export default function MyListings({ ownerId, onClose }: MyListingsProps) {
     if (!window.confirm(`Supprimer l’annonce « ${listing.name} » ?`)) return;
 
     try {
-      const response = await fetch(`/api/collectibles/${listing.id}`, {
+      const response = await fetch(collectibleUrl(listing.id), {
         method: "DELETE",
         headers: authHeaders(),
       });

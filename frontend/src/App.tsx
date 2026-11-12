@@ -5,6 +5,7 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
 import { clearToken, getToken } from "./auth";
+import { catalogUrl } from "./api";
 
 type ApiListing = {
   id: string;
@@ -79,20 +80,10 @@ function App() {
   useEffect(() => {
     let cancelled = false;
 
-    const params = new URLSearchParams();
-
-    if (category !== "Tout") {
-      params.set("category", category);
-    }
-
-    if (search.trim()) {
-      params.set("search", search.trim());
-    }
-
-    const query = params.toString();
-    const url = query
-      ? `/api/collectibles/catalog?${query}`
-      : "/api/collectibles/catalog";
+    const url = catalogUrl(
+      categories.includes(category) && category !== "Tout" ? category : "",
+      search.trim(),
+    );
 
     fetch(url)
       .then(async (response) => {
