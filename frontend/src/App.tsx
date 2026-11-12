@@ -5,6 +5,7 @@ import "./styles/tones.css";
 import "./styles/header.css";
 import "./styles/hero.css";
 import "./styles/catalogue.css";
+import "./styles/cards.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -13,6 +14,7 @@ import { clearToken, getToken } from "./auth";
 import { catalogUrl } from "./api";
 import Modal from "./Modal";
 import HeroArt from "./HeroArt";
+import ObjectArt, { type ArtKind } from "./ObjectArt";
 
 type ApiListing = {
   id: string;
@@ -33,7 +35,7 @@ type Listing = {
   price: number;
   image: string;
   shippingCost: number;
-  icon: string;
+  art: ArtKind;
   tone: string;
 };
 
@@ -50,11 +52,11 @@ const categoryLabels: Record<string, string> = {
   other: "Autres objets",
 };
 
-const categoryVisuals: Record<string, { icon: string; tone: string }> = {
-  postcards: { icon: "✉️", tone: "rose" },
-  coins: { icon: "🪙", tone: "gold" },
-  stamps: { icon: "📮", tone: "blue" },
-  other: { icon: "📷", tone: "green" },
+const categoryVisuals: Record<string, { art: ArtKind; tone: string }> = {
+  postcards: { art: "postcards", tone: "gold" },
+  coins: { art: "coins", tone: "rose" },
+  stamps: { art: "stamps", tone: "sage" },
+  other: { art: "other", tone: "kraft" },
 };
 
 const conditionLabels: Record<string, string> = {
@@ -119,7 +121,7 @@ function App() {
             price: item.price,
             image: "",
             shippingCost: item.shippingCost,
-            ...(categoryVisuals[key] ?? { icon: "📦", tone: "green" }),
+            ...(categoryVisuals[key] ?? categoryVisuals.other),
           };
         });
 
@@ -364,9 +366,7 @@ function App() {
                       alt={item.title}
                     />
                   ) : (
-                    <span className="item-icon" aria-hidden="true">
-                      {item.icon}
-                    </span>
+                    <ObjectArt kind={item.art} />
                   )}
 
                   <button
@@ -498,9 +498,7 @@ function App() {
                 alt={selectedListing.title}
               />
             ) : (
-              <span className="item-icon" aria-hidden="true">
-                {selectedListing.icon}
-              </span>
+              <ObjectArt kind={selectedListing.art} size={220} />
             )}
           </div>
 
