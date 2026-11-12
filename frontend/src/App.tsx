@@ -4,6 +4,7 @@ import "./styles/layout.css";
 import "./styles/tones.css";
 import "./styles/header.css";
 import "./styles/hero.css";
+import "./styles/catalogue.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -333,11 +334,12 @@ function App() {
           </label>
         </div>
 
-        <div className="filters" aria-label="Filtrer par catégorie">
+        <div className="filters" role="group" aria-label="Filtrer par catégorie">
           {categories.map((item) => (
             <button
               type="button"
               key={item}
+              aria-pressed={category === item}
               className={category === item ? "filter selected" : "filter"}
               onClick={() => handleCategoryChange(item)}
             >
