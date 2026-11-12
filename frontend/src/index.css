@@ -54,3 +54,18 @@ a {
 a:hover {
   color: var(--tomato-ink);
 }
+
+:focus-visible {
+  outline: 3px solid var(--tomato-ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
