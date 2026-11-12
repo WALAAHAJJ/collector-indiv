@@ -1,0 +1,130 @@
+/* Formulaires : connexion, inscription, dépôt d'annonce, message de confirmation */
+
+.auth-card h2 {
+  margin: 6px 0 8px;
+  color: var(--green);
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.auth-card > p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.auth-card form,
+.auth-form {
+  display: grid;
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.auth-card label,
+.auth-form label,
+.listing-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-card input,
+.auth-form input,
+.listing-form input,
+.listing-form textarea,
+.listing-form select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.listing-form textarea {
+  min-height: 110px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.auth-submit {
+  min-height: 56px;
+  margin-top: 4px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--green);
+  box-shadow: 4px 5px 0 var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-submit:hover {
+  background: #2b6354;
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.auth-error {
+  margin: 0;
+  color: var(--tomato-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.auth-switch {
+  margin-top: 20px;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.auth-switch button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-switch button:hover {
+  color: var(--tomato-ink);
+}
+
+/* Formulaire de dépôt */
+
+.listing-form {
+  display: grid;
+  gap: 18px;
+}
+
+/* Message de confirmation sous l'en-tête */
+
+.registration-message {
+  display: block;
+  width: min(1104px, calc(100% - 40px));
+  margin: 0 auto 24px;
+  padding: 14px 20px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--mustard);
+  box-shadow: 4px 5px 0 var(--ink);
+  color: var(--ink);
+  font-weight: 700;
+}

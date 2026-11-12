@@ -14,140 +14,6 @@ footer span:first-child {
   font-weight: 750;
 }
 
-/* Connexion et inscription */
-
-.auth-card {
-  position: relative;
-  width: min(100%, 430px);
-  padding: 32px;
-  border-radius: 16px;
-  background: white;
-}
-
-.auth-card h2 {
-  margin: 10px 0;
-  color: #263d32;
-  font-family: Georgia, serif;
-  font-size: 32px;
-  font-weight: 500;
-}
-
-.auth-card > p {
-  color: #70736b;
-  line-height: 1.5;
-}
-
-.auth-card form,
-.auth-form {
-  display: grid;
-  gap: 16px;
-  margin-top: 22px;
-}
-
-.auth-card label,
-.auth-form label {
-  display: grid;
-  gap: 7px;
-  color: #30372f;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.auth-card input,
-.auth-form input {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e5e2dc;
-  border-radius: 8px;
-  font: inherit;
-}
-
-.auth-form input:focus {
-  border-color: #263d32;
-  outline: 2px solid #263d3220;
-}
-
-.auth-submit {
-  margin-top: 4px;
-  padding: 13px;
-  border: 0;
-  border-radius: 8px;
-  background: #263d32;
-  color: white;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.auth-submit:disabled {
-  opacity: 0.65;
-  cursor: wait;
-}
-
-.auth-error {
-  margin: 0;
-  color: #a33030;
-  font-size: 13px;
-}
-
-.auth-switch {
-  margin-top: 20px;
-  font-size: 13px;
-}
-
-.auth-switch button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #263d32;
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.registration-message {
-  padding: 12px;
-  border-radius: 8px;
-  background: #e8ece3;
-  color: #263d32;
-}
-
-/* Formulaire de dépôt */
-
-.listing-form-card {
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.listing-form {
-  display: grid;
-  gap: 14px;
-}
-
-.listing-form label {
-  display: grid;
-  gap: 6px;
-}
-
-.listing-form input,
-.listing-form textarea,
-.listing-form select {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e5e2dc;
-  border-radius: 8px;
-  background: white;
-  color: #30372f;
-  font: inherit;
-}
-
-.listing-form textarea {
-  resize: vertical;
-}
-
 /* Mes annonces */
 
 .my-listings-modal {
@@ -343,17 +209,10 @@ footer span:first-child {
     height: 210px;
   }
 
-  .auth-card {
-    padding: 26px 20px;
-  }
+  
 }
 
 /* Fenêtres modales accessibles (élément <dialog>) */
-dialog.auth-card {
-  margin: 0;
-  border: 0;
-  color: inherit;
-}
 
 .backdrop-dismiss {
   position: absolute;
