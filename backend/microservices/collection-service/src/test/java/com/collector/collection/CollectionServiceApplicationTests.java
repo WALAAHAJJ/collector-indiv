@@ -8,6 +8,7 @@ class CollectionServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Le test réussit si le contexte Spring démarre sans erreur.
 	}
 
 }

@@ -11,20 +11,20 @@ public class ModerationService {
 
     static final BigDecimal MANUAL_REVIEW_PRICE = new BigDecimal("5000");
 
-    private static final Pattern EMAIL =
-            Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
+    private static final int PHONE_MIN_DIGITS = 9;
 
-    private static final Pattern PHONE =
-            Pattern.compile("(?:\\+?\\d[\\s.-]?){9,}");
+    private static final Pattern EMAIL = Pattern.compile(
+            "[A-Za-z0-9._%+-]{1,64}+@(?:[A-Za-z0-9-]{1,63}+\\.){1,8}+[A-Za-z]{2,24}+");
 
     private static final Pattern FORBIDDEN_WORDS = Pattern.compile(
             "\\b(contrefaçon|contrefacon|drogue|arme|paypal|virement|western union)\\b",
-            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS);
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                    | Pattern.UNICODE_CHARACTER_CLASS | Pattern.CANON_EQ);
 
     public ModerationResult evaluate(String name, String description, BigDecimal price) {
         String text = name + " " + (description == null ? "" : description);
 
-        if (EMAIL.matcher(text).find() || PHONE.matcher(text).find()) {
+        if (EMAIL.matcher(text).find() || containsPhoneNumber(text)) {
             return new ModerationResult(
                     ListingStatus.REJECTED,
                     "Les coordonnées personnelles sont interdites : les échanges passent par la plateforme."
@@ -46,5 +46,38 @@ public class ModerationService {
         }
 
         return new ModerationResult(ListingStatus.APPROVED, null);
+    }
+
+    /**
+     * Détecte une suite d'au moins {@value #PHONE_MIN_DIGITS} chiffres, séparés au plus
+     * par un espace, un point, un tiret ou un plus. Parcours linéaire, sans expression régulière.
+     */
+    static boolean containsPhoneNumber(String text) {
+        int digits = 0;
+        boolean separatorPending = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (c >= '0' && c <= '9') {
+                digits++;
+                separatorPending = false;
+
+                if (digits >= PHONE_MIN_DIGITS) {
+                    return true;
+                }
+            } else if (digits > 0 && !separatorPending && isPhoneSeparator(c)) {
+                separatorPending = true;
+            } else {
+                digits = 0;
+                separatorPending = false;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isPhoneSeparator(char c) {
+        return c == ' ' || c == '.' || c == '-' || c == '+';
     }
 }
