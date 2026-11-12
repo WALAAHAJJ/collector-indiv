@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { setToken } from "./auth";
+import Modal from "./Modal";
 
 type SessionUser = {
   id: string;
@@ -17,7 +18,7 @@ function LoginForm({
   onClose,
   onLoggedIn,
   onShowRegistration,
-}: LoginFormProps) {
+}: Readonly<LoginFormProps>) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -62,69 +63,66 @@ function LoginForm({
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <section
-        className="listing-modal auth-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="login-title"
-        onClick={(event) => event.stopPropagation()}
+    <Modal
+      onClose={onClose}
+      titleId="login-title"
+      backdropClassName="modal-backdrop"
+      dialogClassName="listing-modal auth-modal"
+    >
+      <button
+        className="modal-close"
+        type="button"
+        onClick={onClose}
+        aria-label="Fermer"
       >
-        <button
-          className="modal-close"
-          type="button"
-          onClick={onClose}
-          aria-label="Fermer"
-        >
-          ×
+        ×
+      </button>
+
+      <span className="eyebrow">HEUREUSE DE VOUS REVOIR</span>
+      <h2 id="login-title">Se connecter</h2>
+      <p>Connectez-vous pour retrouver votre espace Collector.</p>
+
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <label>
+          Nom d’utilisateur
+          <input
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Mot de passe
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+        </label>
+
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <button className="sell-button auth-submit" type="submit" disabled={submitting}>
+          {submitting ? "Connexion…" : "Se connecter"}
         </button>
+      </form>
 
-        <span className="eyebrow">HEUREUSE DE VOUS REVOIR</span>
-        <h2 id="login-title">Se connecter</h2>
-        <p>Connectez-vous pour retrouver votre espace Collector.</p>
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            Nom d’utilisateur
-            <input
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              required
-            />
-          </label>
-
-          <label>
-            Mot de passe
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </label>
-
-          {error && (
-            <p className="auth-error" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button className="sell-button auth-submit" type="submit" disabled={submitting}>
-            {submitting ? "Connexion…" : "Se connecter"}
-          </button>
-        </form>
-
-        <p className="auth-switch">
-          Vous n’avez pas encore de compte ?{" "}
-          <button type="button" onClick={onShowRegistration}>
-            Créer un compte
-          </button>
-        </p>
-      </section>
-    </div>
+      <p className="auth-switch">
+        Vous n’avez pas encore de compte ?{" "}
+        <button type="button" onClick={onShowRegistration}>
+          Créer un compte
+        </button>
+      </p>
+    </Modal>
   );
 }
 

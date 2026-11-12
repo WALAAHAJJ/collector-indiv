@@ -1029,3 +1029,25 @@ footer span:first-child {
     font-size: 14px;
   }
 }
+/* Fenêtres modales accessibles (élément <dialog>) */
+dialog.listing-modal,
+dialog.auth-card {
+  margin: 0;
+  border: 0;
+  color: inherit;
+}
+
+.backdrop-dismiss {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+output {
+  display: block;
+}
