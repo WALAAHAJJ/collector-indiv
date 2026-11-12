@@ -6,6 +6,7 @@ import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
 import { clearToken, getToken } from "./auth";
 import { catalogUrl } from "./api";
+import Modal from "./Modal";
 
 type ApiListing = {
   id: string;
@@ -168,19 +169,6 @@ function App() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!selectedListing) return;
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setSelectedListing(null);
-      }
-    }
-
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [selectedListing]);
 
   const filteredListings = listings.filter((item) => {
     const matchesCategory = category === "Tout" || item.category === category;
@@ -422,9 +410,9 @@ function App() {
       </footer>
 
       {registrationMessage && (
-        <p className="registration-message" role="status">
+        <output className="registration-message">
           {registrationMessage}
-        </p>
+        </output>
       )}
 
       {showListingForm && sessionUser && (
@@ -476,59 +464,53 @@ function App() {
       )}
 
       {selectedListing && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setSelectedListing(null)}
+        <Modal
+          onClose={() => setSelectedListing(null)}
+          titleId="modal-title"
+          backdropClassName="modal-backdrop"
+          dialogClassName="listing-modal listing-detail-modal"
         >
-          <section
-            className="listing-modal listing-detail-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-            onClick={(event) => event.stopPropagation()}
+          <button
+            type="button"
+            className="modal-close"
+            onClick={() => setSelectedListing(null)}
+            aria-label="Fermer"
           >
-            <button
-              type="button"
-              className="modal-close"
-              onClick={() => setSelectedListing(null)}
-              aria-label="Fermer"
-            >
-              ×
-            </button>
+            ×
+          </button>
 
-            <div
-              className={`modal-visual item-visual ${selectedListing.tone}`}
-            >
-              {selectedListing.image ? (
-                <img
-                  className="listing-photo"
-                  src={selectedListing.image}
-                  alt={selectedListing.title}
-                />
-              ) : (
-                <span className="item-icon" aria-hidden="true">
-                  {selectedListing.icon}
-                </span>
-              )}
-            </div>
+          <div
+            className={`modal-visual item-visual ${selectedListing.tone}`}
+          >
+            {selectedListing.image ? (
+              <img
+                className="listing-photo"
+                src={selectedListing.image}
+                alt={selectedListing.title}
+              />
+            ) : (
+              <span className="item-icon" aria-hidden="true">
+                {selectedListing.icon}
+              </span>
+            )}
+          </div>
 
-            <span className="item-category">{selectedListing.category}</span>
-            <h2 id="modal-title">{selectedListing.title}</h2>
-            <p>
-              {selectedListing.description ||
-                "Aucune description renseignée."}
-            </p>
+          <span className="item-category">{selectedListing.category}</span>
+          <h2 id="modal-title">{selectedListing.title}</h2>
+          <p>
+            {selectedListing.description ||
+              "Aucune description renseignée."}
+          </p>
 
-            <div className="modal-price">
-              <span>{selectedListing.condition}</span>
-              <strong>{formatEuros(selectedListing.price)}</strong>
-            </div>
+          <div className="modal-price">
+            <span>{selectedListing.condition}</span>
+            <strong>{formatEuros(selectedListing.price)}</strong>
+          </div>
 
-            <p className="shipping-cost">
-              Frais d’expédition : {formatEuros(selectedListing.shippingCost)}
-            </p>
-          </section>
-        </div>
+          <p className="shipping-cost">
+            Frais d’expédition : {formatEuros(selectedListing.shippingCost)}
+          </p>
+        </Modal>
       )}
     </main>
   );

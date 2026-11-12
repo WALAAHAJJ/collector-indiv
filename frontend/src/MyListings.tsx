@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken } from "./auth";
 import { collectibleUrl, myCollectiblesUrl } from "./api";
+import Modal from "./Modal";
 
 type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 
@@ -54,7 +55,7 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export default function MyListings({ ownerId, onClose }: MyListingsProps) {
+export default function MyListings({ ownerId, onClose }: Readonly<MyListingsProps>) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -164,177 +165,174 @@ export default function MyListings({ ownerId, onClose }: MyListingsProps) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <section
-        className="listing-modal my-listings-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="my-listings-title"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button className="modal-close" onClick={onClose} aria-label="Fermer">
-          ×
-        </button>
+    <Modal
+      onClose={onClose}
+      titleId="my-listings-title"
+      backdropClassName="modal-backdrop"
+      dialogClassName="listing-modal my-listings-modal"
+    >
+      <button className="modal-close" onClick={onClose} aria-label="Fermer">
+        ×
+      </button>
 
-        <span className="eyebrow">MON ESPACE</span>
-        <h2 id="my-listings-title">Mes annonces</h2>
+      <span className="eyebrow">MON ESPACE</span>
+      <h2 id="my-listings-title">Mes annonces</h2>
 
-        {message && <p role="status">{message}</p>}
-        {error && <p role="alert">{error}</p>}
+      {message && <output>{message}</output>}
+      {error && <p role="alert">{error}</p>}
 
-        {loading ? (
-          <p className="empty-state">Chargement de vos annonces…</p>
-        ) : listings.length === 0 ? (
-          <p className="empty-state">Vous n’avez pas encore déposé d’annonce.</p>
-        ) : (
-          <div className="my-listings-list">
-            {listings.map((listing) => (
-              <article className="my-listing-card" key={listing.id}>
-                <div className="my-listing-placeholder" aria-hidden="true">
-                  📦
-                </div>
+      {loading ? (
+        <p className="empty-state">Chargement de vos annonces…</p>
+      ) : listings.length === 0 ? (
+        <p className="empty-state">Vous n’avez pas encore déposé d’annonce.</p>
+      ) : (
+        <div className="my-listings-list">
+          {listings.map((listing) => (
+            <article className="my-listing-card" key={listing.id}>
+              <div className="my-listing-placeholder" aria-hidden="true">
+                📦
+              </div>
 
-                <div className="my-listing-info">
-                  <span className="item-category">{listing.category}</span>
-                  <h3>{listing.name}</h3>
-                  <p>Prix : {formatEuros(listing.price)}</p>
-                  <p>Expédition : {formatEuros(listing.shippingCost)}</p>
-                  <span
-                    className={`listing-status status-${listing.status.toLowerCase()}`}
+              <div className="my-listing-info">
+                <span className="item-category">{listing.category}</span>
+                <h3>{listing.name}</h3>
+                <p>Prix : {formatEuros(listing.price)}</p>
+                <p>Expédition : {formatEuros(listing.shippingCost)}</p>
+                <span
+                  className={`listing-status status-${listing.status.toLowerCase()}`}
+                >
+                  {statusLabels[listing.status]}
+                </span>
+                {listing.moderationReason && (
+                  <p className="moderation-reason">
+                    {listing.moderationReason}
+                  </p>
+                )}
+
+                <div className="my-listing-actions">
+                  <button onClick={() => startEditing(listing)}>
+                    Modifier
+                  </button>
+                  <button
+                    className="delete-listing-button"
+                    onClick={() => deleteListing(listing)}
                   >
-                    {statusLabels[listing.status]}
-                  </span>
-                  {listing.moderationReason && (
-                    <p className="moderation-reason">
-                      {listing.moderationReason}
-                    </p>
-                  )}
-
-                  <div className="my-listing-actions">
-                    <button onClick={() => startEditing(listing)}>
-                      Modifier
-                    </button>
-                    <button
-                      className="delete-listing-button"
-                      onClick={() => deleteListing(listing)}
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-
-                  {editingId === listing.id && (
-                    <form className="my-listing-edit-form" onSubmit={saveListing}>
-                      <label>
-                        Titre
-                        <input
-                          required
-                          maxLength={120}
-                          value={editForm.name}
-                          onChange={(event) =>
-                            setEditForm({ ...editForm, name: event.target.value })
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Description
-                        <textarea
-                          required
-                          maxLength={1000}
-                          value={editForm.description}
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              description: event.target.value,
-                            })
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Catégorie
-                        <select
-                          value={editForm.category}
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              category: event.target.value,
-                            })
-                          }
-                        >
-                          <option value="Cartes postales">Cartes postales</option>
-                          <option value="Pièces">Pièces</option>
-                          <option value="Timbres">Timbres</option>
-                          <option value="Autres objets">Autres objets</option>
-                        </select>
-                      </label>
-
-                      <label>
-                        État
-                        <select
-                          value={editForm.condition}
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              condition: event.target.value,
-                            })
-                          }
-                        >
-                          <option value="new">Neuf</option>
-                          <option value="very_good">Très bon état</option>
-                          <option value="good">Bon état</option>
-                          <option value="used">État d’usage</option>
-                        </select>
-                      </label>
-
-                      <label>
-                        Prix (€)
-                        <input
-                          required
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={editForm.price}
-                          onChange={(event) =>
-                            setEditForm({ ...editForm, price: event.target.value })
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        Frais d’expédition (€)
-                        <input
-                          required
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={editForm.shippingCost}
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              shippingCost: event.target.value,
-                            })
-                          }
-                        />
-                      </label>
-
-                      <div className="my-listing-actions">
-                        <button type="submit">Enregistrer</button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingId(null)}
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    </form>
-                  )}
+                    Supprimer
+                  </button>
                 </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
+
+                {editingId === listing.id && (
+                  <form className="my-listing-edit-form" onSubmit={saveListing}>
+                    <label>
+                      Titre
+                      <input
+                        required
+                        maxLength={120}
+                        value={editForm.name}
+                        onChange={(event) =>
+                          setEditForm({ ...editForm, name: event.target.value })
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Description
+                      <textarea
+                        required
+                        maxLength={1000}
+                        value={editForm.description}
+                        onChange={(event) =>
+                          setEditForm({
+                            ...editForm,
+                            description: event.target.value,
+                          })
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Catégorie
+                      <select
+                        value={editForm.category}
+                        onChange={(event) =>
+                          setEditForm({
+                            ...editForm,
+                            category: event.target.value,
+                          })
+                        }
+                      >
+                        <option value="Cartes postales">Cartes postales</option>
+                        <option value="Pièces">Pièces</option>
+                        <option value="Timbres">Timbres</option>
+                        <option value="Autres objets">Autres objets</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      État
+                      <select
+                        value={editForm.condition}
+                        onChange={(event) =>
+                          setEditForm({
+                            ...editForm,
+                            condition: event.target.value,
+                          })
+                        }
+                      >
+                        <option value="new">Neuf</option>
+                        <option value="very_good">Très bon état</option>
+                        <option value="good">Bon état</option>
+                        <option value="used">État d’usage</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Prix (€)
+                      <input
+                        required
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={editForm.price}
+                        onChange={(event) =>
+                          setEditForm({ ...editForm, price: event.target.value })
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Frais d’expédition (€)
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editForm.shippingCost}
+                        onChange={(event) =>
+                          setEditForm({
+                            ...editForm,
+                            shippingCost: event.target.value,
+                          })
+                        }
+                      />
+                    </label>
+
+                    <div className="my-listing-actions">
+                      <button type="submit">Enregistrer</button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </Modal>
   );
 }
