@@ -27,7 +27,17 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - run: npm run test:coverage
       - run: npm run build
+
+      - name: Publier le rapport de couverture
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rapport-couverture-frontend
+          path: frontend/coverage/
+          if-no-files-found: warn
+          retention-days: 14
 
   collection-service:
     name: Tests, SonarCloud et Docker
@@ -48,6 +58,21 @@ jobs:
         working-directory: backend/microservices/collection-service
         run: ./mvnw -B verify
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Tests du frontend avec couverture
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run test:coverage
+
+      - name: Adapter les chemins du rapport de couverture pour Sonar
+        run: sed -i 's#^SF:src/#SF:frontend/src/#' frontend/coverage/lcov.info
+
       - name: Analyse SonarCloud
         if: github.actor != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@v8.4.1
@@ -58,9 +83,11 @@ jobs:
             -Dsonar.organization=walaahajj
             -Dsonar.projectKey=WALAAHAJJ_collector-indiv
             -Dsonar.sources=frontend/src,backend/microservices/collection-service/src/main/java
-            -Dsonar.tests=backend/microservices/collection-service/src/test/java
+            -Dsonar.tests=backend/microservices/collection-service/src/test/java,frontend/tests
             -Dsonar.java.binaries=backend/microservices/collection-service/target/classes
             -Dsonar.coverage.jacoco.xmlReportPaths=backend/microservices/collection-service/target/site/jacoco/jacoco.xml
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+            -Dsonar.coverage.exclusions=frontend/src/main.tsx
 
       - name: Publier le rapport JaCoCo
         if: always()
