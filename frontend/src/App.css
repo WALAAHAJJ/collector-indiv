@@ -14,110 +14,6 @@ footer span:first-child {
   font-weight: 750;
 }
 
-/* Fenêtres modales */
-
-.modal-backdrop,
-.auth-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: #17221dcc;
-}
-
-.auth-backdrop {
-  z-index: 20;
-}
-
-.listing-modal {
-  position: relative;
-  width: min(100%, 480px);
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 24px;
-  border-radius: 16px;
-  background: white;
-}
-
-.modal-close,
-.auth-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 1;
-  border: 0;
-  background: white;
-  color: #263d32;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.modal-visual {
-  height: 190px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-}
-
-.listing-modal h2 {
-  margin: 8px 0;
-  color: #263d32;
-  font-family: Georgia, serif;
-}
-
-.listing-modal p {
-  color: #70736b;
-  line-height: 1.6;
-}
-
-.modal-price {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #eeeae4;
-}
-
-.modal-price strong {
-  color: #263d32;
-}
-
-/* Détail d’annonce agrandi */
-
-.listing-detail-modal {
-  width: min(900px, calc(100vw - 40px));
-  max-height: 92vh;
-  padding: 36px;
-}
-
-.listing-detail-modal .modal-visual {
-  height: 400px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  background: #f5f1eb;
-}
-
-.listing-detail-modal h2 {
-  margin: 10px 0 16px;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1.2;
-}
-
-.listing-detail-modal > p {
-  font-size: 1.1rem;
-  line-height: 1.7;
-}
-
-.listing-detail-modal .modal-price {
-  margin-top: 24px;
-  font-size: 1.15rem;
-}
-
-.listing-detail-modal .modal-price strong {
-  font-size: 1.8rem;
-}
-
 /* Connexion et inscription */
 
 .auth-card {
@@ -126,10 +22,6 @@ footer span:first-child {
   padding: 32px;
   border-radius: 16px;
   background: white;
-}
-
-.auth-modal {
-  max-width: 440px;
 }
 
 .auth-card h2 {
@@ -143,10 +35,6 @@ footer span:first-child {
 .auth-card > p {
   color: #70736b;
   line-height: 1.5;
-}
-
-.auth-close {
-  right: 16px;
 }
 
 .auth-card form,
@@ -397,34 +285,6 @@ footer span:first-child {
   resize: vertical;
 }
 
-/* Tablette */
-
-@media (max-width: 800px) {
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  .listing-detail-modal {
-    padding: 28px;
-  }
-
-  .listing-detail-modal .modal-visual {
-    height: 340px;
-  }
-}
-
 /* Téléphone */
 
 @media (max-width: 560px) {
@@ -465,14 +325,9 @@ footer span:first-child {
     gap: 15px;
   }
 
-  .listing-detail-modal {
-    width: calc(100vw - 24px);
-    padding: 22px 16px;
-  }
+  
 
-  .listing-detail-modal .modal-visual {
-    height: 260px;
-  }
+  
 
   .my-listings-modal {
     padding: 24px 16px;
@@ -494,7 +349,6 @@ footer span:first-child {
 }
 
 /* Fenêtres modales accessibles (élément <dialog>) */
-dialog.listing-modal,
 dialog.auth-card {
   margin: 0;
   border: 0;

@@ -6,6 +6,7 @@ import "./styles/header.css";
 import "./styles/hero.css";
 import "./styles/catalogue.css";
 import "./styles/cards.css";
+import "./styles/modal.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
