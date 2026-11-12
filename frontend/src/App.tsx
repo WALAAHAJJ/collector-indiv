@@ -4,6 +4,7 @@ import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
+import { clearToken, getToken } from "./auth";
 
 type ApiListing = {
   id: string;
@@ -29,7 +30,7 @@ type Listing = {
 };
 
 type SessionUser = {
-  id: number;
+  id: string;
   username: string;
   email: string;
 };
@@ -56,16 +57,6 @@ const conditionLabels: Record<string, string> = {
 };
 
 const categories = ["Tout", ...Object.values(categoryLabels)];
-
-function getCookie(name: string): string | null {
-  const cookie = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${name}=`));
-
-  if (!cookie) return null;
-
-  return decodeURIComponent(cookie.slice(name.length + 1));
-}
 
 function formatEuros(value: number): string {
   return `${value.toFixed(2).replace(".", ",")} €`;
@@ -156,19 +147,26 @@ function App() {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/auth/me/", { credentials: "include" })
+    const token = getToken();
+
+    if (!token) return;
+
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then(async (response) => {
-        if (response.status === 401 || response.status === 403) return null;
+        if (response.status === 401 || response.status === 403) {
+          clearToken();
+          return null;
+        }
 
         if (!response.ok) {
           throw new Error("Impossible de vérifier la session.");
         }
 
-        return (await response.json()) as { user: SessionUser };
+        return (await response.json()) as SessionUser;
       })
-      .then((data) => {
-        if (!cancelled && data?.user) {
-          setSessionUser(data.user);
+      .then((user) => {
+        if (!cancelled && user) {
+          setSessionUser(user);
         }
       })
       .catch(() => {
@@ -220,44 +218,11 @@ function App() {
     setCategory(value);
   }
 
-  async function handleLogout() {
-    try {
-      const csrfResponse = await fetch("/api/auth/csrf/", {
-        credentials: "include",
-      });
-
-      if (!csrfResponse.ok) {
-        throw new Error("Impossible de préparer la déconnexion.");
-      }
-
-      const csrfToken = getCookie("csrftoken");
-
-      if (!csrfToken) {
-        throw new Error("Le jeton de sécurité est introuvable.");
-      }
-
-      const response = await fetch("/api/auth/logout/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("La déconnexion a échoué. Réessaie.");
-      }
-
-      setSessionUser(null);
-      setShowMyListings(false);
-      setRegistrationMessage("Vous êtes déconnectée.");
-    } catch (logoutError) {
-      setRegistrationMessage(
-        logoutError instanceof Error
-          ? logoutError.message
-          : "La déconnexion a échoué.",
-      );
-    }
+  function handleLogout() {
+    clearToken();
+    setSessionUser(null);
+    setShowMyListings(false);
+    setRegistrationMessage("Vous êtes déconnectée.");
   }
 
   return (

@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
+import { setToken } from "./auth";
 
 type SessionUser = {
-  id: number;
+  id: string;
   username: string;
   email: string;
 };
@@ -11,16 +12,6 @@ type LoginFormProps = {
   onLoggedIn: (user: SessionUser) => void;
   onShowRegistration: () => void;
 };
-
-function getCookie(name: string): string | null {
-  const cookie = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${name}=`));
-
-  if (!cookie) return null;
-
-  return decodeURIComponent(cookie.slice(name.length + 1));
-}
 
 function LoginForm({
   onClose,
@@ -38,39 +29,26 @@ function LoginForm({
     setSubmitting(true);
 
     try {
-      const csrfResponse = await fetch("/api/auth/csrf/", {
-        credentials: "include",
-      });
-
-      if (!csrfResponse.ok) {
-        throw new Error("Impossible de préparer la connexion.");
-      }
-
-      const csrfToken = getCookie("csrftoken");
-
-      if (!csrfToken) {
-        throw new Error("Le jeton de sécurité est introuvable. Réessaie.");
-      }
-
-      const response = await fetch("/api/auth/login/", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = (await response.json()) as {
-        user?: SessionUser;
-        detail?: string;
-      };
-
-      if (!response.ok || !data.user) {
-        throw new Error(data.detail ?? "La connexion a échoué.");
+      if (response.status === 401) {
+        throw new Error("Nom d’utilisateur ou mot de passe incorrect.");
       }
 
+      const data = (await response.json()) as {
+        accessToken?: string;
+        user?: SessionUser;
+      };
+
+      if (!response.ok || !data.accessToken || !data.user) {
+        throw new Error("La connexion a échoué.");
+      }
+
+      setToken(data.accessToken);
       onLoggedIn(data.user);
     } catch (requestError) {
       setError(

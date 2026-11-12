@@ -22,22 +22,19 @@ export default function RegisterForm({
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/register/", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
 
-      if (!response.ok) {
-        const payload = (await response.json()) as Record<string, unknown>;
-        const messages = Object.values(payload).flatMap((value) =>
-          Array.isArray(value) ? value : [value],
-        );
-        const firstMessage = messages.find(
-          (value): value is string => typeof value === "string",
-        );
+      if (response.status === 409) {
+        setError("Ce nom d’utilisateur ou cette adresse e-mail est déjà utilisé.");
+        return;
+      }
 
-        setError(firstMessage ?? "Vérifie les informations saisies.");
+      if (!response.ok) {
+        setError("Vérifie les informations saisies (mot de passe : 8 caractères minimum).");
         return;
       }
 
@@ -98,6 +95,7 @@ export default function RegisterForm({
             <input
               required
               type="password"
+              minLength={8}
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
