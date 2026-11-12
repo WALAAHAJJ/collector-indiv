@@ -112,7 +112,7 @@ function LoginForm({
             </p>
           )}
 
-          <button className="sell-button auth-submit" disabled={submitting}>
+          <button className="sell-button auth-submit" type="submit" disabled={submitting}>
             {submitting ? "Connexion…" : "Se connecter"}
           </button>
         </form>
