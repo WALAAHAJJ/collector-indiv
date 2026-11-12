@@ -17,6 +17,7 @@ import { catalogUrl } from "./api";
 import Modal from "./Modal";
 import HeroArt from "./HeroArt";
 import ObjectArt, { type ArtKind } from "./ObjectArt";
+import { categoryLabels, visualForLabel } from "./categories";
 
 type ApiListing = {
   id: string;
@@ -45,20 +46,6 @@ type SessionUser = {
   id: string;
   username: string;
   email: string;
-};
-
-const categoryLabels: Record<string, string> = {
-  postcards: "Cartes postales",
-  coins: "Pièces",
-  stamps: "Timbres",
-  other: "Autres objets",
-};
-
-const categoryVisuals: Record<string, { art: ArtKind; tone: string }> = {
-  postcards: { art: "postcards", tone: "gold" },
-  coins: { art: "coins", tone: "rose" },
-  stamps: { art: "stamps", tone: "sage" },
-  other: { art: "other", tone: "kraft" },
 };
 
 const conditionLabels: Record<string, string> = {
@@ -108,11 +95,6 @@ function App() {
         if (cancelled) return;
 
         const convertedListings = data.map((item) => {
-          const key =
-            Object.entries(categoryLabels).find(
-              ([, label]) => label === item.category,
-            )?.[0] ?? "other";
-
           return {
             id: item.id,
             title: item.name,
@@ -123,7 +105,7 @@ function App() {
             price: item.price,
             image: "",
             shippingCost: item.shippingCost,
-            ...(categoryVisuals[key] ?? categoryVisuals.other),
+            ...visualForLabel(item.category),
           };
         });
 
