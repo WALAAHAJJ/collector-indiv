@@ -1,0 +1,13 @@
+# Les deux brokers de la démonstration. Ils ne font pas partie du site Collector.
+# Lancer : docker compose up -d   Arrêter et effacer : docker compose down -v
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"     # protocole AMQP
+      - "15672:15672"   # interface web : http://localhost:15672 (guest / guest)
+
+  kafka:
+    image: apache/kafka:4.0.2
+    ports:
+      - "9092:9092"     # un seul nœud, en mode KRaft (sans ZooKeeper)
