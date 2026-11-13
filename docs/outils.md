@@ -77,7 +77,7 @@ La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service
 
 | Outil | Version | À quoi il sert | Où |
 |---|---|---|---|
-| Trivy | 0.70.0 | Cherche des failles dans les dépendances, des secrets oubliés et des erreurs de configuration. En mode rapport pour l'instant. | job « Scan de sécurité » |
+| Trivy | 0.70.0 | Cherche des failles dans les dépendances, des secrets oubliés et des erreurs de configuration. Fait échouer la CI sur une faille haute ou critique. | job « Scan de sécurité » |
 | Dependabot | service GitHub | Propose chaque semaine des mises à jour des dépendances Maven, npm, Docker et Actions. | `.github/dependabot.yml` |
 | Secrets GitHub | service GitHub | Garde le jeton Sonar hors du code. | réglages du dépôt |
 | Fichier `.env` non versionné | — | Garde mots de passe et clé JWT hors du dépôt ; `.env.example` documente les variables. | racine du dépôt |

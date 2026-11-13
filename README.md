@@ -113,7 +113,7 @@ Le workflow `.github/workflows/ci.yml` s'exécute à chaque push :
 | Frontend | lint, tests avec couverture, build |
 | Tests, SonarCloud et Docker | tests du collection-service, tests du frontend, analyse Sonar, build de l'image |
 | User service | tests et build de l'image |
-| Scan de sécurité (Trivy) | dépendances, secrets et configuration (rapport, sans blocage pour l'instant) |
+| Scan de sécurité (Trivy) | dépendances, secrets et configuration ; fait échouer la CI sur une faille haute ou critique |
 
 Dependabot propose chaque semaine des mises à jour Maven, npm, Docker et GitHub Actions. Le projet reste en Java 21, version à support long.
 
@@ -124,6 +124,9 @@ Dependabot propose chaque semaine des mises à jour Maven, npm, Docker et GitHub
 - Contrôle du propriétaire côté serveur sur toutes les opérations d'écriture.
 - Identifiants validés (UUID) avant de construire les URL côté frontend.
 - Secrets hors du dépôt : le fichier `.env` n'est pas versionné, `.env.example` documente les variables, `SONAR_TOKEN` est un secret GitHub.
+- Conteneurs exécutés avec un utilisateur sans privilèges.
+
+La démarche complète (risques, détection, incidents) est décrite dans [docs/securite.md](docs/securite.md).
 
 ## Structure du dépôt
 
@@ -139,6 +142,7 @@ compose.yaml                              bases de données et services
 ## Documentation
 
 - [Référentiel des outils](docs/outils.md) : tous les outils utilisés, leur rôle et leur emplacement dans le dépôt.
+- [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
 
 ## Auteure
 
