@@ -142,6 +142,8 @@ compose.yaml                              bases de données et services
 ## Documentation
 
 - [Référentiel des outils](docs/outils.md) : tous les outils utilisés, leur rôle et leur emplacement dans le dépôt.
+- [Architecture](docs/architecture.md) : composants, responsabilités, flux principaux, décisions et évolutions prévues, avec schémas.
+- [Stratégie de tests](docs/tests.md) : types de tests, place dans la CI/CD et ce qui reste à tester.
 - [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
 
 ## Auteure
