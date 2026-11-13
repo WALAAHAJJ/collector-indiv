@@ -104,6 +104,20 @@ public class CollectibleService {
                 .toList();
     }
 
+    public CollectibleResponse approve(UUID id) {
+        Collectible collectible = findEntityById(id);
+        collectible.applyModeration(ListingStatus.APPROVED, null);
+
+        return toResponse(repository.save(collectible));
+    }
+
+    public CollectibleResponse reject(UUID id, String reason) {
+        Collectible collectible = findEntityById(id);
+        collectible.applyModeration(ListingStatus.REJECTED, reason);
+
+        return toResponse(repository.save(collectible));
+    }
+
     private void moderate(Collectible collectible) {
         ModerationResult result = moderationService.evaluate(
                 collectible.getName(),
