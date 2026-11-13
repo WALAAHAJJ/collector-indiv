@@ -58,6 +58,9 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
       JWT_SECRET: ${JWT_SECRET}
+      APP_ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      APP_ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      APP_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     ports:
       - "8082:8080"
 
