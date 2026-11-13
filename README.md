@@ -16,7 +16,8 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | Interface accessible (fenêtres natives `<dialog>`, clavier, contrastes) | Fait |
 | Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
 | Back-office administrateur : écran « Administration » dans le site (approuver, refuser avec motif, supprimer) | Fait |
-| Catégories créées et gérées par l'administrateur | À faire |
+| Catégories créées et supprimées par l'administrateur : API, liste publique, catégories par défaut, annonces limitées aux catégories existantes | Fait |
+| Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | À faire |
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
 | Intégration de RabbitMQ au site (événements d'annonces, notifications) | À faire |
 | Photos des annonces | À faire |
@@ -70,6 +71,7 @@ Le user-service crée un compte administrateur au démarrage si `ADMIN_USERNAME`
 | `POST /api/auth/register` | public | Créer un compte |
 | `POST /api/auth/login` | public | Se connecter, reçoit un jeton |
 | `GET /api/auth/me` | jeton | Compte courant |
+| `GET /api/categories` | public | Liste des catégories, avec leur illustration |
 | `GET /api/collectibles/catalog?category=&search=` | public | Annonces approuvées |
 | `POST /api/collectibles` | jeton | Déposer une annonce |
 | `GET /api/collectibles?ownerId=` | jeton | Mes annonces (uniquement les siennes) |
@@ -79,6 +81,8 @@ Le user-service crée un compte administrateur au démarrage si `ADMIN_USERNAME`
 | `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
 | `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
 | `DELETE /api/admin/collectibles/{id}` | administrateur | Supprimer une annonce contraire à la charte |
+| `POST /api/admin/categories` | administrateur | Créer une catégorie (nom unique, illustration) |
+| `DELETE /api/admin/categories/{id}` | administrateur | Supprimer une catégorie, refusé si des annonces l'utilisent |
 
 ## Modération automatique
 
