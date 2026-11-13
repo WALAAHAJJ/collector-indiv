@@ -29,7 +29,12 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
 
 describe("LoginForm", () => {
   it("connecte l’utilisatrice et conserve le jeton", async () => {
-    const loggedUser = { id: ownerId, username: "walaa", email: "w@x.fr" };
+    const loggedUser = {
+      id: ownerId,
+      username: "walaa",
+      email: "w@x.fr",
+      role: "USER",
+    };
     const fetchMock = mockFetch(() =>
       jsonResponse({ accessToken: "jeton-123", user: loggedUser }),
     );
