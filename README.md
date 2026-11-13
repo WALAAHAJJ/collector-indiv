@@ -17,7 +17,8 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
 | Back-office administrateur : écran « Administration » dans le site (approuver, refuser avec motif, supprimer) | Fait |
 | Catégories créées et gérées par l'administrateur | À faire |
-| Comparaison RabbitMQ et Kafka avec démonstration (`demos/messaging`) | En cours : démonstration écrite, mesures à relever |
+| Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
+| Intégration de RabbitMQ au site (événements d'annonces, notifications) | À faire |
 | Photos des annonces | À faire |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
@@ -146,7 +147,7 @@ demos/messaging                           démonstration comparative RabbitMQ et
 - [Référentiel des outils](docs/outils.md) : tous les outils utilisés, leur rôle et leur emplacement dans le dépôt.
 - [Architecture](docs/architecture.md) : composants, responsabilités, flux principaux, décisions et évolutions prévues, avec schémas.
 - [Stratégie de tests](docs/tests.md) : types de tests, place dans la CI/CD et ce qui reste à tester.
-- [Comparaison des technologies](docs/comparaisons.md) : RabbitMQ contre Kafka, avec démonstration et choix provisoire.
+- [Comparaison des technologies](docs/comparaisons.md) : RabbitMQ contre Kafka, avec démonstration mesurée et choix retenu.
 - [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
 
 ## Auteure
