@@ -126,6 +126,10 @@ compose.yaml                              bases de données et services
 .github/dependabot.yml                    mises à jour automatiques
 ```
 
+## Documentation
+
+- [Référentiel des outils](docs/outils.md) : tous les outils utilisés, leur rôle et leur emplacement dans le dépôt.
+
 ## Auteure
 
 Walaa EL HAJJ, dans le cadre de l'évaluation individuelle du bloc.
