@@ -15,12 +15,13 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | API protégée : chacun ne modifie que ses propres annonces | Fait |
 | Interface accessible (fenêtres natives `<dialog>`, clavier, contrastes) | Fait |
 | Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
-| Back-office administrateur : écran dans le site et catégories gérées par l'administrateur | À faire |
+| Back-office administrateur : écran « Administration » dans le site (approuver, refuser avec motif, supprimer) | Fait |
+| Catégories créées et gérées par l'administrateur | À faire |
 | Photos des annonces | À faire |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
-Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse aujourd'hui par l'API d'administration, l'écran correspondant dans le site n'existe pas encore.
+Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse depuis l'écran « Administration » du site.
 
 ## Architecture
 
