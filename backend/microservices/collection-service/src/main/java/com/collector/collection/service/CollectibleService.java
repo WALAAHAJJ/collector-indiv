@@ -97,6 +97,13 @@ public class CollectibleService {
         repository.delete(collectible);
     }
 
+    public List<CollectibleResponse> findByStatus(ListingStatus status) {
+        return repository.findByStatus(status)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private void moderate(Collectible collectible) {
         ModerationResult result = moderationService.evaluate(
                 collectible.getName(),

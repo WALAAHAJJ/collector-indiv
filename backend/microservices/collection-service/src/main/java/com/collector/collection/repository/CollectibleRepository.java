@@ -13,6 +13,8 @@ public interface CollectibleRepository extends JpaRepository<Collectible, UUID> 
 
     List<Collectible> findByOwnerId(UUID ownerId);
 
+    List<Collectible> findByStatus(ListingStatus status);
+
     @Query("""
             select c from Collectible c
             where c.status = :status
