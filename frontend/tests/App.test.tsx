@@ -249,6 +249,52 @@ describe("App - compte", () => {
 });
 
 describe("App - espace vendeuse", () => {
+  it("n’affiche pas le bouton d’administration à un compte ordinaire", async () => {
+    setToken("jeton-123");
+    mockApi();
+    render(<App />);
+
+    await screen.findByRole("button", { name: "Mes annonces" });
+
+    expect(screen.queryByRole("button", { name: "Administration" })).not.toBeInTheDocument();
+  });
+
+  it("ouvre le panneau d’administration pour un administrateur", async () => {
+    setToken("jeton-admin");
+    mockApi({
+      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
+      other: () => jsonResponse([]),
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Administration" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: "Administration" }),
+    ).toBeInTheDocument();
+    expect(
+      await within(dialog).findByText("Aucune annonce en attente de vérification."),
+    ).toBeInTheDocument();
+  });
+
+  it("ferme le panneau d’administration à la déconnexion", async () => {
+    setToken("jeton-admin");
+    mockApi({
+      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
+      other: () => jsonResponse([]),
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Administration" }));
+    await screen.findByRole("dialog");
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("ouvre la liste de mes annonces", async () => {
     setToken("jeton-123");
     mockApi({ other: () => jsonResponse([approvedListing]) });

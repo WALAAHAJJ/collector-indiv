@@ -17,6 +17,7 @@ import MyListings from "./MyListings";
 import { clearToken, getToken } from "./auth";
 import { catalogUrl } from "./api";
 import Modal from "./Modal";
+import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
 import ObjectArt, { type ArtKind } from "./ObjectArt";
 import { categoryLabels, visualForLabel } from "./categories";
@@ -75,6 +76,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [registrationMessage, setRegistrationMessage] = useState("");
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
 
@@ -196,6 +198,7 @@ function App() {
     clearToken();
     setSessionUser(null);
     setShowMyListings(false);
+    setShowAdmin(false);
     setRegistrationMessage("Vous êtes déconnectée.");
   }
 
@@ -308,6 +311,16 @@ function App() {
           >
             ＋ Déposer une annonce
           </button>
+
+          {sessionUser.role === "ADMIN" && (
+            <button
+              type="button"
+              className="my-listings-button"
+              onClick={() => setShowAdmin(true)}
+            >
+              Administration
+            </button>
+          )}
         </section>
       )}
 
@@ -422,6 +435,10 @@ function App() {
             );
           }}
         />
+      )}
+
+      {showAdmin && sessionUser?.role === "ADMIN" && (
+        <AdminPanel onClose={() => setShowAdmin(false)} />
       )}
 
       {showMyListings && sessionUser && (
