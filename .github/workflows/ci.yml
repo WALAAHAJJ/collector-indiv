@@ -146,5 +146,5 @@ jobs:
             --scanners vuln,secret,misconfig \
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
-            --exit-code 0 \
+            --exit-code 1 \
             /src
