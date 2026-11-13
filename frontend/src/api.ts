@@ -36,3 +36,24 @@ export function catalogUrl(category: string, search: string): string {
     ? `/api/collectibles/catalog?${query}`
     : "/api/collectibles/catalog";
 }
+
+export const ADMIN_STATUSES = ["PENDING_REVIEW", "APPROVED", "REJECTED"] as const;
+
+export type AdminStatus = (typeof ADMIN_STATUSES)[number];
+
+export function adminListUrl(status: AdminStatus): string {
+  if (!ADMIN_STATUSES.includes(status)) {
+    throw new Error("Statut invalide.");
+  }
+
+  return `/api/admin/collectibles?status=${encodeURIComponent(status)}`;
+}
+
+export function adminCollectibleUrl(
+  id: string,
+  action?: "approve" | "reject",
+): string {
+  const base = `/api/admin/collectibles/${encodeURIComponent(assertUuid(id))}`;
+
+  return action ? `${base}/${action}` : base;
+}
