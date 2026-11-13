@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
 
+import com.collector.collection.domain.Category;
+import com.collector.collection.domain.CategoryArt;
+import com.collector.collection.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +34,9 @@ class AdminCollectibleTests {
 
     @Autowired
     private SecretKey secretKey;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     void adminSeesListingsWaitingForReview() throws Exception {
@@ -177,6 +183,8 @@ class AdminCollectibleTests {
     }
 
     private String createPendingListing(String category) throws Exception {
+        categoryRepository.save(new Category(category, CategoryArt.OTHER));
+
         MvcResult result = mockMvc.perform(post("/api/collectibles")
                         .with(jwt().jwt(token -> token.subject(UUID.randomUUID().toString())))
                         .contentType(MediaType.APPLICATION_JSON)

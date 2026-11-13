@@ -3,6 +3,7 @@ package com.collector.collection.service;
 import com.collector.collection.api.dto.CollectibleResponse;
 import com.collector.collection.api.dto.CreateCollectibleRequest;
 import com.collector.collection.api.dto.UpdateCollectibleRequest;
+import com.collector.collection.domain.Category;
 import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.repository.CollectibleRepository;
@@ -18,20 +19,25 @@ public class CollectibleService {
 
     private final CollectibleRepository repository;
     private final ModerationService moderationService;
+    private final CategoryService categoryService;
 
     public CollectibleService(
             CollectibleRepository repository,
-            ModerationService moderationService
+            ModerationService moderationService,
+            CategoryService categoryService
     ) {
         this.repository = repository;
         this.moderationService = moderationService;
+        this.categoryService = categoryService;
     }
 
     public CollectibleResponse create(UUID ownerId, CreateCollectibleRequest request) {
+        Category category = categoryService.requireByName(request.category());
+
         Collectible collectible = new Collectible(
                 ownerId,
                 request.name(),
-                request.category(),
+                category.getName(),
                 request.description(),
                 request.price(),
                 request.shippingCost(),
@@ -79,9 +85,11 @@ public class CollectibleService {
             UpdateCollectibleRequest request
     ) {
         Collectible collectible = findOwnedEntity(id, currentUserId);
+        Category category = categoryService.requireByName(request.category());
+
         collectible.updateDetails(
                 request.name(),
-                request.category(),
+                category.getName(),
                 request.description(),
                 request.price(),
                 request.shippingCost(),

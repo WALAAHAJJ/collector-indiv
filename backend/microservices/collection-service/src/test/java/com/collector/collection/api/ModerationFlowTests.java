@@ -46,7 +46,7 @@ class ModerationFlowTests {
         return """
                 {
                   "name": "Figurine",
-                  "category": "Jouets",
+                  "category": "Timbres",
                   "description": "%s",
                   "price": %s,
                   "shippingCost": 3.00,

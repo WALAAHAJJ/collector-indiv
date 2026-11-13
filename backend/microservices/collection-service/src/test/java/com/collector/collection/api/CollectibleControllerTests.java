@@ -39,7 +39,7 @@ class CollectibleControllerTests {
                         .content("""
                                 {
                                   "name": "Vinyle",
-                                  "category": "Musique",
+                                  "category": "Timbres",
                                   "description": "Un disque de collection",
                                   "price": 25.00,
                                   "shippingCost": 4.50,
@@ -68,7 +68,7 @@ class CollectibleControllerTests {
                         .content("""
                                 {
                                   "name": "Vinyle jazz",
-                                  "category": "Jazz",
+                                  "category": "Pièces",
                                   "description": "Édition remasterisée",
                                   "price": 30.00,
                                   "shippingCost": 5.00,
@@ -78,7 +78,7 @@ class CollectibleControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ownerId").value(ownerId))
                 .andExpect(jsonPath("$.name").value("Vinyle jazz"))
-                .andExpect(jsonPath("$.category").value("Jazz"))
+                .andExpect(jsonPath("$.category").value("Pièces"))
                 .andExpect(jsonPath("$.price").value(30.0))
                 .andExpect(jsonPath("$.status").value("APPROVED"));
 
@@ -109,7 +109,7 @@ class CollectibleControllerTests {
                         .content("""
                                 {
                                   "name": "Vinyle",
-                                  "category": "Musique",
+                                  "category": "Timbres",
                                   "description": "Description",
                                   "price": 10.00,
                                   "shippingCost": 0.00,
@@ -153,7 +153,7 @@ class CollectibleControllerTests {
         return """
                 {
                   "name": "%s",
-                  "category": "Musique",
+                  "category": "Timbres",
                   "description": "Un disque de collection",
                   "price": %s,
                   "shippingCost": 4.50,

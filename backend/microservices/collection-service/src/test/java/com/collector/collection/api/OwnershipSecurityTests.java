@@ -28,7 +28,7 @@ class OwnershipSecurityTests {
     private static final String LISTING = """
             {
               "name": "Figurine",
-              "category": "Jouets",
+              "category": "Timbres",
               "description": "Figurine d’époque",
               "price": 40.00,
               "shippingCost": 3.00,
