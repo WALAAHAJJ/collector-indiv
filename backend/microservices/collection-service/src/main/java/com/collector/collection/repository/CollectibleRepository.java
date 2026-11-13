@@ -15,6 +15,8 @@ public interface CollectibleRepository extends JpaRepository<Collectible, UUID> 
 
     List<Collectible> findByStatus(ListingStatus status);
 
+    long countByCategory(String category);
+
     @Query("""
             select c from Collectible c
             where c.status = :status
