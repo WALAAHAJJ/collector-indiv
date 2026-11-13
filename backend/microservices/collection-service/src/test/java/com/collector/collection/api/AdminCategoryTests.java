@@ -1,6 +1,8 @@
 package com.collector.collection.api;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
 
@@ -10,8 +12,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -86,6 +92,58 @@ class AdminCategoryTests {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void adminDeletesAnUnusedCategory() throws Exception {
+        String name = uniqueName();
+        String id = extractId(create(name, "OTHER", admin()).andExpect(status().isCreated()).andReturn());
+
+        mockMvc.perform(delete("/api/admin/categories/{id}", id).header("Authorization", admin()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.name=='%s')]".formatted(name)).isEmpty());
+    }
+
+    @Test
+    void deletingAnUnknownCategoryIsNotFound() throws Exception {
+        mockMvc.perform(delete("/api/admin/categories/{id}", UUID.randomUUID())
+                        .header("Authorization", admin()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void aCategoryUsedByAListingCannotBeDeleted() throws Exception {
+        String name = uniqueName();
+        String id = extractId(create(name, "COINS", admin()).andExpect(status().isCreated()).andReturn());
+
+        mockMvc.perform(post("/api/collectibles")
+                        .with(jwt().jwt(token -> token.subject(UUID.randomUUID().toString())))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Un lot à vendre",
+                                  "category": "%s",
+                                  "description": "Très bon état",
+                                  "price": 20.00,
+                                  "shippingCost": 3.00,
+                                  "condition": "GOOD"
+                                }
+                                """.formatted(name)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/admin/categories/{id}", id).header("Authorization", admin()))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void ordinaryUsersCannotDeleteCategories() throws Exception {
+        String id = extractId(create(uniqueName(), "OTHER", admin()).andExpect(status().isCreated()).andReturn());
+
+        mockMvc.perform(delete("/api/admin/categories/{id}", id).header("Authorization", user()))
+                .andExpect(status().isForbidden());
+    }
+
     private ResultActions create(String name, String art, String authorization) throws Exception {
         return mockMvc.perform(post("/api/admin/categories")
                 .header("Authorization", authorization)
@@ -101,6 +159,14 @@ class AdminCategoryTests {
 
     private String user() {
         return TestTokens.bearer(secretKey, UUID.randomUUID(), "USER");
+    }
+
+    private String extractId(MvcResult result) throws Exception {
+        String response = result.getResponse().getContentAsString();
+        Matcher matcher = Pattern.compile("\"id\"\\s*:\\s*\"([^\"]+)\"").matcher(response);
+
+        assertTrue(matcher.find(), "La réponse doit contenir l’identifiant de la catégorie");
+        return matcher.group(1);
     }
 
     private String uniqueName() {
