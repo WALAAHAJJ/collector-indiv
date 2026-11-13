@@ -2,10 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { getToken } from "./auth";
 import { collectibleUrl, myCollectiblesUrl } from "./api";
 import { visualForLabel } from "./categories";
+import { statusLabels, type ListingStatus } from "./listingStatus";
 import ObjectArt from "./ObjectArt";
 import Modal from "./Modal";
-
-type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 
 type Listing = {
   id: string;
@@ -31,12 +30,6 @@ type EditForm = {
 type MyListingsProps = {
   ownerId: string;
   onClose: () => void;
-};
-
-const statusLabels: Record<ListingStatus, string> = {
-  PENDING_REVIEW: "En attente de vérification",
-  APPROVED: "Approuvée",
-  REJECTED: "Refusée",
 };
 
 const initialForm: EditForm = {
