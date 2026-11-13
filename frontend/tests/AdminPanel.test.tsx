@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import AdminPanel from "../src/AdminPanel";
 import { setToken } from "../src/auth";
-import { approvedListing, jsonResponse, mockFetch } from "./helpers";
+import { approvedListing, jsonResponse, listingId, mockFetch } from "./helpers";
 
 const pendingListing = {
   ...approvedListing,
@@ -101,5 +101,129 @@ describe("AdminPanel", () => {
     await user.click(await screen.findByRole("button", { name: "Fermer" }));
 
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("approuve une annonce puis recharge la liste", async () => {
+    setToken("jeton-admin");
+    let approved = false;
+    const fetchMock = mockFetch((_url, init) => {
+      if (init?.method === "POST") {
+        approved = true;
+        return jsonResponse({ ...pendingListing, status: "APPROVED" });
+      }
+
+      return jsonResponse(approved ? [] : [pendingListing]);
+    });
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Approuver" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Annonce approuvée.");
+    expect(
+      await screen.findByText("Aucune annonce en attente de vérification."),
+    ).toBeInTheDocument();
+
+    const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
+    expect(postCall?.[0]).toBe(`/api/admin/collectibles/${listingId}/approve`);
+    expect(postCall?.[1]?.headers).toMatchObject({ Authorization: "Bearer jeton-admin" });
+  });
+
+  it("ne propose pas d’approuver une annonce déjà approuvée", async () => {
+    mockFetch(() => jsonResponse([{ ...pendingListing, status: "APPROVED" }]));
+    setup();
+
+    expect(await screen.findByRole("button", { name: "Refuser" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approuver" })).not.toBeInTheDocument();
+  });
+
+  it("refuse une annonce avec un motif", async () => {
+    const fetchMock = mockFetch((_url, init) =>
+      init?.method === "POST"
+        ? jsonResponse({ ...pendingListing, status: "REJECTED" })
+        : jsonResponse([pendingListing]),
+    );
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Refuser" }));
+    await user.type(screen.getByLabelText("Motif du refus"), "Photo non conforme");
+    await user.click(screen.getByRole("button", { name: "Confirmer le refus" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Annonce refusée.");
+
+    const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
+    expect(postCall?.[0]).toBe(`/api/admin/collectibles/${listingId}/reject`);
+    expect(JSON.parse(String(postCall?.[1]?.body))).toEqual({
+      reason: "Photo non conforme",
+    });
+  });
+
+  it("exige un vrai motif pour refuser", async () => {
+    const fetchMock = mockFetch(() => jsonResponse([pendingListing]));
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Refuser" }));
+    await user.type(screen.getByLabelText("Motif du refus"), "   ");
+    await user.click(screen.getByRole("button", { name: "Confirmer le refus" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Indiquez un motif de refus.");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("permet d’annuler un refus", async () => {
+    mockFetch(() => jsonResponse([pendingListing]));
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Refuser" }));
+    await user.click(screen.getByRole("button", { name: "Annuler" }));
+
+    expect(screen.queryByLabelText("Motif du refus")).not.toBeInTheDocument();
+  });
+
+  it("supprime une annonce après confirmation", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    let deleted = false;
+    const fetchMock = mockFetch((_url, init) => {
+      if (init?.method === "DELETE") {
+        deleted = true;
+        return new Response(null, { status: 204 });
+      }
+
+      return jsonResponse(deleted ? [] : [pendingListing]);
+    });
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Supprimer" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Annonce supprimée.");
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/admin/collectibles/${listingId}`,
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
+  it("ne supprime rien quand la confirmation est refusée", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const fetchMock = mockFetch(() => jsonResponse([pendingListing]));
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Supprimer" }));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [500, "L’action a échoué. Réessayez."],
+    [401, "Session expirée : reconnectez-vous."],
+  ])("explique l’échec %i d’une action", async (code, message) => {
+    mockFetch((_url, init) =>
+      init?.method === "POST"
+        ? new Response(null, { status: code })
+        : jsonResponse([pendingListing]),
+    );
+    const { user } = setup();
+
+    await user.click(await screen.findByRole("button", { name: "Approuver" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
   });
 });

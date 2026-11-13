@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { adminListUrl, type AdminStatus } from "./api";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { adminCollectibleUrl, adminListUrl, type AdminStatus } from "./api";
 import { getToken } from "./auth";
 import { visualForLabel } from "./categories";
 import { statusLabels, type ListingStatus } from "./listingStatus";
@@ -49,6 +49,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
 
   const loadListings = useCallback(async (): Promise<AdminListing[]> => {
     const response = await fetch(adminListUrl(status), {
@@ -105,8 +108,85 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
     setLoading(true);
     setError("");
+    setMessage("");
+    setRejectingId(null);
     setListings([]);
     setStatus(next);
+  }
+
+  async function applyAction(
+    request: () => Promise<Response>,
+    success: string,
+  ) {
+    try {
+      const response = await request();
+
+      if (response.status === 401) {
+        throw new Error("Session expirée : reconnectez-vous.");
+      }
+
+      if (!response.ok) {
+        throw new Error("L’action a échoué. Réessayez.");
+      }
+
+      setListings(await loadListings());
+      setRejectingId(null);
+      setReason("");
+      setError("");
+      setMessage(success);
+    } catch (requestError: unknown) {
+      setMessage("");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "L’action a échoué. Réessayez.",
+      );
+    }
+  }
+
+  function approve(listing: AdminListing) {
+    return applyAction(
+      () =>
+        fetch(adminCollectibleUrl(listing.id, "approve"), {
+          method: "POST",
+          headers: authHeaders(),
+        }),
+      "Annonce approuvée.",
+    );
+  }
+
+  function reject(event: FormEvent<HTMLFormElement>, listing: AdminListing) {
+    event.preventDefault();
+
+    if (reason.trim() === "") {
+      setError("Indiquez un motif de refus.");
+      return Promise.resolve();
+    }
+
+    return applyAction(
+      () =>
+        fetch(adminCollectibleUrl(listing.id, "reject"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ reason: reason.trim() }),
+        }),
+      "Annonce refusée.",
+    );
+  }
+
+  function remove(listing: AdminListing) {
+    if (!window.confirm(`Supprimer l’annonce « ${listing.name} » ?`)) {
+      return Promise.resolve();
+    }
+
+    return applyAction(
+      () =>
+        fetch(adminCollectibleUrl(listing.id), {
+          method: "DELETE",
+          headers: authHeaders(),
+        }),
+      "Annonce supprimée.",
+    );
   }
 
   function renderListings() {
@@ -153,6 +233,56 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     {listing.moderationReason}
                   </p>
                 )}
+
+                <div className="my-listing-actions">
+                  {listing.status !== "APPROVED" && (
+                    <button type="button" onClick={() => approve(listing)}>
+                      Approuver
+                    </button>
+                  )}
+                  {listing.status !== "REJECTED" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRejectingId(listing.id);
+                        setReason("");
+                      }}
+                    >
+                      Refuser
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="delete-listing-button"
+                    onClick={() => remove(listing)}
+                  >
+                    Supprimer
+                  </button>
+                </div>
+
+                {rejectingId === listing.id && (
+                  <form
+                    className="admin-reject-form"
+                    onSubmit={(event) => reject(event, listing)}
+                  >
+                    <label>
+                      Motif du refus
+                      <input
+                        required
+                        maxLength={255}
+                        value={reason}
+                        onChange={(event) => setReason(event.target.value)}
+                      />
+                    </label>
+
+                    <div className="my-listing-actions">
+                      <button type="submit">Confirmer le refus</button>
+                      <button type="button" onClick={() => setRejectingId(null)}>
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </article>
           );
@@ -189,6 +319,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         ))}
       </div>
 
+      {message && <output>{message}</output>}
       {error && <p role="alert">{error}</p>}
 
       {renderListings()}
