@@ -1,0 +1,197 @@
+import { useCallback, useEffect, useState } from "react";
+import { adminListUrl, type AdminStatus } from "./api";
+import { getToken } from "./auth";
+import { visualForLabel } from "./categories";
+import { statusLabels, type ListingStatus } from "./listingStatus";
+import Modal from "./Modal";
+import ObjectArt from "./ObjectArt";
+
+type AdminListing = {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string | null;
+  category: string;
+  condition: string;
+  price: number;
+  shippingCost: number;
+  status: ListingStatus;
+  moderationReason: string | null;
+};
+
+type AdminPanelProps = Readonly<{
+  onClose: () => void;
+}>;
+
+const tabs: { status: AdminStatus; label: string }[] = [
+  { status: "PENDING_REVIEW", label: "En attente" },
+  { status: "APPROVED", label: "Approuvées" },
+  { status: "REJECTED", label: "Refusées" },
+];
+
+const emptyMessages: Record<AdminStatus, string> = {
+  PENDING_REVIEW: "Aucune annonce en attente de vérification.",
+  APPROVED: "Aucune annonce approuvée.",
+  REJECTED: "Aucune annonce refusée.",
+};
+
+function formatEuros(value: number): string {
+  return `${Number(value).toFixed(2).replace(".", ",")} €`;
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export default function AdminPanel({ onClose }: AdminPanelProps) {
+  const [status, setStatus] = useState<AdminStatus>("PENDING_REVIEW");
+  const [listings, setListings] = useState<AdminListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadListings = useCallback(async (): Promise<AdminListing[]> => {
+    const response = await fetch(adminListUrl(status), {
+      headers: authHeaders(),
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expirée : reconnectez-vous.");
+    }
+
+    if (response.status === 403) {
+      throw new Error("Accès réservé aux administrateurs.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Impossible de charger les annonces.");
+    }
+
+    return (await response.json()) as AdminListing[];
+  }, [status]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadListings()
+      .then((data) => {
+        if (!cancelled) {
+          setListings(data);
+          setError("");
+        }
+      })
+      .catch((requestError: unknown) => {
+        if (!cancelled) {
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : "Une erreur est survenue.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadListings]);
+
+  function changeStatus(next: AdminStatus) {
+    if (next === status) return;
+
+    setLoading(true);
+    setError("");
+    setListings([]);
+    setStatus(next);
+  }
+
+  function renderListings() {
+    if (loading) {
+      return <p className="empty-state">Chargement des annonces…</p>;
+    }
+
+    if (listings.length === 0) {
+      return error ? null : (
+        <p className="empty-state">{emptyMessages[status]}</p>
+      );
+    }
+
+    return (
+      <div className="my-listings-list">
+        {listings.map((listing) => {
+          const visual = visualForLabel(listing.category);
+
+          return (
+            <article className="my-listing-card" key={listing.id}>
+              <div
+                className={`my-listing-placeholder ${visual.tone}`}
+                aria-hidden="true"
+              >
+                <ObjectArt kind={visual.art} size={96} />
+              </div>
+
+              <div className="my-listing-info">
+                <span className="item-category">{listing.category}</span>
+                <h3>{listing.name}</h3>
+                <p className="admin-owner">
+                  Vendeur : {listing.ownerId.slice(0, 8)}…
+                </p>
+                {listing.description && <p>{listing.description}</p>}
+                <p>Prix : {formatEuros(listing.price)}</p>
+                <p>Expédition : {formatEuros(listing.shippingCost)}</p>
+                <span
+                  className={`listing-status status-${listing.status.toLowerCase()}`}
+                >
+                  {statusLabels[listing.status]}
+                </span>
+                {listing.moderationReason && (
+                  <p className="moderation-reason">
+                    {listing.moderationReason}
+                  </p>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <Modal
+      onClose={onClose}
+      titleId="admin-title"
+      backdropClassName="modal-backdrop"
+      dialogClassName="listing-modal my-listings-modal admin-modal"
+    >
+      <button className="modal-close" onClick={onClose} aria-label="Fermer">
+        ×
+      </button>
+
+      <span className="eyebrow">back-office</span>
+      <h2 id="admin-title">Administration</h2>
+
+      <div className="filters" role="group" aria-label="Filtrer par statut">
+        {tabs.map((tab) => (
+          <button
+            type="button"
+            key={tab.status}
+            aria-pressed={status === tab.status}
+            className={status === tab.status ? "filter selected" : "filter"}
+            onClick={() => changeStatus(tab.status)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {error && <p role="alert">{error}</p>}
+
+      {renderListings()}
+    </Modal>
+  );
+}

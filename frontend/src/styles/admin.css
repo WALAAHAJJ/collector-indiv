@@ -1,0 +1,10 @@
+/* Panneau d'administration : réutilise les cartes de « Mes annonces » */
+
+.admin-modal .filters {
+  margin: 20px 0;
+}
+
+.admin-owner {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
