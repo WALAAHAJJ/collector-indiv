@@ -12,7 +12,8 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 6. [Sécurité automatisée](#6-sécurité-automatisée)
 7. [Gestion du code et du travail](#7-gestion-du-code-et-du-travail)
 8. [Interface et design](#8-interface-et-design)
-9. [Prévu, pas encore en place](#9-prévu-pas-encore-en-place)
+9. [Démonstrations](#9-démonstrations)
+10. [Prévu, pas encore en place](#10-prévu-pas-encore-en-place)
 
 ## 1. Langages et frameworks
 
@@ -102,7 +103,20 @@ La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service
 
 Le thème « Album » (papier kraft, polaroïds, notes manuscrites) a été choisi parmi cinq directions de maquettes comparées.
 
-## 9. Prévu, pas encore en place
+## 9. Démonstrations
+
+Ces outils servent à comparer des technologies. Ils ne font pas partie du site.
+
+| Outil | Version | À quoi il sert | Où |
+|---|---|---|---|
+| RabbitMQ | image `rabbitmq:4-management` | Courtier de messages à files et échanges, avec interface web. | `demos/messaging/compose.yaml` |
+| Apache Kafka | image `apache/kafka:4.0.2` | Journal d'événements partitionné, en mode KRaft. | `demos/messaging/compose.yaml` |
+| amqplib | 2.3 | Client Node.js pour RabbitMQ. | `demos/messaging` |
+| KafkaJS | 2.2 | Client Node.js pour Kafka. | `demos/messaging` |
+
+La comparaison et le choix provisoire sont dans [comparaisons.md](comparaisons.md).
+
+## 10. Prévu, pas encore en place
 
 Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 
@@ -110,7 +124,7 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 |---|---|
 | GitLab CI | Seconde solution d'intégration continue, à comparer à GitHub Actions avec une démonstration. |
 | Kubernetes en local (Kind ou Minikube) | Déployer les services dans un orchestrateur et schématiser ses composants. |
-| RabbitMQ ou Kafka | Messagerie entre services : notifications de nouvel article ou de changement de prix, détection de fraude. |
+| Intégration de RabbitMQ dans les services | Publier les événements (annonce publiée, prix modifié) et alimenter les notifications et la détection de fraude, après confirmation du choix. |
 | Keycloak ou Auth0 | Comparaison possible d'un serveur d'autorisation avec l'authentification actuelle. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |
 | Flyway | Migrations de base de données versionnées, à la place de la mise à jour automatique actuelle. |
