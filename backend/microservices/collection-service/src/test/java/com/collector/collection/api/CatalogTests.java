@@ -2,6 +2,9 @@ package com.collector.collection.api;
 
 import java.util.UUID;
 
+import com.collector.collection.domain.Category;
+import com.collector.collection.domain.CategoryArt;
+import com.collector.collection.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,9 +26,13 @@ class CatalogTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Test
     void catalogIsPublicAndShowsOnlyApprovedListings() throws Exception {
         String category = "cat" + UUID.randomUUID().toString().substring(0, 8);
+        categoryRepository.save(new Category(category, CategoryArt.OTHER));
 
         create(category, "Pièce ancienne", "Belle pièce de collection").andExpect(status().isCreated());
         create(category, "Pièce suspecte", "Contactez-moi sur vendeur@mail.com").andExpect(status().isCreated());
@@ -40,6 +47,7 @@ class CatalogTests {
     @Test
     void catalogFiltersBySearchText() throws Exception {
         String category = "cat" + UUID.randomUUID().toString().substring(0, 8);
+        categoryRepository.save(new Category(category, CategoryArt.OTHER));
 
         create(category, "Timbre rare", "Série complète").andExpect(status().isCreated());
         create(category, "Carte postale", "Vue de Paris").andExpect(status().isCreated());

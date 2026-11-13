@@ -59,6 +59,12 @@ public class CategoryService {
         categories.delete(category);
     }
 
+    /** Renvoie la catégorie portant ce nom, sans tenir compte de la casse, ou refuse la demande. */
+    public Category requireByName(String name) {
+        return categories.findByNameIgnoreCase(name.trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Catégorie inconnue"));
+    }
+
     private CategoryResponse toResponse(Category category) {
         return new CategoryResponse(category.getId(), category.getName(), category.getArt());
     }
