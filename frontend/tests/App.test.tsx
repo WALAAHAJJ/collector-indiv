@@ -5,7 +5,12 @@ import App from "../src/App";
 import { getToken, setToken } from "../src/auth";
 import { approvedListing, jsonResponse, mockFetch, ownerId } from "./helpers";
 
-const sessionUser = { id: ownerId, username: "walaa", email: "walaa@example.com" };
+const sessionUser = {
+  id: ownerId,
+  username: "walaa",
+  email: "walaa@example.com",
+  role: "USER",
+};
 
 type Routes = {
   catalog?: () => Response;
