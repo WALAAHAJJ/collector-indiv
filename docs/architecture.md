@@ -152,7 +152,3 @@ flowchart LR
     classDef planned stroke-dasharray: 5 5
     class bus,notif,fraude,paiement,chat planned
 ```
-
-## 7. Environnement d'orchestration
-
-Le déploiement des services dans un orchestrateur (Kubernetes en local) et son schéma sont à venir. Ils seront décrits dans ce document au moment de leur mise en place.

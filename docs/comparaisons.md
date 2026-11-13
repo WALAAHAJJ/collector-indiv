@@ -1,8 +1,8 @@
 # Comparaison des technologies
 
-Ce document compare des technologies envisagées pour Collector, avec une démonstration pour chaque comparaison. Ce qui n'est pas encore démontré est marqué « à venir ».
+Ce document compare les technologies envisagées pour Collector, avec une démonstration mesurée pour chaque comparaison.
 
-## 1. Messagerie entre services : RabbitMQ ou Kafka
+## Messagerie entre services : RabbitMQ ou Kafka
 
 ### Pourquoi une messagerie
 
@@ -57,11 +57,3 @@ Les mêmes cinq scénarios ont été exécutés sur les deux brokers, sur une m�
 **Kafka reste le candidat pour l'analyse des ventes** demandée à la direction : conserver tous les événements et pouvoir les rejouer (scénario 4) est précisément son atout. On pourra l'ajouter plus tard sans changer le reste, puisque les services ne communiquent que par événements.
 
 Limites de cette comparaison : volumes très faibles, un seul nœud par broker, une seule machine. Elle montre des comportements, pas des performances de production.
-
-## 2. Intégration continue : GitHub Actions ou GitLab CI
-
-À venir. Le même pipeline (lint, tests, analyse, construction des images, scan de sécurité) sera exécuté sur les deux outils, avec une démonstration et un tableau des forces, faiblesses et limites de chacun.
-
-## 3. Autres comparaisons possibles
-
-À venir, selon le temps disponible : environnement Kubernetes local (Kind ou Minikube), serveur d'autorisation (Keycloak ou Auth0).

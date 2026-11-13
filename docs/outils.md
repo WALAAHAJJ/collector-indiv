@@ -122,9 +122,6 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 
 | Outil | Pour quoi faire |
 |---|---|
-| GitLab CI | Seconde solution d'intégration continue, à comparer à GitHub Actions avec une démonstration. |
-| Kubernetes en local (Kind ou Minikube) | Déployer les services dans un orchestrateur et schématiser ses composants. |
 | Intégration de RabbitMQ dans les services | Publier les événements (annonce publiée, prix modifié) et alimenter les notifications et la détection de fraude, après confirmation du choix. |
-| Keycloak ou Auth0 | Comparaison possible d'un serveur d'autorisation avec l'authentification actuelle. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |
 | Flyway | Migrations de base de données versionnées, à la place de la mise à jour automatique actuelle. |
