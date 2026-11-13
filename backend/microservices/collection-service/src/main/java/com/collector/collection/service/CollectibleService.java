@@ -118,6 +118,10 @@ public class CollectibleService {
         return toResponse(repository.save(collectible));
     }
 
+    public void deleteAsAdmin(UUID id) {
+        repository.delete(findEntityById(id));
+    }
+
     private void moderate(Collectible collectible) {
         ModerationResult result = moderationService.evaluate(
                 collectible.getName(),

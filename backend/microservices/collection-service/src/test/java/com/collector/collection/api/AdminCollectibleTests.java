@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -130,6 +131,35 @@ class AdminCollectibleTests {
         String id = createPendingListing("cat" + shortId());
 
         mockMvc.perform(post("/api/admin/collectibles/{id}/approve", id)
+                        .header("Authorization", user()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminDeletesAListingThatBreaksTheCharter() throws Exception {
+        String id = createPendingListing("cat" + shortId());
+
+        mockMvc.perform(delete("/api/admin/collectibles/{id}", id)
+                        .header("Authorization", admin()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/collectibles/{id}", id)
+                        .header("Authorization", admin()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deletingAnUnknownListingIsNotFound() throws Exception {
+        mockMvc.perform(delete("/api/admin/collectibles/{id}", UUID.randomUUID())
+                        .header("Authorization", admin()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void ordinaryUsersCannotDeleteThroughTheAdminRoute() throws Exception {
+        String id = createPendingListing("cat" + shortId());
+
+        mockMvc.perform(delete("/api/admin/collectibles/{id}", id)
                         .header("Authorization", user()))
                 .andExpect(status().isForbidden());
     }
