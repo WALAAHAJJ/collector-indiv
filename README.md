@@ -14,12 +14,13 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | Modération automatique des annonces | Fait |
 | API protégée : chacun ne modifie que ses propres annonces | Fait |
 | Interface accessible (fenêtres natives `<dialog>`, clavier, contrastes) | Fait |
-| Back-office administrateur (catégories, validation manuelle) | À faire |
+| Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
+| Back-office administrateur : écran dans le site et catégories gérées par l'administrateur | À faire |
 | Photos des annonces | À faire |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
-Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : l'écran d'administration qui la validera n'existe pas encore.
+Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse aujourd'hui par l'API d'administration, l'écran correspondant dans le site n'existe pas encore.
 
 ## Architecture
 
@@ -35,7 +36,7 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
      └── jetons JWT HS256 signés par user-service, vérifiés par collection-service
 ```
 
-- **user-service** : comptes, mots de passe hachés avec BCrypt, émission des jetons JWT (15 minutes, rôle `USER` ou `ADMIN` dans le jeton).
+- **user-service** : comptes, mots de passe hachés avec BCrypt, émission des jetons JWT (15 minutes, rôle `USER` ou `ADMIN` dans le jeton). Le compte administrateur est créé au démarrage à partir des variables d'environnement.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton et prend le propriétaire dans le jeton, jamais dans le formulaire.
 - **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/auth` vers le user-service et `/api/collectibles` vers le collection-service.
 
@@ -55,6 +56,10 @@ npm run dev                     # http://localhost:5173
 
 Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL).
 
+### Compte administrateur
+
+Le user-service crée un compte administrateur au démarrage si `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` (8 caractères minimum) sont renseignés dans le fichier `.env`. Sans mot de passe, aucun compte n'est créé. Un compte existant n'est jamais modifié, et l'inscription publique ne donne jamais le rôle administrateur.
+
 ## API
 
 | Route | Accès | Rôle |
@@ -67,6 +72,10 @@ Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (ba
 | `GET /api/collectibles?ownerId=` | jeton | Mes annonces (uniquement les siennes) |
 | `GET /api/collectibles/{id}` | jeton | Une annonce approuvée, ou la sienne |
 | `PUT` / `DELETE /api/collectibles/{id}` | jeton | Modifier ou supprimer sa propre annonce |
+| `GET /api/admin/collectibles?status=` | administrateur | Annonces par statut (par défaut : en attente) |
+| `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
+| `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
+| `DELETE /api/admin/collectibles/{id}` | administrateur | Supprimer une annonce contraire à la charte |
 
 ## Modération automatique
 
