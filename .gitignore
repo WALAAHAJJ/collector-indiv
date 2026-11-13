@@ -6,4 +6,5 @@ target/
 *.iml
 .env
 .env.*
+!.env.example
 *.log
