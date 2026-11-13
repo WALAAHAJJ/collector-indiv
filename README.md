@@ -17,6 +17,7 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
 | Back-office administrateur : écran « Administration » dans le site (approuver, refuser avec motif, supprimer) | Fait |
 | Catégories créées et gérées par l'administrateur | À faire |
+| Comparaison RabbitMQ et Kafka avec démonstration (`demos/messaging`) | En cours : démonstration écrite, mesures à relever |
 | Photos des annonces | À faire |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
@@ -135,6 +136,7 @@ backend/microservices/user-service        comptes et jetons
 backend/microservices/collection-service  annonces et modération
 frontend                                  site React
 compose.yaml                              bases de données et services
+demos/messaging                           démonstration comparative RabbitMQ et Kafka
 .github/workflows/ci.yml                  intégration continue
 .github/dependabot.yml                    mises à jour automatiques
 ```
@@ -144,6 +146,7 @@ compose.yaml                              bases de données et services
 - [Référentiel des outils](docs/outils.md) : tous les outils utilisés, leur rôle et leur emplacement dans le dépôt.
 - [Architecture](docs/architecture.md) : composants, responsabilités, flux principaux, décisions et évolutions prévues, avec schémas.
 - [Stratégie de tests](docs/tests.md) : types de tests, place dans la CI/CD et ce qui reste à tester.
+- [Comparaison des technologies](docs/comparaisons.md) : RabbitMQ contre Kafka, avec démonstration et choix provisoire.
 - [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
 
 ## Auteure
