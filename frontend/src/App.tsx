@@ -8,6 +8,7 @@ import "./styles/cards.css";
 import "./styles/modal.css";
 import "./styles/forms.css";
 import "./styles/my-listings.css";
+import "./styles/admin.css";
 import "./styles/footer.css";
 import ListingForm from "./ListingForm";
 import LoginForm from "./LoginForm";
