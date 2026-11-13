@@ -59,8 +59,87 @@ class AdminCollectibleTests {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void adminApprovesAListingWhichThenAppearsInTheCatalog() throws Exception {
+        String category = "cat" + shortId();
+        String id = createPendingListing(category);
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/approve", id)
+                        .header("Authorization", admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+
+        mockMvc.perform(get("/api/collectibles/catalog").param("category", category))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(id));
+    }
+
+    @Test
+    void adminRejectsAListingWithAReason() throws Exception {
+        String category = "cat" + shortId();
+        String id = createPendingListing(category);
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/reject", id)
+                        .header("Authorization", admin())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "reason": "Photo non conforme à la charte" }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.moderationReason").value("Photo non conforme à la charte"));
+
+        mockMvc.perform(get("/api/collectibles/catalog").param("category", category))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void rejectionNeedsAReason() throws Exception {
+        String id = createPendingListing("cat" + shortId());
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/reject", id)
+                        .header("Authorization", admin())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "reason": " " }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void approvingOrRejectingAnUnknownListingIsNotFound() throws Exception {
+        String unknownId = UUID.randomUUID().toString();
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/approve", unknownId)
+                        .header("Authorization", admin()))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/reject", unknownId)
+                        .header("Authorization", admin())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "reason": "Hors charte" }
+                                """))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void ordinaryUsersCannotApprove() throws Exception {
+        String id = createPendingListing("cat" + shortId());
+
+        mockMvc.perform(post("/api/admin/collectibles/{id}/approve", id)
+                        .header("Authorization", user()))
+                .andExpect(status().isForbidden());
+    }
+
     private String admin() {
         return TestTokens.bearer(secretKey, UUID.randomUUID(), "ADMIN");
+    }
+
+    private String user() {
+        return TestTokens.bearer(secretKey, UUID.randomUUID(), "USER");
     }
 
     private String shortId() {
