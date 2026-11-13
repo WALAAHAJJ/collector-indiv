@@ -42,7 +42,8 @@ public class AuthController {
         return new UserResponse(
                 java.util.UUID.fromString(jwt.getSubject()),
                 jwt.getClaimAsString("username"),
-                jwt.getClaimAsString("email")
+                jwt.getClaimAsString("email"),
+                jwt.getClaimAsString("role")
         );
     }
 }

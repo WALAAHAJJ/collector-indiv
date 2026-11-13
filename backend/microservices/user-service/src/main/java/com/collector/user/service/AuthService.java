@@ -98,7 +98,8 @@ public class AuthService {
         UserResponse user = new UserResponse(
                 account.getId(),
                 account.getUsername(),
-                account.getEmail()
+                account.getEmail(),
+                account.getRole().name()
         );
 
         return new AuthResponse(token, "Bearer", TOKEN_TTL_SECONDS, user);
