@@ -82,6 +82,10 @@ public class Account {
         return role;
     }
 
+    public void makeAdmin() {
+        this.role = Role.ADMIN;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
