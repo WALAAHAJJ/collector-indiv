@@ -31,7 +31,7 @@ Le site ne contient aucune donnée : il appelle les deux services. Chaque servic
 |---|---|---|
 | Site web | Afficher le catalogue, les formulaires, la page « Mes annonces » et l'administration ; conserver le jeton le temps de la session | Aucune règle métier : il ne décide ni de la modération ni des droits |
 | Service des comptes | Créer les comptes, vérifier les mots de passe, émettre les jetons signés avec le rôle, créer le compte administrateur au démarrage | Ne connaît pas les annonces |
-| Service des annonces | Stocker les annonces, appliquer la modération automatique, vérifier le jeton et les droits, publier le catalogue, offrir le back-office | Ne gère ni les mots de passe ni les comptes |
+| Service des annonces | Stocker les annonces et les catégories, appliquer la modération automatique, vérifier le jeton et les droits, publier le catalogue, offrir le back-office (annonces et catégories) | Ne gère ni les mots de passe ni les comptes |
 | Base des comptes | Persister comptes et mots de passe hachés | — |
 | Base des annonces | Persister annonces, statuts et motifs de modération | — |
 
