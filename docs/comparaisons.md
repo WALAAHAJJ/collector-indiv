@@ -24,27 +24,35 @@ Quand une annonce est publiée ou qu'un prix change, plusieurs choses doivent se
 
 ### Résultats mesurés
 
-Les mêmes cinq scénarios ont été exécutés sur les deux brokers (voir `demos/messaging/README.md`).
-
-**À compléter avec tes propres mesures** : lance la démonstration, puis colle ici le tableau de `demos/messaging/resultats.md` et la consommation de mémoire relevée avec `docker stats --no-stream`.
+Les mêmes cinq scénarios ont été exécutés sur les deux brokers, sur une même machine (voir `demos/messaging/README.md` et le détail dans `demos/messaging/resultats.md`).
 
 | Scénario | RabbitMQ | Kafka |
 |---|---|---|
-| 1. Débit | à mesurer | à mesurer |
-| 2. Diffusion à deux services | à mesurer | à mesurer |
-| 3. Partage entre deux consommateurs | à mesurer | à mesurer |
-| 4. Relecture par un service arrivé après | à mesurer | à mesurer |
-| 5. Panne sur un message | à mesurer | à mesurer |
-| Mémoire d'un broker au repos | à mesurer | à mesurer |
+| 1. Débit (2 000 messages, un consommateur) | 16 630 messages/s | 16 769 messages/s |
+| 2. Diffusion à deux services (200 messages) | notifications 200, fraude 200 | notifications 200, fraude 200 |
+| 3. Partage entre deux consommateurs (200 messages) | A 100, B 100 | A 70, B 130 |
+| 4. Relecture par un service arrivé après (200 messages déjà publiés) | reçoit 0 sur 200 | reçoit 200 sur 200 |
+| 5. Panne sur le message 5 (10 messages) | 2 livraisons du message, 10 traités sur 10 | 2 livraisons du message, 10 traités sur 10 |
+| Mémoire d'un broker au repos (`docker stats`) | 146 Mio | 339 Mio |
 
-### Choix provisoire pour Collector
+### Lecture des résultats
 
-**RabbitMQ** pour les notifications et la détection de fraude, à confirmer avec les mesures :
+- **Débit : à égalité.** À ce volume, les deux brokers donnent le même résultat. Cette mesure ne départage pas les outils, et elle est très au-dessus des besoins de Collector. Elle ne dit rien de ce qui se passerait avec des millions de messages.
+- **Diffusion : les deux conviennent.** Les deux services reçoivent chacun tous les messages, par des mécanismes différents (une file par service chez RabbitMQ, un groupe de consommateurs par service chez Kafka).
+- **Partage : RabbitMQ répartit plus régulièrement.** Chez RabbitMQ, chaque message va au consommateur disponible, d'où 100 et 100. Chez Kafka, la répartition suit les partitions : avec deux partitions et des clés d'annonce, l'un des consommateurs a reçu 70 messages et l'autre 130. Le nombre de consommateurs utiles est limité par le nombre de partitions.
+- **Relecture : c'est la vraie différence.** Un service qui arrive après la publication ne reçoit rien de RabbitMQ (les messages lus ont disparu) mais retrouve les 200 messages chez Kafka.
+- **Panne : même résultat sur ce cas simple.** Dans les deux cas, le message en échec est livré une seconde fois et aucun message n'est perdu. Les mécanismes diffèrent : RabbitMQ remet le message en file sur refus explicite, Kafka relit parce que le décalage n'a pas avancé. Un message qui échoue toujours (message « empoisonné ») n'a pas été testé : RabbitMQ peut l'envoyer vers une file de lettres mortes, alors que chez Kafka ce mécanisme est à construire.
+- **Mémoire : Kafka consomme environ 2,3 fois plus** (339 Mio contre 146 Mio) pour un seul nœud au repos.
 
-- le besoin est de **traiter chaque événement une fois, avec reprise en cas d'échec** : l'acquittement par message et la remise en file correspondent exactement au scénario 5 ;
+### Choix pour Collector
+
+**RabbitMQ** pour les notifications et la détection de fraude. Les mesures confirment le choix provisoire :
+
+- le débit et la diffusion sont équivalents, donc rien ne justifie un broker plus lourd ;
+- il est **deux fois et demie plus léger** en mémoire, et il répartit le travail plus régulièrement entre consommateurs ;
+- le traitement d'un événement avec reprise en cas d'échec est exactement ce qu'il propose nativement (acquittement par message, remise en file, lettres mortes) ;
 - le routage par motif permet de prévenir les acheteurs selon leurs centres d'intérêt (`annonce.publiee.timbres`) sans code de filtrage ;
-- le volume attendu est modéré, et un broker léger avec son interface de gestion est plus simple à exploiter ;
-- rien dans ces deux usages n'exige de relire l'historique.
+- ces deux usages n'ont pas besoin de relire l'historique.
 
 **Kafka reste le candidat pour l'analyse des ventes** demandée à la direction : conserver tous les événements et pouvoir les rejouer (scénario 4) est précisément son atout. On pourra l'ajouter plus tard sans changer le reste, puisque les services ne communiquent que par événements.
 
