@@ -8,6 +8,8 @@ import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingPhoto;
 import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.domain.PhotoFormat;
+import com.collector.collection.events.ListingEventPublisher;
+import com.collector.collection.events.ListingStatusEvent;
 import com.collector.collection.repository.CollectibleRepository;
 import com.collector.collection.repository.ListingPhotoRepository;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,17 +29,20 @@ public class CollectibleService {
     private final ListingPhotoRepository photoRepository;
     private final ModerationService moderationService;
     private final CategoryService categoryService;
+    private final ListingEventPublisher eventPublisher;
 
     public CollectibleService(
             CollectibleRepository repository,
             ListingPhotoRepository photoRepository,
             ModerationService moderationService,
-            CategoryService categoryService
+            CategoryService categoryService,
+            ListingEventPublisher eventPublisher
     ) {
         this.repository = repository;
         this.photoRepository = photoRepository;
         this.moderationService = moderationService;
         this.categoryService = categoryService;
+        this.eventPublisher = eventPublisher;
     }
 
     public CollectibleResponse create(UUID ownerId, CreateCollectibleRequest request) {
@@ -53,7 +59,10 @@ public class CollectibleService {
         );
         moderate(collectible);
 
-        return toResponse(repository.save(collectible));
+        Collectible saved = repository.save(collectible);
+        publishStatus(saved);
+
+        return toResponse(saved);
     }
 
     public List<CollectibleResponse> findByOwnerId(UUID ownerId) {
@@ -94,6 +103,7 @@ public class CollectibleService {
     ) {
         Collectible collectible = findOwnedEntity(id, currentUserId);
         Category category = categoryService.requireByName(request.category());
+        ListingStatus previousStatus = collectible.getStatus();
 
         collectible.updateDetails(
                 request.name(),
@@ -105,7 +115,13 @@ public class CollectibleService {
         );
         moderate(collectible);
 
-        return toResponse(repository.save(collectible));
+        Collectible saved = repository.save(collectible);
+
+        if (saved.getStatus() != previousStatus) {
+            publishStatus(saved);
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -173,16 +189,30 @@ public class CollectibleService {
 
     public CollectibleResponse approve(UUID id) {
         Collectible collectible = findEntityById(id);
+        ListingStatus previousStatus = collectible.getStatus();
         collectible.applyModeration(ListingStatus.APPROVED, null);
 
-        return toResponse(repository.save(collectible));
+        Collectible saved = repository.save(collectible);
+
+        if (previousStatus != ListingStatus.APPROVED) {
+            publishStatus(saved);
+        }
+
+        return toResponse(saved);
     }
 
     public CollectibleResponse reject(UUID id, String reason) {
         Collectible collectible = findEntityById(id);
+        ListingStatus previousStatus = collectible.getStatus();
         collectible.applyModeration(ListingStatus.REJECTED, reason);
 
-        return toResponse(repository.save(collectible));
+        Collectible saved = repository.save(collectible);
+
+        if (previousStatus != ListingStatus.REJECTED) {
+            publishStatus(saved);
+        }
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -190,6 +220,17 @@ public class CollectibleService {
         Collectible collectible = findEntityById(id);
         photoRepository.deleteById(id);
         repository.delete(collectible);
+    }
+
+    private void publishStatus(Collectible collectible) {
+        eventPublisher.publish(new ListingStatusEvent(
+                collectible.getId(),
+                collectible.getOwnerId(),
+                collectible.getName(),
+                collectible.getStatus(),
+                collectible.getModerationReason(),
+                Instant.now()
+        ));
     }
 
     private void moderate(Collectible collectible) {
