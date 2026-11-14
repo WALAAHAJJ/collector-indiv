@@ -2,7 +2,7 @@
 
 Plateforme web de vente d'objets de collection entre particuliers : timbres, pièces, cartes postales, cassettes… Les objets « du quotidien » qui ravivent des souvenirs, hors luxe et brocante classique.
 
-Projet réalisé dans le cadre du bloc **Superviser et assurer le développement des applications logicielles** (CESI). L'entreprise Collector est fictive ; le cahier des charges décrit une commission de 5 % par transaction, des acheteurs et vendeurs inscrits, un back-office administrateur et une exigence de sécurité de premier plan.
+Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commission de 5 % par transaction, des acheteurs et vendeurs inscrits, un back-office administrateur et une exigence de sécurité de premier plan.
 
 ## État d'avancement
 
