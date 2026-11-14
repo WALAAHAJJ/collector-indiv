@@ -16,8 +16,8 @@ describe("port du serveur de développement", () => {
 });
 
 describe("proxy du serveur de développement", () => {
-  it("envoie les comptes au user-service", () => {
-    expect(proxy["/api/auth"].target).toBe("http://127.0.0.1:8082");
+  it("ne redirige plus la connexion : elle passe par Keycloak", () => {
+    expect(proxy["/api/auth"]).toBeUndefined();
   });
 
   it.each([
