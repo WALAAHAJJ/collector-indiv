@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import "./styles/layout.css";
 import "./styles/tones.css";
 import "./styles/header.css";
@@ -11,10 +11,9 @@ import "./styles/my-listings.css";
 import "./styles/admin.css";
 import "./styles/footer.css";
 import ListingForm from "./ListingForm";
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
-import { clearToken, getToken } from "./auth";
+import { getToken, subscribe, userFromToken } from "./auth";
+import { login, logout, register } from "./identity";
 import { catalogUrl, photoUrl } from "./api";
 import Modal from "./Modal";
 import AdminPanel from "./AdminPanel";
@@ -47,13 +46,6 @@ type CatalogListing = {
 
 type Listing = CatalogListing & CategoryVisual;
 
-type SessionUser = {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-};
-
 const conditionLabels: Record<string, string> = {
   new: "Neuf",
   very_good: "Très bon état",
@@ -75,13 +67,12 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
-  const [showRegistration, setShowRegistration] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [registrationMessage, setRegistrationMessage] = useState("");
-  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  // L'identité vient du jeton de Keycloak : elle apparaît dès que la connexion est établie.
+  const sessionUser = userFromToken(useSyncExternalStore(subscribe, getToken));
 
   useEffect(() => {
     let cancelled = false;
@@ -132,40 +123,6 @@ function App() {
     };
   }, [category, search]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const token = getToken();
-
-    if (!token) return;
-
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(async (response) => {
-        if (response.status === 401 || response.status === 403) {
-          clearToken();
-          return null;
-        }
-
-        if (!response.ok) {
-          throw new Error("Impossible de vérifier la session.");
-        }
-
-        return (await response.json()) as SessionUser;
-      })
-      .then((user) => {
-        if (!cancelled && user) {
-          setSessionUser(user);
-        }
-      })
-      .catch(() => {
-        // Le catalogue reste accessible si la session ne peut pas être vérifiée.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const filteredListings = listings
     .map((item) => ({
       ...item,
@@ -200,11 +157,9 @@ function App() {
   }
 
   function handleLogout() {
-    clearToken();
-    setSessionUser(null);
     setShowMyListings(false);
     setShowAdmin(false);
-    setRegistrationMessage("Vous êtes déconnectée.");
+    void logout();
   }
 
   function renderCatalogue() {
@@ -325,7 +280,7 @@ function App() {
               <button
                 type="button"
                 className="login-button"
-                onClick={() => setShowLogin(true)}
+                onClick={() => void login()}
               >
                 Se connecter
               </button>
@@ -333,7 +288,7 @@ function App() {
               <button
                 type="button"
                 className="sell-button"
-                onClick={() => setShowRegistration(true)}
+                onClick={() => void register()}
               >
                 Créer un compte
               </button>
@@ -469,34 +424,6 @@ function App() {
           ownerId={sessionUser.id}
           categories={apiCategories}
           onClose={() => setShowMyListings(false)}
-        />
-      )}
-
-      {showRegistration && (
-        <RegisterForm
-          onClose={() => setShowRegistration(false)}
-          onRegistered={() => {
-            setShowRegistration(false);
-            setShowLogin(true);
-            setRegistrationMessage(
-              "Compte créé. Connectez-vous pour continuer.",
-            );
-          }}
-        />
-      )}
-
-      {showLogin && (
-        <LoginForm
-          onClose={() => setShowLogin(false)}
-          onShowRegistration={() => {
-            setShowLogin(false);
-            setShowRegistration(true);
-          }}
-          onLoggedIn={(user) => {
-            setSessionUser(user);
-            setShowLogin(false);
-            setRegistrationMessage(`Bienvenue, ${user.username} !`);
-          }}
         />
       )}
 
