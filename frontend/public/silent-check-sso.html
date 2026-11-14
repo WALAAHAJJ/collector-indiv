@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vérification de la session</title>
+  </head>
+  <body>
+    <!-- Page chargée dans un cadre invisible par keycloak-js : elle rend la réponse de Keycloak à la page principale. -->
+    <script>
+      parent.postMessage(location.href, location.origin);
+    </script>
+  </body>
+</html>
