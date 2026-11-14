@@ -73,6 +73,7 @@ La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service
 |---|---|---|---|
 | Docker | — | Empaquette chaque service avec tout ce qu'il faut pour tourner. | `Dockerfile` de chaque service |
 | Docker Compose | — | Lance d'un coup les deux bases PostgreSQL, RabbitMQ et les deux services. | `compose.yaml` |
+| Keycloak | image `quay.io/keycloak/keycloak:26.8.1` | Serveur d'identité (SSO) : comptes, connexion, inscription, rôles, jetons. Mode développement (HTTP), console sur le port 8180. La configuration du « realm » `collector` (client du site, rôle `ADMIN`, protection contre les essais répétés, interface en français) est dans `keycloak/realm-collector.json`, importée au premier démarrage. | `compose.yaml`, `keycloak/` |
 | RabbitMQ | image `rabbitmq:4-management` | Messagerie entre services : le service des annonces y publie les changements de statut. Interface web sur le port 15672. | `compose.yaml` |
 | Spring AMQP | fourni par Spring Boot 4.1.2 | Envoi des messages RabbitMQ depuis le service des annonces. | `collection-service/pom.xml` |
 | Images maven:3.9 et eclipse-temurin:21 | 3.9 et 21 | Construction en deux étapes : une image de build, puis une image légère d'exécution. | Dockerfiles |
