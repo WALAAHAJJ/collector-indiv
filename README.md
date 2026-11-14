@@ -153,6 +153,7 @@ demos/messaging                           démonstration comparative RabbitMQ et
 - [Stratégie de tests](docs/tests.md) : types de tests, place dans la CI/CD et ce qui reste à tester.
 - [Comparaison des technologies](docs/comparaisons.md) : RabbitMQ contre Kafka, avec démonstration mesurée et choix retenu.
 - [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
+- [Signalement d'une vulnérabilité](SECURITY.md) : comment signaler une faille de façon privée.
 
 ## Auteure
 
