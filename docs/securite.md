@@ -8,9 +8,10 @@ Collector manipule des comptes, des échanges entre particuliers et, à terme, d
 
 | Composant | Technologie | Rôle | Données sensibles |
 |---|---|---|---|
-| user-service | Java 21, Spring Boot 4.1.2, port 8082 | Comptes, connexion, jetons | e-mails, mots de passe hachés |
+| Keycloak | image `quay.io/keycloak/keycloak:26.8.1`, port 8180 | Comptes, connexion, rôles, jetons | e-mails, mots de passe hachés |
+| user-service | Java 21, Spring Boot 4.1.2, port 8082 | Ancienne connexion maison (retrait prévu) | anciens comptes de développement |
 | collection-service | Java 21, Spring Boot 4.1.2, port 8081 | Annonces, modération, back-office | annonces, identifiants de vendeurs |
-| frontend | React 19, Vite 8, port 5173 | Site | aucune (jeton en session du navigateur) |
+| frontend | React 19, Vite 8, port 5173 | Site | aucune (jeton gardé en mémoire, jamais dans le stockage du navigateur) |
 | base des comptes | PostgreSQL 17, port 5434 | Stockage du user-service | comptes |
 | base des annonces | PostgreSQL 17, port 5433 | Stockage du collection-service | annonces |
 | intégration continue | GitHub Actions | Tests, analyses, build | secret `SONAR_TOKEN` |
@@ -24,10 +25,11 @@ Chaque nouveau composant (broker de messages, orchestrateur, base de supervision
 
 | Domaine | Mesure | Où |
 |---|---|---|
-| Mots de passe | Hachage BCrypt, 8 caractères minimum, jamais renvoyés par l'API | user-service |
-| Authentification | Jeton JWT signé (HS256), valable 15 minutes, rôle `USER` ou `ADMIN` | user-service |
+| Mots de passe | Saisis sur la page de Keycloak, jamais vus par le site ni par les services ; hachés par Keycloak | Keycloak |
+| Authentification | SSO par Keycloak : code d'autorisation avec PKCE (S256), pas de flux par mot de passe côté site ; jeton JWT signé RS256, valable 5 minutes, renouvelé par le site ; protection contre les essais répétés (blocage après 5 échecs) | Keycloak, site |
+| Vérification des jetons | Signature (clés publiques de Keycloak), émetteur, expiration ; aucun secret partagé entre les services | collection-service, notification-service |
 | Autorisation | Seul le catalogue est public ; le propriétaire d'une annonce vient du jeton, jamais du formulaire ; routes `/api/admin` réservées au rôle `ADMIN` | collection-service |
-| Compte administrateur | Créé au démarrage depuis des variables d'environnement, sans mot de passe par défaut ; l'inscription publique ne donne jamais ce rôle | user-service |
+| Compte administrateur | Créé dans Keycloak au premier démarrage depuis des variables d'environnement, sans mot de passe par défaut ; l'inscription publique ne donne jamais le rôle `ADMIN` | Keycloak |
 | Erreurs | Codes HTTP exacts (401, 403, 404, 409), sans détail interne | les deux services |
 | Données saisies | Validation côté serveur (prix, longueurs, formats) ; requêtes SQL paramétrées | DTO, repository |
 | Contournement de la plateforme | Modération automatique : e-mail, téléphone et termes interdits refusés, prix très élevé en validation manuelle | collection-service |
@@ -65,8 +67,8 @@ Gravité = impact si le risque se réalise. Probabilité estimée pour un site d
 
 | Risque | Gravité | Probabilité | Mesure en place | Reste à faire |
 |---|---|---|---|---|
-| Vol de compte par mot de passe faible ou deviné | haute | moyenne | BCrypt, longueur minimale | limiter les tentatives de connexion |
-| Jeton volé ou falsifié | haute | faible | signature HS256, durée de 15 minutes | rotation de la clé, jeton de renouvellement |
+| Vol de compte par mot de passe faible ou deviné | haute | moyenne | Keycloak : hachage, blocage après 5 échecs | règles de mot de passe, double authentification |
+| Jeton volé ou falsifié | haute | faible | signature RS256 (clé privée seulement chez Keycloak), durée de 5 minutes, jeton en mémoire | HTTPS en production |
 | Lecture ou modification des annonces d'un autre | haute | faible | contrôle du propriétaire côté serveur, tests 401 et 403 | — |
 | Élévation de privilèges (devenir administrateur) | haute | faible | rôle porté par le jeton signé, aucune route publique pour le changer | journal des actions d'administration |
 | Échange de coordonnées hors plateforme | moyenne | haute | modération automatique | analyse des messages du futur chat |
@@ -88,7 +90,7 @@ Cette procédure est décrite mais n'a pas encore été exercée.
 5. **Rétablir** : redéployer, vérifier.
 6. **Documenter et améliorer** : ajouter une ligne au tableau de la partie 4 et un test qui empêche le retour.
 
-Cas particulier : **fuite d'un secret**. Changer immédiatement la valeur (`JWT_SECRET` invalide tous les jetons en circulation, `SONAR_TOKEN` se régénère dans SonarCloud), puis vérifier qu'elle n'apparaît plus dans l'historique du dépôt.
+Cas particulier : **fuite d'un secret**. Changer immédiatement la valeur (`SONAR_TOKEN` se régénère dans SonarCloud), puis vérifier qu'elle n'apparaît plus dans l'historique du dépôt.
 
 ## 7. Supervision
 

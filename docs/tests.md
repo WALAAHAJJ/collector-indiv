@@ -7,9 +7,9 @@ Ce document décrit les types de tests de Collector, leur rôle, leur place dans
 | Type | Objectif | Outils | Où | Nombre |
 |---|---|---|---|---|
 | Unitaires | Vérifier une règle isolée : modération, validation d'identifiants, catégories, session | JUnit 5, Vitest | `ModerationRulesTests`, `ModerationServiceTests`, `api.test.ts`, `auth.test.ts`, `categories.test.ts`, `useCategories.test.tsx`, `PhotoFormatTests`, `RabbitListingEventPublisherTests`, `ListingEventsTests`, `photoFile.test.ts` | inclus ci-dessous |
-| Composants (frontend) | Vérifier chaque écran comme le ferait un utilisateur : saisie, clics, messages d'erreur | Vitest, Testing Library, jsdom | `frontend/tests` | 191 au total côté frontend |
-| Intégration de l'API | Faire traverser à une vraie requête toute la pile : contrôleur, validation, sécurité, base | Spring Boot Test, MockMvc, base H2 en mémoire | `src/test/java` des trois services | 132 au total côté Java (13, 95 et 24) |
-| Sécurité applicative | Vérifier les accès : 401 sans jeton, 403 pour un utilisateur ordinaire sur les routes d'administration, propriétaire d'une annonce, compte administrateur | MockMvc avec de vrais jetons signés | `AdminAccessTests`, `OwnershipSecurityTests`, `AdminBootstrapTests`, `PhotoTests` | inclus ci-dessus |
+| Composants (frontend) | Vérifier chaque écran comme le ferait un utilisateur : saisie, clics, messages d'erreur | Vitest, Testing Library, jsdom | `frontend/tests` | 197 au total côté frontend |
+| Intégration de l'API | Faire traverser à une vraie requête toute la pile : contrôleur, validation, sécurité, base | Spring Boot Test, MockMvc, base H2 en mémoire | `src/test/java` des trois services | 140 au total côté Java (13, 99 et 28) |
+| Sécurité applicative | Vérifier les accès : 401 sans jeton, 403 pour un utilisateur ordinaire sur les routes d'administration, propriétaire d'une annonce, compte administrateur | MockMvc avec de vrais jetons signés (RS256, de la forme de ceux de Keycloak) | `AdminAccessTests`, `OwnershipSecurityTests`, `AdminBootstrapTests`, `PhotoTests` | inclus ci-dessus |
 | Analyse statique | Repérer les erreurs et mauvaises pratiques sans exécuter le code | ESLint, SonarCloud | CI | à chaque push |
 | Dépendances et configuration | Repérer les failles connues, les secrets oubliés et les erreurs Docker | Trivy | CI | à chaque push |
 | Couverture | Mesurer la part du code exécutée par les tests | JaCoCo (Java), v8 (frontend) | rapports de CI | à chaque push |
@@ -65,7 +65,7 @@ flowchart LR
 |---|---|---|
 | Charge et performance | Mesurer le temps de réponse du catalogue avec beaucoup d'annonces et d'utilisateurs | à faire |
 | De bout en bout dans un navigateur | Rejouer le parcours complet : inscription, dépôt, validation par l'administrateur, catalogue | à faire |
-| De contrat entre services | Garantir que le service des annonces comprend toujours le jeton émis par le service des comptes | à faire |
+| De contrat entre services | Garantir que les services comprennent toujours le jeton émis par Keycloak | à faire : démarrer Keycloak dans la CI |
 | De résilience | Vérifier le comportement du site quand un service est arrêté | à faire |
 | D'accessibilité automatisés | Détecter les défauts de contraste et de navigation au clavier à chaque push | à faire |
 
