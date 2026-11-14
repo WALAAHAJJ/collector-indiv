@@ -19,7 +19,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Catégories créées et supprimées par l'administrateur : API, liste publique, catégories par défaut, annonces limitées aux catégories existantes | Fait |
 | Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | Fait |
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
-| Intégration de RabbitMQ au site (événements d'annonces, notifications) | À faire |
+| Événements d'annonces publiés sur RabbitMQ (publiée, refusée, en attente de vérification) | Fait |
+| Notifications : service dédié, cloche dans le site | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
@@ -52,13 +53,13 @@ Prérequis : Docker, et Node.js pour le frontend. Java 21 n'est nécessaire que 
 
 ```bash
 cp .env.example .env            # puis adapter les valeurs si besoin
-docker compose up -d --build    # bases de données et deux services
+docker compose up -d --build    # bases de données, RabbitMQ et deux services
 cd frontend
 npm ci
 npm run dev                     # http://localhost:5173
 ```
 
-Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL).
+Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL), 5672 (RabbitMQ) et 15672 (interface de RabbitMQ, identifiants de `.env`).
 
 ### Compte administrateur
 
