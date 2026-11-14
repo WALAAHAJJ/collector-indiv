@@ -115,11 +115,12 @@ sequenceDiagram
 sequenceDiagram
     participant A as Service des annonces
     participant R as RabbitMQ (échange collector.events)
-    participant N as Service de notifications (réception à venir)
+    participant N as Service de notifications
     A->>A: Modère, ou l'administrateur décide
     A->>R: Publie listing.approved, listing.rejected ou listing.pending_review
     Note over A,R: En cas de panne de RabbitMQ, l'erreur est journalisée<br/>et la requête de l'utilisateur réussit quand même
-    R-->>N: Livre le message à la file du service de notifications
+    R-->>N: Livre le message à sa file « notification.listing-events »
+    N->>N: Crée une notification pour le vendeur, rédigée en français
 ```
 
 Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'annonce, le nouveau statut et le motif voyagent dans les en-têtes AMQP.
