@@ -15,7 +15,7 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import MyListings from "./MyListings";
 import { clearToken, getToken } from "./auth";
-import { catalogUrl } from "./api";
+import { catalogUrl, photoUrl } from "./api";
 import Modal from "./Modal";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
@@ -31,6 +31,7 @@ type ApiListing = {
   condition: string;
   price: number;
   shippingCost: number;
+  hasPhoto?: boolean;
 };
 
 type CatalogListing = {
@@ -107,7 +108,7 @@ function App() {
             condition:
               conditionLabels[item.condition.toLowerCase()] ?? item.condition,
             price: item.price,
-            image: "",
+            image: item.hasPhoto ? photoUrl(item.id) : "",
             shippingCost: item.shippingCost,
           };
         });
