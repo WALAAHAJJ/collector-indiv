@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -19,8 +20,12 @@ import java.util.UUID;
  * le statut et l'éventuel motif sont dans les en-têtes (voir le service des annonces).
  *
  * <p>Un message incomplet est journalisé puis abandonné : le renvoyer en boucle ne le réparerait pas.
+ *
+ * <p>L'écouteur n'existe que si {@code app.events.enabled} vaut {@code true} (valeur par défaut) :
+ * les tests le désactivent pour ne pas chercher de RabbitMQ, et appellent la méthode directement.
  */
 @Component
+@ConditionalOnProperty(name = "app.events.enabled", havingValue = "true", matchIfMissing = true)
 public class ListingEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ListingEventListener.class);

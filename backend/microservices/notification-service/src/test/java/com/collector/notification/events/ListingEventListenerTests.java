@@ -3,6 +3,7 @@ package com.collector.notification.events;
 import com.collector.notification.domain.Notification;
 import com.collector.notification.domain.NotificationType;
 import com.collector.notification.repository.NotificationRepository;
+import com.collector.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Message;
@@ -23,10 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ListingEventListenerTests {
 
     @Autowired
-    private ListingEventListener listener;
+    private NotificationService service;
 
     @Autowired
     private NotificationRepository repository;
+
+    private ListingEventListener listener;
 
     private final UUID owner = UUID.randomUUID();
     private final UUID listing = UUID.randomUUID();
@@ -34,6 +37,7 @@ class ListingEventListenerTests {
     @BeforeEach
     void cleanDatabase() {
         repository.deleteAll();
+        listener = new ListingEventListener(service);
     }
 
     private Message event(String name, String status, String reason) {

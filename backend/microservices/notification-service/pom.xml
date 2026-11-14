@@ -112,9 +112,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- Les tests ne se connectent pas à RabbitMQ : l'écoute des files est désactivée. -->
+                    <!-- Les tests ne se connectent pas à RabbitMQ : l'écouteur d'événements n'est pas créé. -->
                     <systemPropertyVariables>
-                        <spring.rabbitmq.listener.simple.auto-startup>false</spring.rabbitmq.listener.simple.auto-startup>
+                        <app.events.enabled>false</app.events.enabled>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
