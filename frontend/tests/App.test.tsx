@@ -1,27 +1,38 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
-import { getToken, setToken } from "../src/auth";
+import { clearToken, getToken, setToken } from "../src/auth";
 import {
   approvedListing,
   defaultCategories,
+  fakeToken,
   jsonResponse,
   mockFetch,
-  ownerId,
 } from "./helpers";
 
-const sessionUser = {
-  id: ownerId,
-  username: "walaa",
-  email: "walaa@example.com",
-  role: "USER",
-};
+const identity = vi.hoisted(() => ({
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+}));
+
+vi.mock("../src/identity", () => identity);
+
+beforeEach(() => {
+  identity.login.mockReset().mockResolvedValue(undefined);
+  identity.register.mockReset().mockResolvedValue(undefined);
+  identity.logout.mockReset().mockImplementation(() => {
+    clearToken();
+    return Promise.resolve();
+  });
+});
+
+const adminToken = () => fakeToken({ roles: ["default-roles-collector", "ADMIN"] });
 
 type Routes = {
   categories?: () => Response;
   catalog?: () => Response;
-  me?: () => Response;
   other?: (url: string, init?: RequestInit) => Response;
 };
 
@@ -33,10 +44,6 @@ function mockApi(routes: Routes = {}) {
 
     if (url === "/api/categories") {
       return routes.categories?.() ?? jsonResponse(defaultCategories);
-    }
-
-    if (url === "/api/auth/me") {
-      return routes.me?.() ?? jsonResponse(sessionUser);
     }
 
     return routes.other?.(url, init) ?? jsonResponse([]);
@@ -201,111 +208,76 @@ describe("App - compte", () => {
     await screen.findByRole("heading", { name: "Lot de timbres" });
   });
 
-  it("retrouve la session grâce au jeton conservé", async () => {
-    setToken("jeton-123");
+  it("reconnaît la personne grâce au jeton de Keycloak, sans interroger d’autre service", async () => {
+    setToken(fakeToken());
     const fetchMock = mockApi();
     render(<App />);
 
     expect(await screen.findByText("Bonjour, walaa")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Mes annonces" })).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith("/api/auth/me", {
-      headers: { Authorization: "Bearer jeton-123" },
-    });
+    expect(fetchMock.mock.calls.map(([url]) => url)).not.toContain("/api/auth/me");
   });
 
-  it("efface un jeton refusé par le serveur", async () => {
-    setToken("jeton-perime");
-    mockApi({ me: () => new Response(null, { status: 401 }) });
+  it("affiche l’identité dès que Keycloak fournit le jeton", async () => {
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    act(() => setToken(fakeToken()));
+
+    expect(await screen.findByText("Bonjour, walaa")).toBeInTheDocument();
+  });
+
+  it("repasse en visiteur quand le jeton disparaît", async () => {
+    setToken(fakeToken());
+    mockApi();
+    render(<App />);
+    await screen.findByText("Bonjour, walaa");
+
+    act(() => clearToken());
+
+    expect(screen.queryByText(/Bonjour/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Se connecter" })).toBeInTheDocument();
+  });
+
+  it("envoie vers Keycloak pour se connecter", async () => {
+    mockApi();
+    const user = userEvent.setup();
     render(<App />);
 
-    await waitFor(() => expect(getToken()).toBeNull());
-    expect(screen.queryByText(/Bonjour/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    expect(identity.login).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("reste utilisable quand la session ne peut pas être vérifiée", async () => {
-    setToken("jeton-123");
-    mockApi({ me: () => new Response(null, { status: 500 }) });
+  it("envoie vers Keycloak pour créer un compte", async () => {
+    mockApi();
+    const user = userEvent.setup();
     render(<App />);
 
-    expect(
-      await screen.findByRole("heading", { name: "Lot de timbres" }),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/Bonjour/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Créer un compte" }));
+
+    expect(identity.register).toHaveBeenCalledOnce();
   });
 
-  it("déconnecte l’utilisatrice", async () => {
-    setToken("jeton-123");
+  it("déconnecte la personne par Keycloak", async () => {
+    setToken(fakeToken());
     mockApi();
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(await screen.findByRole("button", { name: "Se déconnecter" }));
 
+    expect(identity.logout).toHaveBeenCalledOnce();
     expect(getToken()).toBeNull();
     expect(screen.getByRole("button", { name: "Se connecter" })).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Vous êtes déconnectée.");
-  });
-
-  it("connecte l’utilisatrice depuis la fenêtre de connexion", async () => {
-    mockApi({
-      other: (url) =>
-        url === "/api/auth/login"
-          ? jsonResponse({ accessToken: "jeton-neuf", user: sessionUser })
-          : jsonResponse([]),
-    });
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Se connecter" }));
-    const dialog = screen.getByRole("dialog");
-    await user.type(within(dialog).getByLabelText(/Nom d.utilisateur/), "walaa");
-    await user.type(within(dialog).getByLabelText("Mot de passe"), "motdepasse123");
-    await user.click(within(dialog).getByRole("button", { name: "Se connecter" }));
-
-    expect(await screen.findByText("Bonjour, walaa")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Bienvenue, walaa !");
-    expect(getToken()).toBe("jeton-neuf");
-  });
-
-  it("passe de l’inscription à la connexion une fois le compte créé", async () => {
-    mockApi({
-      other: (url) =>
-        url === "/api/auth/register" ? jsonResponse({}, 201) : jsonResponse([]),
-    });
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Créer un compte" }));
-    const dialog = screen.getByRole("dialog");
-    await user.type(within(dialog).getByLabelText(/Nom d.utilisateur/), "walaa");
-    await user.type(within(dialog).getByLabelText("Adresse e-mail"), "walaa@example.com");
-    await user.type(within(dialog).getByLabelText("Mot de passe"), "motdepasse123");
-    await user.click(within(dialog).getByRole("button", { name: "Créer mon compte" }));
-
-    expect(
-      await screen.findByRole("heading", { name: "Se connecter" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(/Compte créé/);
-  });
-
-  it("bascule de la connexion à l’inscription", async () => {
-    mockApi();
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Se connecter" }));
-    const dialog = screen.getByRole("dialog");
-    await user.click(within(dialog).getByRole("button", { name: "Créer un compte" }));
-
-    expect(
-      await screen.findByRole("heading", { name: "Créer un compte" }),
-    ).toBeInTheDocument();
   });
 });
 
 describe("App - espace vendeuse", () => {
   it("n’affiche pas le bouton d’administration à un compte ordinaire", async () => {
-    setToken("jeton-123");
+    setToken(fakeToken());
     mockApi();
     render(<App />);
 
@@ -315,9 +287,8 @@ describe("App - espace vendeuse", () => {
   });
 
   it("ouvre le panneau d’administration pour un administrateur", async () => {
-    setToken("jeton-admin");
+    setToken(adminToken());
     mockApi({
-      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
       other: () => jsonResponse([]),
     });
     const user = userEvent.setup();
@@ -335,10 +306,9 @@ describe("App - espace vendeuse", () => {
   });
 
   it("fait apparaître une catégorie créée par l’administrateur dans les filtres", async () => {
-    setToken("jeton-admin");
+    setToken(adminToken());
     let categories = [...defaultCategories];
     mockApi({
-      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
       categories: () => jsonResponse(categories),
       other: (url, init) => {
         if (url === "/api/admin/categories" && init?.method === "POST") {
@@ -373,9 +343,8 @@ describe("App - espace vendeuse", () => {
   });
 
   it("ferme le panneau d’administration à la déconnexion", async () => {
-    setToken("jeton-admin");
+    setToken(adminToken());
     mockApi({
-      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
       other: () => jsonResponse([]),
     });
     const user = userEvent.setup();
@@ -389,7 +358,7 @@ describe("App - espace vendeuse", () => {
   });
 
   it("ouvre la liste de mes annonces", async () => {
-    setToken("jeton-123");
+    setToken(fakeToken());
     mockApi({ other: () => jsonResponse([approvedListing]) });
     const user = userEvent.setup();
     render(<App />);
@@ -408,7 +377,7 @@ describe("App - espace vendeuse", () => {
   });
 
   it("dépose une annonce et confirme l’enregistrement", async () => {
-    setToken("jeton-123");
+    setToken(fakeToken());
     mockApi({
       other: (url, init) =>
         url === "/api/collectibles" && init?.method === "POST"
