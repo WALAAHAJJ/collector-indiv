@@ -1,16 +1,19 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { getToken } from "./auth";
 import type { Category } from "./categories";
 import Modal from "./Modal";
+import { uploadPhoto } from "./photoApi";
+import { PHOTO_TYPES, photoProblem, shrinkPhoto } from "./photoFile";
 
 type ListingFormProps = {
   ownerId: string;
   categories: Category[];
   onClose: () => void;
-  onSubmitted: () => void;
+  onSubmitted: (message?: string) => void;
 };
 
 type CreatedListing = {
+  id: string;
   status: "PENDING_REVIEW" | "APPROVED" | "REJECTED";
   moderationReason: string | null;
 };
@@ -29,6 +32,33 @@ export default function ListingForm({
   const [shippingCost, setShippingCost] = useState("0.00");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const photoRequest = useRef(0);
+
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const chosen = event.target.files?.[0];
+    const request = ++photoRequest.current;
+
+    setPhoto(null);
+    setPhotoError("");
+
+    if (!chosen) return;
+
+    const prepared = await shrinkPhoto(chosen);
+
+    // Un choix plus récent a pris la place de celui-ci pendant la réduction.
+    if (request !== photoRequest.current) return;
+
+    const problem = photoProblem(prepared);
+
+    if (problem) {
+      setPhotoError(problem);
+      return;
+    }
+
+    setPhoto(prepared);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,6 +98,20 @@ export default function ListingForm({
           created.moderationReason ??
             "Votre annonce a été refusée par la modération automatique.",
         );
+      }
+
+      if (photo) {
+        try {
+          await uploadPhoto(created.id, photo);
+        } catch (photoRequestError) {
+          const reason =
+            photoRequestError instanceof Error ? photoRequestError.message : "";
+
+          onSubmitted(
+            `Annonce enregistrée, mais la photo n’a pas été envoyée. ${reason} Vous pourrez l’ajouter depuis « Mes annonces ».`,
+          );
+          return;
+        }
       }
 
       onSubmitted();
@@ -174,6 +218,21 @@ export default function ListingForm({
             onChange={(event) => setShippingCost(event.target.value)}
           />
         </label>
+
+        <label>
+          Photo (facultative)
+          <input
+            type="file"
+            accept={PHOTO_TYPES.join(",")}
+            onChange={handlePhotoChange}
+          />
+        </label>
+
+        {photoError && (
+          <p className="auth-error" role="alert">
+            {photoError}
+          </p>
+        )}
 
         {error && (
           <p className="auth-error" role="alert">

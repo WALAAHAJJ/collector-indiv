@@ -446,10 +446,11 @@ function App() {
           ownerId={sessionUser.id}
           categories={apiCategories}
           onClose={() => setShowListingForm(false)}
-          onSubmitted={() => {
+          onSubmitted={(message) => {
             setShowListingForm(false);
             setRegistrationMessage(
-              "Annonce enregistrée. Elle apparaît dans le catalogue une fois approuvée.",
+              message ??
+                "Annonce enregistrée. Elle apparaît dans le catalogue une fois approuvée.",
             );
           }}
         />

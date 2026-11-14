@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { setToken } from "../src/auth";
@@ -151,5 +151,77 @@ describe("ListingForm", () => {
 
     expect(options).toEqual(["Vinyles", "Monnaies"]);
     expect(screen.getByLabelText("Catégorie")).toHaveValue("Vinyles");
+  });
+
+  describe("photo", () => {
+    const created = { ...approvedListing, id: "44444444-4444-4444-8444-444444444444" };
+
+    function choosePhoto(file: File) {
+      fireEvent.change(screen.getByLabelText("Photo (facultative)"), {
+        target: { files: [file] },
+      });
+    }
+
+    it("envoie la photo après la création de l’annonce", async () => {
+      setToken("jeton-123");
+      const fetchMock = mockFetch(() => jsonResponse(created, 201));
+      const { onSubmitted, user } = setup();
+
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+      await fillAndSubmit(user);
+
+      await waitFor(() => expect(onSubmitted).toHaveBeenCalledOnce());
+      expect(onSubmitted).toHaveBeenCalledWith();
+      const [url, init] = fetchMock.mock.calls[1];
+      expect(url).toBe(`/api/collectibles/${created.id}/photo`);
+      expect(init?.method).toBe("POST");
+      expect((init?.body as FormData).get("file")).toBeInstanceOf(File);
+    });
+
+    it("n’appelle pas l’envoi de photo quand aucune n’est choisie", async () => {
+      const fetchMock = mockFetch(() => jsonResponse(created, 201));
+      const { user } = setup();
+
+      await fillAndSubmit(user);
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    });
+
+    it("refuse un format non pris en charge", async () => {
+      mockFetch(() => jsonResponse(created, 201));
+      setup();
+
+      choosePhoto(new File([new Uint8Array(10)], "a.gif", { type: "image/gif" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("Format non pris en charge");
+    });
+
+    it("oublie la photo quand on en retire le choix", async () => {
+      const fetchMock = mockFetch(() => jsonResponse(created, 201));
+      const { user } = setup();
+
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      fireEvent.change(screen.getByLabelText("Photo (facultative)"), {
+        target: { files: [] },
+      });
+      await fillAndSubmit(user);
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    });
+
+    it("prévient quand la photo n’a pas pu être envoyée mais garde l’annonce", async () => {
+      mockFetch((url) =>
+        url.endsWith("/photo") ? jsonResponse({}, 413) : jsonResponse(created, 201),
+      );
+      const { onSubmitted, user } = setup();
+
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      await fillAndSubmit(user);
+
+      await waitFor(() => expect(onSubmitted).toHaveBeenCalledOnce());
+      expect(onSubmitted.mock.calls[0][0]).toContain("la photo n’a pas été envoyée");
+      expect(onSubmitted.mock.calls[0][0]).toContain("dépasse 1 Mo");
+    });
   });
 });
