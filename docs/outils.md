@@ -63,6 +63,8 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 | actions/checkout, setup-java, setup-node, upload-artifact | v7, v6, v7, v7 | Étapes standard : récupérer le code, installer Java et Node, conserver les rapports. | `ci.yml` |
 | SonarSource/sonarqube-scan-action | 8.4.1 | Envoie l'analyse à SonarCloud depuis la CI. | `ci.yml` |
 
+L'étape Sonar est sautée pour les PR de Dependabot, qui n'ont pas accès aux secrets du dépôt (`if: github.actor != 'dependabot[bot]'`).
+
 La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service, et scan de sécurité.
 
 ## 5. Conteneurs
