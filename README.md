@@ -108,6 +108,7 @@ cd frontend && npm run test:coverage && npm run lint && npm run build
 
 - Java : JUnit et MockMvc, couverture JaCoCo.
 - Frontend : Vitest et Testing Library, couverture v8.
+- Les analyses Sonar lancées par Dependabot sont ignorées : ses PR n'ont pas accès au secret `SONAR_TOKEN`, l'étape échouerait sans rapport avec le code.
 - SonarCloud analyse le code et les couvertures ; le Quality Gate impose une couverture d'au moins 80 % sur le code nouveau et les notes A en fiabilité, sécurité et maintenabilité.
 
 ## Intégration continue
