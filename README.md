@@ -156,6 +156,3 @@ demos/messaging                           démonstration comparative RabbitMQ et
 - [Politique de sécurité](docs/securite.md) : inventaire, mesures en place, analyse des risques, gestion des incidents et améliorations déjà réalisées.
 - [Signalement d'une vulnérabilité](SECURITY.md) : comment signaler une faille de façon privée.
 
-## Auteure
-
-Walaa EL HAJJ, dans le cadre de l'évaluation individuelle du bloc.
