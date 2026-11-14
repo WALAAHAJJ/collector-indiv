@@ -8,8 +8,11 @@ import java.util.Optional;
  */
 public final class PhotoFormat {
 
-    /** Taille maximale d'une photo : 2 Mo. */
-    public static final int MAX_BYTES = 2 * 1024 * 1024;
+    /**
+     * Taille maximale d'une photo : 1 Mo. Cette limite tient dans une colonne binaire
+     * classique (PostgreSQL, H2) ; le site réduit les grandes photos avant l'envoi.
+     */
+    public static final int MAX_BYTES = 1024 * 1024;
 
     private static final byte[] JPEG = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
     private static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};

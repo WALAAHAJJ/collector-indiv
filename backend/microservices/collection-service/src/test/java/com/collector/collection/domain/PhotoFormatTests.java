@@ -64,7 +64,7 @@ class PhotoFormatTests {
     }
 
     @Test
-    void limitsPhotosToTwoMegabytes() {
-        assertEquals(2_097_152, PhotoFormat.MAX_BYTES);
+    void limitsPhotosToOneMegabyte() {
+        assertEquals(1_048_576, PhotoFormat.MAX_BYTES);
     }
 }
