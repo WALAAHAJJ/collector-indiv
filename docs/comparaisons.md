@@ -57,3 +57,37 @@ Les mêmes cinq scénarios ont été exécutés sur les deux brokers, sur une m�
 **Kafka reste le candidat pour l'analyse des ventes** demandée à la direction : conserver tous les événements et pouvoir les rejouer (scénario 4) est précisément son atout. On pourra l'ajouter plus tard sans changer le reste, puisque les services ne communiquent que par événements.
 
 Limites de cette comparaison : volumes très faibles, un seul nœud par broker, une seule machine. Elle montre des comportements, pas des performances de production.
+
+
+## Authentification : solution maison, Keycloak ou Authentik
+
+Le site doit identifier les personnes (acheteurs, vendeurs, administrateurs) sans jamais exposer leurs mots de passe. Trois options ont été étudiées. Le projet a d'abord utilisé la première, puis est passé à la deuxième.
+
+| Critère | Solution maison (ancien user-service) | Keycloak | Authentik |
+|---|---|---|---|
+| Standards | Jeton maison, aucun standard d'identité | OpenID Connect, OAuth 2.0, SAML | OpenID Connect, OAuth 2.0, SAML |
+| Connexion unique (SSO) | Non | Oui | Oui |
+| Mots de passe | Hachés par le projet (BCrypt), saisis sur le site | Saisis et hachés par Keycloak, jamais vus par le site | Idem |
+| Protection contre les essais répétés, politique de mot de passe, double authentification | À écrire et à maintenir | Fournies par configuration | Fournies par configuration |
+| Compte administrateur et rôles | Code du projet | Rôles du realm, importés depuis un fichier versionné | Groupes et politiques |
+| Clés de signature | Un secret partagé entre services (HS256) | Paire de clés : les services ne connaissent que la clé publique (RS256) | Idem |
+| Maturité et écosystème | Aucune | Très répandu en entreprise, projet de la CNCF, très documenté | Plus récent, interface moderne, communauté plus petite |
+| Charge d'exploitation | Aucune de plus, mais toute la sécurité à la charge du projet | Un conteneur et sa base | Plusieurs conteneurs (serveur, worker) et une base |
+| Intégration Spring Boot | Code maison | Resource server standard (`jwk-set-uri`) | Resource server standard |
+
+### Choix : Keycloak
+
+- **Ne pas écrire sa propre sécurité** : stocker des mots de passe, limiter les essais, renouveler les jetons sont des fonctions où une erreur de détail devient une faille. Keycloak est éprouvé et mis à jour par une large communauté.
+- **Standards** : OpenID Connect avec code d'autorisation et PKCE (S256), c'est la méthode recommandée pour une application web publique. Le site ne manipule jamais de mot de passe.
+- **Réduction de la surface d'attaque** : plus de secret partagé entre services ; chaque service vérifie la signature avec la clé publique, ce qui permet d'ajouter des services sans leur confier de secret.
+- **Reproductible** : la configuration est un fichier versionné (`keycloak/realm-collector.json`), importé au démarrage ; aucun mot de passe n'est écrit dans le dépôt.
+- **Authentik** aurait convenu techniquement. Keycloak a été préféré pour sa maturité, sa documentation abondante et son empreinte plus simple à faire tourner en local.
+
+Limites assumées : Keycloak est un composant lourd (environ 1 Go de mémoire) et son mode `start-dev` utilisé ici n'est pas destiné à la production (HTTPS, hôte public et base dédiée seraient à configurer).
+
+### Questions probables du jury
+
+- *Pourquoi ne pas avoir gardé la connexion maison ?* Elle fonctionnait, mais la sécurité des comptes aurait reposé entièrement sur du code écrit par une seule personne ; un serveur d'identité apporte standards, protections et maintenance.
+- *Que se passe-t-il si un jeton est volé ?* Il expire en 5 minutes, il est gardé en mémoire (pas dans le stockage du navigateur) et le renouvellement est à usage unique (rotation) : un jeton de renouvellement rejoué est refusé.
+- *Comment un service sait-il que le jeton est authentique ?* Il vérifie la signature RS256 avec la clé publique de Keycloak, l'émetteur et la date d'expiration.
+- *Comment devient-on administrateur ?* Uniquement par le compte créé au démarrage depuis `.env` ou par un administrateur dans Keycloak ; l'inscription publique ne donne jamais ce rôle.

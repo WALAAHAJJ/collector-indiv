@@ -36,8 +36,7 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 | Spring Data JPA et Hibernate | via Spring Boot | Lit et écrit les entités sans écrire de SQL à la main. | `domain/` et `repository/` |
 | H2 | via Spring Boot | Base en mémoire utilisée uniquement par les tests. | dépendance de test |
 | Bean Validation | via Spring Boot | Valide les formulaires côté serveur (prix positif, champs obligatoires). | DTO des services |
-| Spring Security | via Spring Boot | Protège les routes et ne laisse publiques que l'inscription, la connexion et le catalogue. | `SecurityConfig` |
-| BCrypt | via Spring Security | Hache les mots de passe : ils ne sont jamais stockés en clair. | `user-service` |
+| Spring Security | via Spring Boot | Protège les routes et ne laisse publics que le catalogue, les catégories et les photos approuvées. | `SecurityConfig` |
 | JWT (Nimbus, resource server) | via Spring Security | Vérifie les jetons RS256 de Keycloak (clés publiques, émetteur, expiration) et lit les rôles du realm. | collection-service, notification-service |
 | keycloak-js | 26.2.5 | Bibliothèque officielle de Keycloak pour le site : redirection de connexion (PKCE), session silencieuse, renouvellement du jeton. | `frontend/src/identity.ts` |
 | Spring Boot Actuator | via Spring Boot | Expose la route de santé des services. | `/actuator/health` |
@@ -66,7 +65,7 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 
 L'étape Sonar est sautée pour les PR de Dependabot, qui n'ont pas accès aux secrets du dépôt (`if: github.actor != 'dependabot[bot]'`).
 
-La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service, et scan de sécurité.
+La CI compte trois jobs : frontend, collection-service avec Sonar, et scan de sécurité.
 
 ## 5. Conteneurs
 

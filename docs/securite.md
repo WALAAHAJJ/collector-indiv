@@ -9,10 +9,10 @@ Collector manipule des comptes, des échanges entre particuliers et, à terme, d
 | Composant | Technologie | Rôle | Données sensibles |
 |---|---|---|---|
 | Keycloak | image `quay.io/keycloak/keycloak:26.8.1`, port 8180 | Comptes, connexion, rôles, jetons | e-mails, mots de passe hachés |
-| user-service | Java 21, Spring Boot 4.1.2, port 8082 | Ancienne connexion maison (retrait prévu) | anciens comptes de développement |
+| notification-service | Java 21, Spring Boot 4.1.2, port 8083 | Notifications des utilisateurs | notifications personnelles |
 | collection-service | Java 21, Spring Boot 4.1.2, port 8081 | Annonces, modération, back-office | annonces, identifiants de vendeurs |
 | frontend | React 19, Vite 8, port 5173 | Site | aucune (jeton gardé en mémoire, jamais dans le stockage du navigateur) |
-| base des comptes | PostgreSQL 17, port 5434 | Stockage du user-service | comptes |
+| base de Keycloak | PostgreSQL 17, port 5434 | Stockage des comptes de Keycloak | comptes, mots de passe hachés |
 | base des annonces | PostgreSQL 17, port 5433 | Stockage du collection-service | annonces |
 | intégration continue | GitHub Actions | Tests, analyses, build | secret `SONAR_TOKEN` |
 | analyse de qualité | SonarCloud | Qualité et sécurité du code | aucune |
@@ -26,7 +26,7 @@ Chaque nouveau composant (broker de messages, orchestrateur, base de supervision
 | Domaine | Mesure | Où |
 |---|---|---|
 | Mots de passe | Saisis sur la page de Keycloak, jamais vus par le site ni par les services ; hachés par Keycloak | Keycloak |
-| Authentification | SSO par Keycloak : code d'autorisation avec PKCE (S256), pas de flux par mot de passe côté site ; jeton JWT signé RS256, valable 5 minutes, renouvelé par le site ; protection contre les essais répétés (blocage après 5 échecs) | Keycloak, site |
+| Authentification | SSO par Keycloak (choix justifié dans `docs/comparaisons.md`) : code d'autorisation avec PKCE (S256), pas de flux par mot de passe côté site ; jeton JWT signé RS256, valable 5 minutes, renouvelé par le site ; protection contre les essais répétés (blocage après 5 échecs) ; mot de passe d'au moins 8 caractères, différent du nom et de l'e-mail, 3 derniers refusés ; renouvellement à usage unique (rotation) ; journal des connexions activé | Keycloak, site |
 | Vérification des jetons | Signature (clés publiques de Keycloak), émetteur, expiration ; aucun secret partagé entre les services | collection-service, notification-service |
 | Autorisation | Seul le catalogue est public ; le propriétaire d'une annonce vient du jeton, jamais du formulaire ; routes `/api/admin` réservées au rôle `ADMIN` | collection-service |
 | Compte administrateur | Créé dans Keycloak au premier démarrage depuis des variables d'environnement, sans mot de passe par défaut ; l'inscription publique ne donne jamais le rôle `ADMIN` | Keycloak |

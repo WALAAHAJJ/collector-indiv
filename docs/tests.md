@@ -7,8 +7,8 @@ Ce document décrit les types de tests de Collector, leur rôle, leur place dans
 | Type | Objectif | Outils | Où | Nombre |
 |---|---|---|---|---|
 | Unitaires | Vérifier une règle isolée : modération, validation d'identifiants, catégories, session | JUnit 5, Vitest | `ModerationRulesTests`, `ModerationServiceTests`, `api.test.ts`, `auth.test.ts`, `categories.test.ts`, `useCategories.test.tsx`, `PhotoFormatTests`, `RabbitListingEventPublisherTests`, `ListingEventsTests`, `photoFile.test.ts` | inclus ci-dessous |
-| Composants (frontend) | Vérifier chaque écran comme le ferait un utilisateur : saisie, clics, messages d'erreur | Vitest, Testing Library, jsdom | `frontend/tests` | 197 au total côté frontend |
-| Intégration de l'API | Faire traverser à une vraie requête toute la pile : contrôleur, validation, sécurité, base | Spring Boot Test, MockMvc, base H2 en mémoire | `src/test/java` des trois services | 140 au total côté Java (13, 99 et 28) |
+| Composants (frontend) | Vérifier chaque écran comme le ferait un utilisateur : saisie, clics, messages d'erreur | Vitest, Testing Library, jsdom | `frontend/tests` | 198 au total côté frontend |
+| Intégration de l'API | Faire traverser à une vraie requête toute la pile : contrôleur, validation, sécurité, base | Spring Boot Test, MockMvc, base H2 en mémoire | `src/test/java` des deux services | 127 au total côté Java (99 pour collection-service, 28 pour notification-service) |
 | Sécurité applicative | Vérifier les accès : 401 sans jeton, 403 pour un utilisateur ordinaire sur les routes d'administration, propriétaire d'une annonce, compte administrateur | MockMvc avec de vrais jetons signés (RS256, de la forme de ceux de Keycloak) | `AdminAccessTests`, `OwnershipSecurityTests`, `AdminBootstrapTests`, `PhotoTests` | inclus ci-dessus |
 | Analyse statique | Repérer les erreurs et mauvaises pratiques sans exécuter le code | ESLint, SonarCloud | CI | à chaque push |
 | Dépendances et configuration | Repérer les failles connues, les secrets oubliés et les erreurs Docker | Trivy | CI | à chaque push |
@@ -33,11 +33,6 @@ flowchart LR
     subgraph cs["Job collection-service"]
         direction LR
         c1["Tests Java et JaCoCo"] --> c2["Tests frontend et couverture"] --> c3["Analyse SonarCloud"] --> c4["Build de l'image Docker"]
-    end
-
-    subgraph us["Job user-service"]
-        direction LR
-        u1["Tests Java et JaCoCo"] --> u2["Build de l'image Docker"]
     end
 
     subgraph sec["Job sécurité"]
@@ -81,7 +76,7 @@ flowchart LR
 
 ```bash
 # Services Java
-cd backend/microservices/user-service && ./mvnw -B verify
+cd backend/microservices/notification-service && ./mvnw -B verify
 cd backend/microservices/collection-service && ./mvnw -B verify
 
 # Frontend
