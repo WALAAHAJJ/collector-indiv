@@ -4,12 +4,11 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.crypto.SecretKey;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -25,13 +24,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestJwtConfig.class)
 class AdminCategoryTests {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private SecretKey secretKey;
 
     @Test
     void adminCreatesACategoryVisibleToEveryone() throws Exception {
@@ -154,11 +151,11 @@ class AdminCategoryTests {
     }
 
     private String admin() {
-        return TestTokens.bearer(secretKey, UUID.randomUUID(), "ADMIN");
+        return TestTokens.bearer(UUID.randomUUID(), "ADMIN");
     }
 
     private String user() {
-        return TestTokens.bearer(secretKey, UUID.randomUUID(), "USER");
+        return TestTokens.bearer(UUID.randomUUID(), "USER");
     }
 
     private String extractId(MvcResult result) throws Exception {
