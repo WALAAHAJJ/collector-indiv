@@ -65,3 +65,7 @@ export function adminCategoryUrl(id?: string): string {
     ? `/api/admin/categories/${encodeURIComponent(assertUuid(id))}`
     : "/api/admin/categories";
 }
+
+export function photoUrl(listingId: string): string {
+  return `/api/collectibles/${encodeURIComponent(assertUuid(listingId))}/photo`;
+}
