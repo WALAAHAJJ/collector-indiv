@@ -38,7 +38,8 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 | Bean Validation | via Spring Boot | Valide les formulaires côté serveur (prix positif, champs obligatoires). | DTO des services |
 | Spring Security | via Spring Boot | Protège les routes et ne laisse publiques que l'inscription, la connexion et le catalogue. | `SecurityConfig` |
 | BCrypt | via Spring Security | Hache les mots de passe : ils ne sont jamais stockés en clair. | `user-service` |
-| JWT (Nimbus, resource server) | via Spring Security | Jeton signé HS256 de 15 minutes émis par le user-service et vérifié par le collection-service. | les deux services |
+| JWT (Nimbus, resource server) | via Spring Security | Vérifie les jetons RS256 de Keycloak (clés publiques, émetteur, expiration) et lit les rôles du realm. | collection-service, notification-service |
+| keycloak-js | 26.2.5 | Bibliothèque officielle de Keycloak pour le site : redirection de connexion (PKCE), session silencieuse, renouvellement du jeton. | `frontend/src/identity.ts` |
 | Spring Boot Actuator | via Spring Boot | Expose la route de santé des services. | `/actuator/health` |
 
 ## 3. Tests et qualité du code
@@ -86,7 +87,7 @@ La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service
 | Trivy | 0.70.0 | Cherche des failles dans les dépendances, des secrets oubliés et des erreurs de configuration. Fait échouer la CI sur une faille haute ou critique. | job « Scan de sécurité » |
 | Dependabot | service GitHub | Propose chaque semaine des mises à jour des dépendances Maven, npm, Docker et Actions. | `.github/dependabot.yml` |
 | Secrets GitHub | service GitHub | Garde le jeton Sonar hors du code. | réglages du dépôt |
-| Fichier `.env` non versionné | — | Garde mots de passe et clé JWT hors du dépôt ; `.env.example` documente les variables. | racine du dépôt |
+| Fichier `.env` non versionné | — | Garde les mots de passe hors du dépôt ; `.env.example` documente les variables. | racine du dépôt |
 
 ## 7. Gestion du code et du travail
 

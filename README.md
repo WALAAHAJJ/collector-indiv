@@ -8,7 +8,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 
 | Fonctionnalité | État |
 |---|---|
-| Inscription, connexion, session par jeton JWT | Fait |
+| Inscription, connexion et session par Keycloak (SSO : code d'autorisation avec PKCE, jeton en mémoire) | Fait |
 | Catalogue public avec recherche et filtre par catégorie | Fait |
 | Dépôt, modification et suppression d'annonces (prix, frais de port, état) | Fait |
 | Modération automatique des annonces | Fait |
@@ -23,7 +23,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Service de notifications : API des notifications de chaque utilisateur (liste, non lues, marquage comme lue) | Fait |
 | Service de notifications : réception des événements RabbitMQ, une notification par décision sur une annonce | Fait |
 | Keycloak dans Docker Compose (serveur d'identité, realm `collector` importé) | Fait |
-| Authentification par Keycloak : services, site, retrait de la connexion maison | À faire |
+| Authentification par Keycloak : les services vérifient les jetons (clés publiques RS256) et le site se connecte par Keycloak | Fait |
+| Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | À faire |
 | Notifications : service dans Docker Compose et la CI, cloche dans le site | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
@@ -36,17 +37,18 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
 ```
  Navigateur
      │
- Frontend React (Vite, port 5173)
-     │  /api/auth/*          /api/collectibles/*
-     ▼                        ▼
- user-service (8082)     collection-service (8081)
-     │                        │
- PostgreSQL (5434)       PostgreSQL (5433)
-     └── jetons JWT HS256 signés par user-service, vérifiés par collection-service
+ Frontend React (Vite, port 5173) ──── connexion ───▶ Keycloak (8180)
+     │  /api/collectibles/*                              │ jeton RS256
+     ▼                                                   │ (clés publiques)
+ collection-service (8081) ◀─────────────────────────────┘
+     │
+ PostgreSQL (5433)       notification-service : même vérification du jeton
+ user-service (8082) : ancienne connexion maison, remplacée par Keycloak (retrait prévu)
 ```
 
-- **user-service** : comptes, mots de passe hachés avec BCrypt, émission des jetons JWT (15 minutes, rôle `USER` ou `ADMIN` dans le jeton). Le compte administrateur est créé au démarrage à partir des variables d'environnement.
-- **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton et prend le propriétaire dans le jeton, jamais dans le formulaire.
+- **Keycloak** : serveur d'identité (comptes, connexion, inscription, rôles, jetons de 5 minutes signés RS256). Le site n'a jamais le mot de passe : la personne le saisit sur la page de Keycloak. Le compte administrateur du site est créé dans Keycloak au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD`.
+- **user-service** : ancienne connexion maison (comptes BCrypt, jetons HS256), plus utilisée par le site ; elle sera retirée à la prochaine livraison.
+- **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton de Keycloak avec ses clés publiques, puis prend le propriétaire (`sub`) et le rôle (`realm_access.roles`) dans le jeton, jamais dans le formulaire.
 - **notification-service** (pas encore dans Docker Compose ; il y aura le port 8083) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
 - **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/auth` vers le user-service et `/api/collectibles` vers le collection-service.
 
@@ -68,15 +70,13 @@ Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (ba
 
 ### Compte administrateur
 
-Le user-service crée un compte administrateur au démarrage si `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` (8 caractères minimum) sont renseignés dans le fichier `.env`. Sans mot de passe, aucun compte n'est créé. Un compte existant n'est jamais modifié, et l'inscription publique ne donne jamais le rôle administrateur.
+Keycloak crée le compte administrateur du site au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` du fichier `.env` (les trois sont obligatoires). Si le compte existe déjà, la configuration n'est pas relue : pour la reprendre, supprimer le volume `collector-indiv_keycloak-db-data`. L'inscription publique ne donne jamais le rôle administrateur. La console de Keycloak est sur `http://localhost:8180` (compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
 
 ## API
 
 | Route | Accès | Rôle |
 |---|---|---|
-| `POST /api/auth/register` | public | Créer un compte |
-| `POST /api/auth/login` | public | Se connecter, reçoit un jeton |
-| `GET /api/auth/me` | jeton | Compte courant |
+| `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` | — | Ancienne connexion du user-service, remplacée par Keycloak (retrait prévu) |
 | `GET /api/categories` | public | Liste des catégories, avec leur illustration |
 | `GET /api/collectibles/catalog?category=&search=` | public | Annonces approuvées |
 | `POST /api/collectibles` | jeton | Déposer une annonce |
