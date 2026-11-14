@@ -19,8 +19,9 @@ import { catalogUrl } from "./api";
 import Modal from "./Modal";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
-import ObjectArt, { type ArtKind } from "./ObjectArt";
-import { categoryLabels, visualForLabel } from "./categories";
+import ObjectArt from "./ObjectArt";
+import { visualForLabel, type CategoryVisual } from "./categories";
+import { useCategories } from "./useCategories";
 
 type ApiListing = {
   id: string;
@@ -32,7 +33,7 @@ type ApiListing = {
   shippingCost: number;
 };
 
-type Listing = {
+type CatalogListing = {
   id: string;
   title: string;
   description: string;
@@ -41,9 +42,9 @@ type Listing = {
   price: number;
   image: string;
   shippingCost: number;
-  art: ArtKind;
-  tone: string;
 };
+
+type Listing = CatalogListing & CategoryVisual;
 
 type SessionUser = {
   id: string;
@@ -59,14 +60,14 @@ const conditionLabels: Record<string, string> = {
   used: "État d’usage",
 };
 
-const categories = ["Tout", ...Object.values(categoryLabels)];
-
 function formatEuros(value: number): string {
   return `${value.toFixed(2).replace(".", ",")} €`;
 }
 
 function App() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const { categories: apiCategories } = useCategories();
+  const categories = ["Tout", ...apiCategories.map((item) => item.name)];
+  const [listings, setListings] = useState<CatalogListing[]>([]);
   const [category, setCategory] = useState("Tout");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -83,10 +84,7 @@ function App() {
   useEffect(() => {
     let cancelled = false;
 
-    const url = catalogUrl(
-      categories.includes(category) && category !== "Tout" ? category : "",
-      search.trim(),
-    );
+    const url = catalogUrl(category === "Tout" ? "" : category, search.trim());
 
     fetch(url)
       .then(async (response) => {
@@ -110,7 +108,6 @@ function App() {
             price: item.price,
             image: "",
             shippingCost: item.shippingCost,
-            ...visualForLabel(item.category),
           };
         });
 
@@ -167,14 +164,20 @@ function App() {
     };
   }, []);
 
-  const filteredListings = listings.filter((item) => {
-    const matchesCategory = category === "Tout" || item.category === category;
-    const matchesSearch = item.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  const filteredListings = listings
+    .map((item) => ({
+      ...item,
+      ...visualForLabel(item.category, apiCategories),
+    }))
+    .filter((item) => {
+      const matchesCategory =
+        category === "Tout" || item.category === category;
+      const matchesSearch = item.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    return matchesCategory && matchesSearch;
-  });
+      return matchesCategory && matchesSearch;
+    });
 
   function handleSearchChange(value: string) {
     if (value !== search) {
@@ -427,6 +430,7 @@ function App() {
       {showListingForm && sessionUser && (
         <ListingForm
           ownerId={sessionUser.id}
+          categories={apiCategories}
           onClose={() => setShowListingForm(false)}
           onSubmitted={() => {
             setShowListingForm(false);
@@ -444,6 +448,7 @@ function App() {
       {showMyListings && sessionUser && (
         <MyListings
           ownerId={sessionUser.id}
+          categories={apiCategories}
           onClose={() => setShowMyListings(false)}
         />
       )}

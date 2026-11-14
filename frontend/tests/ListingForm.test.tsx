@@ -3,14 +3,25 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { setToken } from "../src/auth";
 import ListingForm from "../src/ListingForm";
-import { approvedListing, jsonResponse, mockFetch, ownerId } from "./helpers";
+import {
+  approvedListing,
+  defaultCategories,
+  jsonResponse,
+  mockFetch,
+  ownerId,
+} from "./helpers";
 
-function setup() {
+function setup(categories = defaultCategories) {
   const onClose = vi.fn();
   const onSubmitted = vi.fn();
 
   render(
-    <ListingForm ownerId={ownerId} onClose={onClose} onSubmitted={onSubmitted} />,
+    <ListingForm
+      ownerId={ownerId}
+      categories={categories}
+      onClose={onClose}
+      onSubmitted={onSubmitted}
+    />,
   );
 
   return { onClose, onSubmitted, user: userEvent.setup() };
@@ -125,5 +136,20 @@ describe("ListingForm", () => {
     await user.click(screen.getByRole("button", { name: "Fermer" }));
 
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("propose les catégories reçues de l’API", () => {
+    setup([
+      { id: "a", name: "Vinyles", art: "OTHER" },
+      { id: "b", name: "Monnaies", art: "COINS" },
+    ]);
+
+    const options = screen
+      .getAllByRole("option")
+      .map((option) => option.textContent)
+      .filter((text) => ["Vinyles", "Monnaies", "Timbres"].includes(text ?? ""));
+
+    expect(options).toEqual(["Vinyles", "Monnaies"]);
+    expect(screen.getByLabelText("Catégorie")).toHaveValue("Vinyles");
   });
 });

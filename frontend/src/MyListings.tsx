@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken } from "./auth";
 import { collectibleUrl, myCollectiblesUrl } from "./api";
-import { visualForLabel } from "./categories";
+import { visualForLabel, type Category } from "./categories";
 import { statusLabels, type ListingStatus } from "./listingStatus";
 import ObjectArt from "./ObjectArt";
 import Modal from "./Modal";
@@ -29,6 +29,7 @@ type EditForm = {
 
 type MyListingsProps = {
   ownerId: string;
+  categories: Category[];
   onClose: () => void;
 };
 
@@ -50,7 +51,11 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export default function MyListings({ ownerId, onClose }: Readonly<MyListingsProps>) {
+export default function MyListings({
+  ownerId,
+  categories,
+  onClose,
+}: Readonly<MyListingsProps>) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -185,11 +190,11 @@ export default function MyListings({ ownerId, onClose }: Readonly<MyListingsProp
           {listings.map((listing) => (
             <article className="my-listing-card" key={listing.id}>
               <div
-                  className={`my-listing-placeholder ${visualForLabel(listing.category).tone}`}
+                  className={`my-listing-placeholder ${visualForLabel(listing.category, categories).tone}`}
                   aria-hidden="true"
                 >
                   <ObjectArt
-                    kind={visualForLabel(listing.category).art}
+                    kind={visualForLabel(listing.category, categories).art}
                     size={96}
                   />
                 </div>
@@ -262,10 +267,11 @@ export default function MyListings({ ownerId, onClose }: Readonly<MyListingsProp
                           })
                         }
                       >
-                        <option value="Cartes postales">Cartes postales</option>
-                        <option value="Pièces">Pièces</option>
-                        <option value="Timbres">Timbres</option>
-                        <option value="Autres objets">Autres objets</option>
+                        {categories.map((item) => (
+                          <option key={item.name} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
                       </select>
                     </label>
 

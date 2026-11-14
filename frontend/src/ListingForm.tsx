@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { getToken } from "./auth";
+import type { Category } from "./categories";
 import Modal from "./Modal";
 
 type ListingFormProps = {
   ownerId: string;
+  categories: Category[];
   onClose: () => void;
   onSubmitted: () => void;
 };
@@ -15,12 +17,13 @@ type CreatedListing = {
 
 export default function ListingForm({
   ownerId,
+  categories,
   onClose,
   onSubmitted,
 }: Readonly<ListingFormProps>) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Cartes postales");
+  const [category, setCategory] = useState(categories[0]?.name ?? "");
   const [condition, setCondition] = useState("good");
   const [price, setPrice] = useState("");
   const [shippingCost, setShippingCost] = useState("0.00");
@@ -127,10 +130,11 @@ export default function ListingForm({
             value={category}
             onChange={(event) => setCategory(event.target.value)}
           >
-            <option value="Cartes postales">Cartes postales</option>
-            <option value="Pièces">Pièces</option>
-            <option value="Timbres">Timbres</option>
-            <option value="Autres objets">Autres objets</option>
+            {categories.map((item) => (
+              <option key={item.name} value={item.name}>
+                {item.name}
+              </option>
+            ))}
           </select>
         </label>
 

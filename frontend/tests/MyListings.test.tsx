@@ -3,7 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { setToken } from "../src/auth";
 import MyListings from "../src/MyListings";
-import { approvedListing, jsonResponse, listingId, mockFetch, ownerId } from "./helpers";
+import {
+  approvedListing,
+  defaultCategories,
+  jsonResponse,
+  listingId,
+  mockFetch,
+  ownerId,
+} from "./helpers";
 
 const rejectedListing = {
   ...approvedListing,
@@ -16,7 +23,13 @@ const rejectedListing = {
 function setup() {
   const onClose = vi.fn();
 
-  render(<MyListings ownerId={ownerId} onClose={onClose} />);
+  render(
+    <MyListings
+      ownerId={ownerId}
+      categories={defaultCategories}
+      onClose={onClose}
+    />,
+  );
 
   return { onClose, user: userEvent.setup() };
 }
