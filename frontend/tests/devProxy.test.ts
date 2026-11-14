@@ -13,7 +13,11 @@ describe("proxy du serveur de développement", () => {
     expect(proxy["/api/auth"].target).toBe("http://127.0.0.1:8082");
   });
 
-  it.each(["/api/collectibles", "/api/admin"])(
+  it.each([
+    "/api/collectibles",
+    "/api/categories",
+    "/api/admin",
+  ])(
     "envoie %s au collection-service",
     (route) => {
       expect(proxy[route].target).toBe("http://127.0.0.1:8081");
