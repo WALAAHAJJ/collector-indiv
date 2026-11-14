@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { setToken } from "../src/auth";
@@ -232,5 +232,177 @@ describe("MyListings", () => {
     await user.click(await screen.findByRole("button", { name: "Fermer" }));
 
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  describe("photo", () => {
+    const withPhoto = { ...approvedListing, hasPhoto: true };
+
+    function choosePhoto(file: File) {
+      fireEvent.change(screen.getByLabelText("Photo (facultative)"), {
+        target: { files: [file] },
+      });
+    }
+
+    function photoRoutes(listing: typeof approvedListing & { hasPhoto?: boolean }, status = 200) {
+      return (url: string, init?: RequestInit) => {
+        if (url.endsWith("/photo") && init?.method === "POST") {
+          return jsonResponse({}, status);
+        }
+
+        if (url.endsWith("/photo") && init?.method === "DELETE") {
+          return jsonResponse({}, status);
+        }
+
+        if (url.endsWith("/photo")) {
+          return jsonResponse({}, 404);
+        }
+
+        return jsonResponse([listing]);
+      };
+    }
+
+    it("n’affiche l’image que pour une annonce qui a une photo", async () => {
+      const fetchMock = mockFetch(photoRoutes(withPhoto));
+      setup();
+
+      await screen.findByRole("heading", { name: "Lot de timbres" });
+
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
+          `/api/collectibles/${listingId}/photo`,
+        ),
+      );
+    });
+
+    it("ne demande pas de photo à une annonce qui n’en a pas", async () => {
+      const fetchMock = mockFetch(photoRoutes({ ...approvedListing, hasPhoto: false }));
+      setup();
+
+      await screen.findByRole("heading", { name: "Lot de timbres" });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("envoie la nouvelle photo en enregistrant la modification", async () => {
+      setToken("jeton-123");
+      const fetchMock = mockFetch((url, init) =>
+        init?.method === "PUT" ? jsonResponse(approvedListing) : photoRoutes(approvedListing)(url, init),
+      );
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+      await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+      expect(await screen.findByRole("status")).toHaveTextContent("Annonce modifiée");
+      const post = fetchMock.mock.calls.find(
+        ([url, init]) => String(url).endsWith("/photo") && init?.method === "POST",
+      );
+      expect(post).toBeDefined();
+      expect((post?.[1]?.body as FormData).get("file")).toBeInstanceOf(File);
+    });
+
+    it("prévient quand la photo n’est pas envoyée mais que l’annonce est modifiée", async () => {
+      mockFetch((url, init) =>
+        init?.method === "PUT" ? jsonResponse(approvedListing) : photoRoutes(approvedListing, 413)(url, init),
+      );
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+      await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Annonce modifiée, mais la photo n’a pas été envoyée. La photo dépasse 1 Mo.",
+      );
+    });
+
+    it("refuse un format de photo non pris en charge", async () => {
+      mockFetch(photoRoutes(approvedListing));
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      choosePhoto(new File([new Uint8Array(10)], "a.gif", { type: "image/gif" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("Format non pris en charge");
+    });
+
+    it("oublie le choix quand on retire le fichier", async () => {
+      const fetchMock = mockFetch((url, init) =>
+        init?.method === "PUT" ? jsonResponse(approvedListing) : photoRoutes(approvedListing)(url, init),
+      );
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      choosePhoto(new File([new Uint8Array(10)], "p.png", { type: "image/png" }));
+      fireEvent.change(screen.getByLabelText("Photo (facultative)"), { target: { files: [] } });
+      await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+      await screen.findByRole("status");
+      expect(
+        fetchMock.mock.calls.some(([url]) => String(url).endsWith("/photo")),
+      ).toBe(false);
+    });
+
+    it("retire la photo après confirmation", async () => {
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      let listing = withPhoto;
+      const fetchMock = mockFetch((url, init) => {
+        if (url.endsWith("/photo") && init?.method === "DELETE") {
+          listing = { ...withPhoto, hasPhoto: false };
+          return jsonResponse(listing);
+        }
+
+        return photoRoutes(listing)(url, init);
+      });
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      await user.click(screen.getByRole("button", { name: "Retirer la photo" }));
+
+      expect(await screen.findByRole("status")).toHaveTextContent("Photo retirée.");
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) => String(url).endsWith("/photo") && init?.method === "DELETE",
+        ),
+      ).toBe(true);
+    });
+
+    it("ne retire rien quand la confirmation est refusée", async () => {
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+      const fetchMock = mockFetch(photoRoutes(withPhoto));
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      await user.click(screen.getByRole("button", { name: "Retirer la photo" }));
+
+      expect(
+        fetchMock.mock.calls.some(([, init]) => init?.method === "DELETE"),
+      ).toBe(false);
+    });
+
+    it("signale l’échec du retrait de la photo", async () => {
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockFetch(photoRoutes(withPhoto, 500));
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+      await user.click(screen.getByRole("button", { name: "Retirer la photo" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "La suppression de la photo a échoué.",
+      );
+    });
+
+    it("n’affiche pas « Retirer la photo » quand il n’y en a pas", async () => {
+      mockFetch(photoRoutes(approvedListing));
+      const { user } = setup();
+
+      await user.click(await screen.findByRole("button", { name: "Modifier" }));
+
+      expect(screen.queryByRole("button", { name: "Retirer la photo" })).toBeNull();
+    });
   });
 });
