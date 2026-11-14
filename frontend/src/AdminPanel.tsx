@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { adminCollectibleUrl, adminListUrl, type AdminStatus } from "./api";
 import { getToken } from "./auth";
-import { visualForLabel } from "./categories";
+import AdminCategories from "./AdminCategories";
+import { visualForLabel, type Category } from "./categories";
 import { statusLabels, type ListingStatus } from "./listingStatus";
 import Modal from "./Modal";
 import ObjectArt from "./ObjectArt";
@@ -20,6 +21,8 @@ type AdminListing = {
 };
 
 type AdminPanelProps = Readonly<{
+  categories: Category[];
+  onCategoriesChange: () => Promise<void> | void;
   onClose: () => void;
 }>;
 
@@ -44,7 +47,14 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export default function AdminPanel({ onClose }: AdminPanelProps) {
+export default function AdminPanel({
+  categories,
+  onCategoriesChange,
+  onClose,
+}: AdminPanelProps) {
+  const [section, setSection] = useState<"listings" | "categories">(
+    "listings",
+  );
   const [status, setStatus] = useState<AdminStatus>("PENDING_REVIEW");
   const [listings, setListings] = useState<AdminListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,7 +213,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     return (
       <div className="my-listings-list">
         {listings.map((listing) => {
-          const visual = visualForLabel(listing.category);
+          const visual = visualForLabel(listing.category, categories);
 
           return (
             <article className="my-listing-card" key={listing.id}>
@@ -291,20 +301,9 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     );
   }
 
-  return (
-    <Modal
-      onClose={onClose}
-      titleId="admin-title"
-      backdropClassName="modal-backdrop"
-      dialogClassName="listing-modal my-listings-modal admin-modal"
-    >
-      <button className="modal-close" onClick={onClose} aria-label="Fermer">
-        ×
-      </button>
-
-      <span className="eyebrow">back-office</span>
-      <h2 id="admin-title">Administration</h2>
-
+  function renderListingsSection() {
+    return (
+      <>
       <div className="filters" role="group" aria-label="Filtrer par statut">
         {tabs.map((tab) => (
           <button
@@ -323,6 +322,51 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       {error && <p role="alert">{error}</p>}
 
       {renderListings()}
+      </>
+    );
+  }
+
+  return (
+    <Modal
+      onClose={onClose}
+      titleId="admin-title"
+      backdropClassName="modal-backdrop"
+      dialogClassName="listing-modal my-listings-modal admin-modal"
+    >
+      <button className="modal-close" onClick={onClose} aria-label="Fermer">
+        ×
+      </button>
+
+      <span className="eyebrow">back-office</span>
+      <h2 id="admin-title">Administration</h2>
+
+      <div className="filters" role="group" aria-label="Section">
+        <button
+          type="button"
+          aria-pressed={section === "listings"}
+          className={section === "listings" ? "filter selected" : "filter"}
+          onClick={() => setSection("listings")}
+        >
+          Annonces
+        </button>
+        <button
+          type="button"
+          aria-pressed={section === "categories"}
+          className={section === "categories" ? "filter selected" : "filter"}
+          onClick={() => setSection("categories")}
+        >
+          Catégories
+        </button>
+      </div>
+
+      {section === "categories" ? (
+        <AdminCategories
+          categories={categories}
+          onChange={onCategoriesChange}
+        />
+      ) : (
+        renderListingsSection()
+      )}
     </Modal>
   );
 }

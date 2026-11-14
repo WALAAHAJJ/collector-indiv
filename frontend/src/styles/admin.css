@@ -36,3 +36,65 @@
   font: inherit;
   font-size: 16px;
 }
+
+/* Onglet « Catégories » */
+
+.admin-category-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px dashed var(--ink);
+}
+
+.admin-category-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-category-form input,
+.admin-category-form select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.admin-category-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.admin-category-art {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 6px;
+}
+
+.admin-category-name {
+  flex: 1;
+  font-weight: 700;
+}

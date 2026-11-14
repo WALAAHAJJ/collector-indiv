@@ -65,7 +65,8 @@ function formatEuros(value: number): string {
 }
 
 function App() {
-  const { categories: apiCategories } = useCategories();
+  const { categories: apiCategories, reload: reloadCategories } =
+    useCategories();
   const categories = ["Tout", ...apiCategories.map((item) => item.name)];
   const [listings, setListings] = useState<CatalogListing[]>([]);
   const [category, setCategory] = useState("Tout");
@@ -442,7 +443,11 @@ function App() {
       )}
 
       {showAdmin && sessionUser?.role === "ADMIN" && (
-        <AdminPanel onClose={() => setShowAdmin(false)} />
+        <AdminPanel
+          categories={apiCategories}
+          onCategoriesChange={reloadCategories}
+          onClose={() => setShowAdmin(false)}
+        />
       )}
 
       {showMyListings && sessionUser && (

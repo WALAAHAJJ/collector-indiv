@@ -313,6 +313,44 @@ describe("App - espace vendeuse", () => {
     ).toBeInTheDocument();
   });
 
+  it("fait apparaître une catégorie créée par l’administrateur dans les filtres", async () => {
+    setToken("jeton-admin");
+    let categories = [...defaultCategories];
+    mockApi({
+      me: () => jsonResponse({ ...sessionUser, role: "ADMIN" }),
+      categories: () => jsonResponse(categories),
+      other: (url, init) => {
+        if (url === "/api/admin/categories" && init?.method === "POST") {
+          categories = [
+            ...categories,
+            { id: "v", name: "Vinyles", art: "OTHER" },
+          ];
+          return jsonResponse(categories[categories.length - 1], 201);
+        }
+
+        return jsonResponse([]);
+      },
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Administration" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Catégories" }));
+    await user.type(
+      within(dialog).getByLabelText("Nom de la catégorie"),
+      "Vinyles",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Ajouter la catégorie" }),
+    );
+
+    expect(
+      await within(dialog).findByText("Catégorie « Vinyles » créée."),
+    ).toBeInTheDocument();
+    expect(await within(dialog).findByText("Vinyles")).toBeInTheDocument();
+  });
+
   it("ferme le panneau d’administration à la déconnexion", async () => {
     setToken("jeton-admin");
     mockApi({

@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import AdminPanel from "../src/AdminPanel";
 import { setToken } from "../src/auth";
-import { approvedListing, jsonResponse, listingId, mockFetch } from "./helpers";
+import {
+  approvedListing,
+  defaultCategories,
+  jsonResponse,
+  listingId,
+  mockFetch,
+} from "./helpers";
 
 const pendingListing = {
   ...approvedListing,
@@ -14,10 +20,17 @@ const pendingListing = {
 
 function setup() {
   const onClose = vi.fn();
+  const onCategoriesChange = vi.fn();
 
-  render(<AdminPanel onClose={onClose} />);
+  render(
+    <AdminPanel
+      categories={defaultCategories}
+      onCategoriesChange={onCategoriesChange}
+      onClose={onClose}
+    />,
+  );
 
-  return { onClose, user: userEvent.setup() };
+  return { onClose, onCategoriesChange, user: userEvent.setup() };
 }
 
 describe("AdminPanel", () => {
