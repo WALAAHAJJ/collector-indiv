@@ -63,7 +63,7 @@ cp .env.example .env            # puis adapter les valeurs si besoin
 docker compose up -d --build    # bases de données, RabbitMQ et deux services
 cd frontend
 npm ci
-npm run dev                     # http://localhost:5173
+npm run dev                     # http://localhost:5173 (port imposé : Keycloak n'autorise que celui-ci ; s'il est pris, fermer l'ancien Vite avec `pkill -f vite`)
 ```
 
 Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
