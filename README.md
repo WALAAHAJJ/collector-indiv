@@ -22,6 +22,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Événements d'annonces publiés sur RabbitMQ (publiée, refusée, en attente de vérification) | Fait |
 | Service de notifications : API des notifications de chaque utilisateur (liste, non lues, marquage comme lue) | Fait |
 | Service de notifications : réception des événements RabbitMQ, une notification par décision sur une annonce | Fait |
+| Keycloak dans Docker Compose (serveur d'identité, realm `collector` importé) | Fait |
+| Authentification par Keycloak : services, site, retrait de la connexion maison | À faire |
 | Notifications : service dans Docker Compose et la CI, cloche dans le site | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
@@ -62,7 +64,7 @@ npm ci
 npm run dev                     # http://localhost:5173
 ```
 
-Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL), 5672 (RabbitMQ) et 15672 (interface de RabbitMQ, identifiants de `.env`).
+Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
 
 ### Compte administrateur
 
