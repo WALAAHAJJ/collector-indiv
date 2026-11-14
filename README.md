@@ -25,7 +25,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Keycloak dans Docker Compose (serveur d'identité, realm `collector` importé) | Fait |
 | Authentification par Keycloak : les services vérifient les jetons (clés publiques RS256) et le site se connecte par Keycloak | Fait |
 | Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | Fait |
-| Notifications : service dans Docker Compose et la CI, cloche dans le site | À faire |
+| Notifications : service et sa base dans Docker Compose, job de CI, suivi par Dependabot | Fait |
+| Notifications : cloche dans le site (compteur de non lues, liste, marquage comme lue) | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
@@ -42,12 +43,13 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
      ▼                                                   │ (clés publiques)
  collection-service (8081) ◀─────────────────────────────┘
      │
- PostgreSQL (5433)       notification-service : même vérification du jeton
+ PostgreSQL (5433)       notification-service (8083) : même vérification du jeton
+                         │ file RabbitMQ, PostgreSQL (5435)
 ```
 
 - **Keycloak** : serveur d'identité (comptes, connexion, inscription, rôles, jetons de 5 minutes signés RS256). Le site n'a jamais le mot de passe : la personne le saisit sur la page de Keycloak. Le compte administrateur du site est créé dans Keycloak au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD`.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton de Keycloak avec ses clés publiques, puis prend le propriétaire (`sub`) et le rôle (`realm_access.roles`) dans le jeton, jamais dans le formulaire.
-- **notification-service** (pas encore dans Docker Compose ; il y aura le port 8083) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
+- **notification-service** (port 8083, base PostgreSQL dédiée sur 5435) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
 - **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le collection-service ; la connexion passe directement par Keycloak.
 
 Chaque service possède sa propre base de données.
@@ -64,7 +66,7 @@ npm ci
 npm run dev                     # http://localhost:5173 (port imposé : Keycloak n'autorise que celui-ci ; s'il est pris, fermer l'ancien Vite avec `pkill -f vite`)
 ```
 
-Ports utilisés : 5173 (site), 8081 (annonces), 5433 (base des annonces), 5434 (base de Keycloak), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
+Ports utilisés : 5173 (site), 8081 (annonces), 5433 (base des annonces), 5434 (base de Keycloak), 8083 (notifications), 5435 (base des notifications), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
 
 ### Compte administrateur
 

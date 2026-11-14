@@ -65,7 +65,7 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 
 L'étape Sonar est sautée pour les PR de Dependabot, qui n'ont pas accès aux secrets du dépôt (`if: github.actor != 'dependabot[bot]'`).
 
-La CI compte trois jobs : frontend, collection-service avec Sonar, et scan de sécurité.
+La CI compte quatre jobs : frontend, collection-service avec Sonar, notification-service (tests et image Docker), et scan de sécurité.
 
 ## 5. Conteneurs
 

@@ -46,6 +46,9 @@ flowchart LR
         cs["collection-service<br/>Spring Boot, Java 21<br/>port 8081"]
         kdb[("PostgreSQL 17<br/>port 5434")]
         cdb[("PostgreSQL 17<br/>port 5433")]
+        ns["notification-service<br/>Spring Boot, Java 21<br/>port 8083"]
+        ndb[("PostgreSQL 17<br/>port 5435")]
+        mq["RabbitMQ<br/>port 5672"]
     end
 
     nav --> vite
@@ -53,6 +56,11 @@ flowchart LR
     vite -->|"/api/collectibles<br/>/api/categories<br/>/api/admin"| cs
     kc --- kdb
     cs --- cdb
+    cs -->|"événements"| mq
+    mq -->|"file notification.listing-events"| ns
+    ns --- ndb
+    kc -.->|"clés publiques"| cs
+    kc -.->|"clés publiques"| ns
 ```
 
 En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le service des annonces. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).

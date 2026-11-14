@@ -35,6 +35,11 @@ flowchart LR
         c1["Tests Java et JaCoCo"] --> c2["Tests frontend et couverture"] --> c3["Analyse SonarCloud"] --> c4["Build de l'image Docker"]
     end
 
+    subgraph ns["Job notification-service"]
+        direction LR
+        n1["Tests Java et JaCoCo"] --> n2["Build de l'image Docker"]
+    end
+
     subgraph sec["Job sécurité"]
         direction LR
         s1["Scan Trivy : dépendances, secrets, configuration"]
@@ -42,7 +47,7 @@ flowchart LR
 
     push --> fe
     push --> cs
-    push --> us
+    push --> ns
     push --> sec
     c3 --> gate{{"Quality Gate"}}
 ```
