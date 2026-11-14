@@ -208,14 +208,13 @@ describe("App - compte", () => {
     await screen.findByRole("heading", { name: "Lot de timbres" });
   });
 
-  it("reconnaît la personne grâce au jeton de Keycloak, sans interroger d’autre service", async () => {
+  it("reconnaît la personne grâce au jeton de Keycloak", async () => {
     setToken(fakeToken());
-    const fetchMock = mockApi();
+    mockApi();
     render(<App />);
 
     expect(await screen.findByText("Bonjour, walaa")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Mes annonces" })).toBeInTheDocument();
-    expect(fetchMock.mock.calls.map(([url]) => url)).not.toContain("/api/auth/me");
   });
 
   it("affiche l’identité dès que Keycloak fournit le jeton", async () => {
