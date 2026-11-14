@@ -118,8 +118,8 @@
 
 .registration-message {
   display: block;
-  width: min(1104px, calc(100% - 40px));
-  margin: 0 auto 24px;
+  width: auto;
+  margin: 0 clamp(12px, 3vw, 48px) 24px;
   padding: 14px 20px;
   border: 2px solid var(--ink);
   border-radius: 6px;

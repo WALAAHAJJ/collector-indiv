@@ -2,9 +2,8 @@
 
 .catalogue {
   position: relative;
-  max-width: 1152px;
-  margin: 0 auto 96px;
-  padding: 72px 48px 64px;
+  margin: 0 clamp(12px, 3vw, 48px) 96px;
+  padding: 72px clamp(24px, 4vw, 64px) 64px;
   background: var(--paper);
   box-shadow:
     0 3px 0 #d2be98,
