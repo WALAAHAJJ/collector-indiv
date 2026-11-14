@@ -109,6 +109,21 @@ sequenceDiagram
     A-->>S: Annonce mise à jour
 ```
 
+### Événements d'annonces (RabbitMQ)
+
+```mermaid
+sequenceDiagram
+    participant A as Service des annonces
+    participant R as RabbitMQ (échange collector.events)
+    participant N as Service de notifications (à venir)
+    A->>A: Modère, ou l'administrateur décide
+    A->>R: Publie listing.approved, listing.rejected ou listing.pending_review
+    Note over A,R: En cas de panne de RabbitMQ, l'erreur est journalisée<br/>et la requête de l'utilisateur réussit quand même
+    R-->>N: Livre le message à la file du service de notifications
+```
+
+Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'annonce, le nouveau statut et le motif voyagent dans les en-têtes AMQP.
+
 ## 5. Décisions d'architecture
 
 | Décision | Raison | Limite ou conséquence |
@@ -118,6 +133,7 @@ sequenceDiagram
 | Le propriétaire d'une annonce vient du jeton | Impossible d'écrire au nom d'un autre en modifiant le formulaire | — |
 | Modération exécutée dans le service des annonces, au moment du dépôt | Simple et immédiate, sans composant supplémentaire | Ajouter la détection de fraude ou les notifications obligerait à modifier ce service ; la messagerie entre services (à venir) lèvera cette limite |
 | Rôle (`USER` ou `ADMIN`) porté par le jeton | Le service des annonces décide des droits sans rappeler les comptes | Un changement de rôle ne prend effet qu'à l'expiration du jeton, soit 15 minutes au plus |
+| Les changements de statut sont publiés sur RabbitMQ, « au mieux » | Les notifications et la détection de fraude s'ajoutent sans modifier la modération ; une panne de RabbitMQ ne bloque jamais un dépôt d'annonce | Un événement peut être perdu si RabbitMQ est arrêté au mauvais moment ; en production, on utiliserait un journal d'envoi en base (patron « outbox ») |
 | Passerelle assurée par Vite en développement | Une seule adresse pour le navigateur, pas de réglage de partage entre origines | À remplacer par une vraie passerelle en production |
 
 ## 6. Évolutivité

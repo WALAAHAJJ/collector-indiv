@@ -72,7 +72,9 @@ La CI compte quatre jobs : frontend, collection-service avec Sonar, user-service
 | Outil | Version | À quoi il sert | Où |
 |---|---|---|---|
 | Docker | — | Empaquette chaque service avec tout ce qu'il faut pour tourner. | `Dockerfile` de chaque service |
-| Docker Compose | — | Lance d'un coup les deux bases PostgreSQL et les deux services. | `compose.yaml` |
+| Docker Compose | — | Lance d'un coup les deux bases PostgreSQL, RabbitMQ et les deux services. | `compose.yaml` |
+| RabbitMQ | image `rabbitmq:4-management` | Messagerie entre services : le service des annonces y publie les changements de statut. Interface web sur le port 15672. | `compose.yaml` |
+| Spring AMQP | fourni par Spring Boot 4.1.2 | Envoi des messages RabbitMQ depuis le service des annonces. | `collection-service/pom.xml` |
 | Images maven:3.9 et eclipse-temurin:21 | 3.9 et 21 | Construction en deux étapes : une image de build, puis une image légère d'exécution. | Dockerfiles |
 | postgres:17-alpine | 17 | Image officielle de la base de données. | `compose.yaml` |
 
@@ -124,6 +126,6 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 
 | Outil | Pour quoi faire |
 |---|---|
-| Intégration de RabbitMQ dans les services | Publier les événements (annonce publiée, prix modifié) et alimenter les notifications et la détection de fraude, après confirmation du choix. |
+| Réception des événements par les services | Service de notifications (en cours) ; plus tard, détection de fraude et prix modifié. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |
 | Flyway | Migrations de base de données versionnées, à la place de la mise à jour automatique actuelle. |
