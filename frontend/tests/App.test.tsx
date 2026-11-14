@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import App from "../src/App";
 import { getToken, setToken } from "../src/auth";
-import { approvedListing, jsonResponse, mockFetch, ownerId } from "./helpers";
+import {
+  approvedListing,
+  defaultCategories,
+  jsonResponse,
+  mockFetch,
+  ownerId,
+} from "./helpers";
 
 const sessionUser = {
   id: ownerId,
@@ -13,6 +19,7 @@ const sessionUser = {
 };
 
 type Routes = {
+  categories?: () => Response;
   catalog?: () => Response;
   me?: () => Response;
   other?: (url: string, init?: RequestInit) => Response;
@@ -22,6 +29,10 @@ function mockApi(routes: Routes = {}) {
   return mockFetch((url, init) => {
     if (url.startsWith("/api/collectibles/catalog")) {
       return routes.catalog?.() ?? jsonResponse([approvedListing]);
+    }
+
+    if (url === "/api/categories") {
+      return routes.categories?.() ?? jsonResponse(defaultCategories);
     }
 
     if (url === "/api/auth/me") {
@@ -76,6 +87,29 @@ describe("App - catalogue", () => {
         "/api/collectibles/catalog?category=Timbres",
       ),
     );
+  });
+
+  it("construit les filtres avec les catégories de l’API", async () => {
+    mockApi({
+      categories: () =>
+        jsonResponse([{ id: "v", name: "Vinyles", art: "OTHER" }]),
+    });
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(
+      await screen.findByRole("button", { name: "Vinyles" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Timbres" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Tout" })).toBeInTheDocument();
+  });
+
+  it("garde les filtres par défaut si l’API des catégories est en panne", async () => {
+    mockApi({ categories: () => new Response(null, { status: 500 }) });
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.getByRole("button", { name: "Timbres" })).toBeInTheDocument();
   });
 
   it("recherche un objet par son nom", async () => {
