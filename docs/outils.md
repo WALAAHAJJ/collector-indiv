@@ -126,6 +126,6 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 
 | Outil | Pour quoi faire |
 |---|---|
-| Réception des événements par les services | Service de notifications (API faite, réception en cours) ; plus tard, détection de fraude et prix modifié. |
+| Réception des événements par les services | Service de notifications (fait : file `notification.listing-events`, liée à l'échange par `listing.*`) ; plus tard, détection de fraude et prix modifié. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |
 | Flyway | Migrations de base de données versionnées, à la place de la mise à jour automatique actuelle. |
