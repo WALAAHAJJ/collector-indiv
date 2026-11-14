@@ -239,4 +239,31 @@ describe("AdminPanel", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(message);
   });
+
+  it("affiche la photo d’une annonce en attente avec le jeton de l’administrateur", async () => {
+    setToken("jeton-admin");
+    const fetchMock = mockFetch((url) =>
+      url.endsWith("/photo")
+        ? jsonResponse({}, 404)
+        : jsonResponse([{ ...pendingListing, hasPhoto: true }]),
+    );
+    setup();
+
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    await vi.waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith("/photo"));
+      expect(call?.[0]).toBe(`/api/collectibles/${listingId}/photo`);
+      expect(call?.[1]?.headers).toMatchObject({ Authorization: "Bearer jeton-admin" });
+    });
+  });
+
+  it("ne demande pas de photo à une annonce qui n’en a pas", async () => {
+    const fetchMock = mockFetch(() => jsonResponse([{ ...pendingListing, hasPhoto: false }]));
+    setup();
+
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });

@@ -4,6 +4,7 @@ import { getToken } from "./auth";
 import AdminCategories from "./AdminCategories";
 import { visualForLabel, type Category } from "./categories";
 import { statusLabels, type ListingStatus } from "./listingStatus";
+import ListingPhoto from "./ListingPhoto";
 import Modal from "./Modal";
 import ObjectArt from "./ObjectArt";
 
@@ -18,6 +19,7 @@ type AdminListing = {
   shippingCost: number;
   status: ListingStatus;
   moderationReason: string | null;
+  hasPhoto?: boolean;
 };
 
 type AdminPanelProps = Readonly<{
@@ -217,11 +219,17 @@ export default function AdminPanel({
 
           return (
             <article className="my-listing-card" key={listing.id}>
-              <div
-                className={`my-listing-placeholder ${visual.tone}`}
-                aria-hidden="true"
-              >
-                <ObjectArt kind={visual.art} size={96} />
+              <div className={`my-listing-placeholder ${visual.tone}`}>
+                {listing.hasPhoto ? (
+                  <ListingPhoto
+                    listingId={listing.id}
+                    alt={listing.name}
+                    className="listing-photo"
+                    fallback={<ObjectArt kind={visual.art} size={96} />}
+                  />
+                ) : (
+                  <ObjectArt kind={visual.art} size={96} />
+                )}
               </div>
 
               <div className="my-listing-info">
