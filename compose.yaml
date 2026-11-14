@@ -83,7 +83,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
-      JWT_SECRET: ${JWT_SECRET}
+      # Jetons de Keycloak : l'émetteur par défaut (http://localhost:8180/realms/collector) est l'adresse publique ;
+      # les clés publiques se téléchargent par le réseau Docker.
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/collector/protocol/openid-connect/certs
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-collector}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
