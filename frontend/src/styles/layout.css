@@ -9,9 +9,7 @@
 .topbar,
 .hero,
 .seller-actions {
-  max-width: 1200px;
-  margin-inline: auto;
-  padding-inline: 48px;
+  padding-inline: clamp(20px, 4vw, 64px);
 }
 
 @media (max-width: 800px) {
