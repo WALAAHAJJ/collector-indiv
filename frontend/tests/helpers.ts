@@ -42,3 +42,30 @@ export const defaultCategories: Category[] = [
   { id: "c0000000-0000-4000-8000-000000000003", name: "Timbres", art: "STAMPS" },
   { id: "c0000000-0000-4000-8000-000000000004", name: "Autres objets", art: "OTHER" },
 ];
+
+/** Fabrique un jeton de la forme de ceux de Keycloak (signature factice : le site ne la vérifie pas). */
+export function fakeToken(
+  claims: {
+    sub?: string;
+    preferred_username?: string;
+    email?: string;
+    roles?: string[];
+  } = {},
+): string {
+  const encode = (value: unknown) =>
+    btoa(String.fromCodePoint(...new TextEncoder().encode(JSON.stringify(value))))
+      .replaceAll("+", "-")
+      .replaceAll("/", "_")
+      .replaceAll("=", "");
+
+  return [
+    encode({ alg: "RS256", typ: "JWT" }),
+    encode({
+      sub: claims.sub ?? ownerId,
+      preferred_username: claims.preferred_username ?? "walaa",
+      email: claims.email ?? "walaa@example.com",
+      realm_access: { roles: claims.roles ?? ["default-roles-collector"] },
+    }),
+    "signature",
+  ].join(".");
+}
