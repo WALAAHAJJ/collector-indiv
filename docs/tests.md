@@ -74,6 +74,7 @@ flowchart LR
 - Chaque fonctionnalité arrive avec ses tests, dans le même ensemble de commits.
 - Chaque bug corrigé reçoit un test qui empêche son retour. Exemples : le test du proxy de développement après l'oubli de `/api/admin`, les tests de codes HTTP après l'erreur 401 à la place du 409.
 - Les contrôles d'accès sont testés avec de vrais jetons signés, pas seulement avec des utilisateurs simulés.
+- Les tests n'ont pas besoin de RabbitMQ : l'interrupteur `app.events.enabled=false` (fixé dans le `pom.xml` des deux services) empêche d'y publier ou d'y écouter, et le service de notifications est testé en appelant son écouteur directement. Un premier essai, qui désactivait seulement le démarrage de l'écoute, échouait quand Spring relançait un contexte de test mis en cache.
 - Le Quality Gate de SonarCloud bloque l'acceptation d'un code insuffisamment testé.
 
 ## 5. Lancer les tests
