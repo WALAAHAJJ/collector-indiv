@@ -9,6 +9,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       host: "0.0.0.0",
+      // Keycloak ne renvoie vers le site que depuis http://localhost:5173 : pas de changement de port silencieux.
+      port: 5173,
+      strictPort: true,
       proxy: {
         "/api/auth": {
           target: env.VITE_USER_SERVICE_URL || "http://127.0.0.1:8082",
