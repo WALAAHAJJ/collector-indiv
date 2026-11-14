@@ -42,20 +42,20 @@ flowchart LR
     nav(["Navigateur"])
     subgraph dev["Poste de développement : docker compose"]
         vite["Frontend React et Vite<br/>port 5173"]
-        us["user-service<br/>Spring Boot, Java 21<br/>port 8082"]
+        kc["Keycloak 26<br/>port 8180"]
         cs["collection-service<br/>Spring Boot, Java 21<br/>port 8081"]
-        udb[("PostgreSQL 17<br/>port 5434")]
+        kdb[("PostgreSQL 17<br/>port 5434")]
         cdb[("PostgreSQL 17<br/>port 5433")]
     end
 
     nav --> vite
-    vite -->|"/api/auth"| us
+    nav -->|"connexion (PKCE)"| kc
     vite -->|"/api/collectibles<br/>/api/categories<br/>/api/admin"| cs
-    us --- udb
+    kc --- kdb
     cs --- cdb
 ```
 
-En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/auth` vers le service des comptes, et `/api/collectibles`, `/api/categories` et `/api/admin` vers le service des annonces. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
+En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le service des annonces. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
 
 ## 4. Flux principaux
 

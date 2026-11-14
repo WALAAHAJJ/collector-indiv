@@ -24,7 +24,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Service de notifications : réception des événements RabbitMQ, une notification par décision sur une annonce | Fait |
 | Keycloak dans Docker Compose (serveur d'identité, realm `collector` importé) | Fait |
 | Authentification par Keycloak : les services vérifient les jetons (clés publiques RS256) et le site se connecte par Keycloak | Fait |
-| Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | À faire |
+| Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | Fait |
 | Notifications : service dans Docker Compose et la CI, cloche dans le site | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
@@ -43,14 +43,12 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
  collection-service (8081) ◀─────────────────────────────┘
      │
  PostgreSQL (5433)       notification-service : même vérification du jeton
- user-service (8082) : ancienne connexion maison, remplacée par Keycloak (retrait prévu)
 ```
 
 - **Keycloak** : serveur d'identité (comptes, connexion, inscription, rôles, jetons de 5 minutes signés RS256). Le site n'a jamais le mot de passe : la personne le saisit sur la page de Keycloak. Le compte administrateur du site est créé dans Keycloak au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD`.
-- **user-service** : ancienne connexion maison (comptes BCrypt, jetons HS256), plus utilisée par le site ; elle sera retirée à la prochaine livraison.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton de Keycloak avec ses clés publiques, puis prend le propriétaire (`sub`) et le rôle (`realm_access.roles`) dans le jeton, jamais dans le formulaire.
 - **notification-service** (pas encore dans Docker Compose ; il y aura le port 8083) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
-- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/auth` vers le user-service et `/api/collectibles` vers le collection-service.
+- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le collection-service ; la connexion passe directement par Keycloak.
 
 Chaque service possède sa propre base de données.
 
@@ -66,7 +64,7 @@ npm ci
 npm run dev                     # http://localhost:5173 (port imposé : Keycloak n'autorise que celui-ci ; s'il est pris, fermer l'ancien Vite avec `pkill -f vite`)
 ```
 
-Ports utilisés : 5173 (site), 8081 (annonces), 8082 (comptes), 5433 et 5434 (bases PostgreSQL), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
+Ports utilisés : 5173 (site), 8081 (annonces), 5433 (base des annonces), 5434 (base de Keycloak), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
 
 ### Compte administrateur
 
@@ -76,7 +74,6 @@ Keycloak crée le compte administrateur du site au premier démarrage à partir 
 
 | Route | Accès | Rôle |
 |---|---|---|
-| `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` | — | Ancienne connexion du user-service, remplacée par Keycloak (retrait prévu) |
 | `GET /api/categories` | public | Liste des catégories, avec leur illustration |
 | `GET /api/collectibles/catalog?category=&search=` | public | Annonces approuvées |
 | `POST /api/collectibles` | jeton | Déposer une annonce |
@@ -108,7 +105,7 @@ Les motifs de refus sont affichés au vendeur. La détection du téléphone n'ut
 ```bash
 # Chaque service Java
 cd backend/microservices/collection-service && ./mvnw -B verify
-cd backend/microservices/user-service && ./mvnw -B verify
+cd backend/microservices/notification-service && ./mvnw -B verify
 
 # Frontend : tests, couverture, lint et build
 cd frontend && npm run test:coverage && npm run lint && npm run build
@@ -127,14 +124,13 @@ Le workflow `.github/workflows/ci.yml` s'exécute à chaque push :
 |---|---|
 | Frontend | lint, tests avec couverture, build |
 | Tests, SonarCloud et Docker | tests du collection-service, tests du frontend, analyse Sonar, build de l'image |
-| User service | tests et build de l'image |
 | Scan de sécurité (Trivy) | dépendances, secrets et configuration ; fait échouer la CI sur une faille haute ou critique |
 
 Dependabot propose chaque semaine des mises à jour Maven, npm, Docker et GitHub Actions. Le projet reste en Java 21, version à support long.
 
 ## Sécurité
 
-- Mots de passe hachés (BCrypt), jetons JWT signés et à durée courte.
+- Authentification déléguée à Keycloak (SSO, code d'autorisation avec PKCE) : mots de passe jamais vus par le site, politique de mot de passe, blocage après 5 échecs, jetons RS256 de 5 minutes à renouvellement tournant. Justification dans [docs/securite.md](docs/securite.md).
 - API sans état ; seul le catalogue est public.
 - Contrôle du propriétaire côté serveur sur toutes les opérations d'écriture.
 - Identifiants validés (UUID) avant de construire les URL côté frontend.
@@ -146,7 +142,8 @@ La démarche complète (risques, détection, incidents) est décrite dans [docs/
 ## Structure du dépôt
 
 ```
-backend/microservices/user-service        comptes et jetons
+backend/microservices/notification-service notifications
+keycloak                                  configuration du realm (SSO)
 backend/microservices/collection-service  annonces et modération
 frontend                                  site React
 compose.yaml                              bases de données et services
