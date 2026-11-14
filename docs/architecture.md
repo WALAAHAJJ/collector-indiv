@@ -29,7 +29,7 @@ Le site ne contient aucune donnée : il appelle les deux services. Chaque servic
 
 | Composant | Responsabilités | Ce qu'il ne fait pas |
 |---|---|---|
-| Site web | Afficher le catalogue, les formulaires, la page « Mes annonces » et l'administration ; conserver le jeton le temps de la session | Aucune règle métier : il ne décide ni de la modération ni des droits |
+| Site web | Afficher le catalogue, les formulaires, la page « Mes annonces » et l'administration (annonces et catégories) ; lire les catégories depuis l'API, avec une liste de secours si elle ne répond pas ; conserver le jeton le temps de la session | Aucune règle métier : il ne décide ni de la modération ni des droits |
 | Service des comptes | Créer les comptes, vérifier les mots de passe, émettre les jetons signés avec le rôle, créer le compte administrateur au démarrage | Ne connaît pas les annonces |
 | Service des annonces | Stocker les annonces et les catégories, appliquer la modération automatique, vérifier le jeton et les droits, publier le catalogue, offrir le back-office (annonces et catégories) | Ne gère ni les mots de passe ni les comptes |
 | Base des comptes | Persister comptes et mots de passe hachés | — |
@@ -50,12 +50,12 @@ flowchart LR
 
     nav --> vite
     vite -->|"/api/auth"| us
-    vite -->|"/api/collectibles<br/>/api/admin"| cs
+    vite -->|"/api/collectibles<br/>/api/categories<br/>/api/admin"| cs
     us --- udb
     cs --- cdb
 ```
 
-En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/auth` vers le service des comptes, et `/api/collectibles` et `/api/admin` vers le service des annonces. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
+En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/auth` vers le service des comptes, et `/api/collectibles`, `/api/categories` et `/api/admin` vers le service des annonces. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
 
 ## 4. Flux principaux
 
