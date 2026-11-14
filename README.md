@@ -20,7 +20,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | Fait |
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
 | Événements d'annonces publiés sur RabbitMQ (publiée, refusée, en attente de vérification) | Fait |
-| Notifications : service dédié, cloche dans le site | À faire |
+| Service de notifications : API des notifications de chaque utilisateur (liste, non lues, marquage comme lue) | Fait |
+| Notifications : réception des événements RabbitMQ, cloche dans le site | À faire |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
@@ -43,6 +44,7 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
 
 - **user-service** : comptes, mots de passe hachés avec BCrypt, émission des jetons JWT (15 minutes, rôle `USER` ou `ADMIN` dans le jeton). Le compte administrateur est créé au démarrage à partir des variables d'environnement.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton et prend le propriétaire dans le jeton, jamais dans le formulaire.
+- **notification-service** (pas encore dans Docker Compose ; il y aura le port 8083) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Les prochaines livraisons lui font consommer les événements RabbitMQ.
 - **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/auth` vers le user-service et `/api/collectibles` vers le collection-service.
 
 Chaque service possède sa propre base de données.

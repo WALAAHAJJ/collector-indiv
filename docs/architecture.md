@@ -115,7 +115,7 @@ sequenceDiagram
 sequenceDiagram
     participant A as Service des annonces
     participant R as RabbitMQ (échange collector.events)
-    participant N as Service de notifications (à venir)
+    participant N as Service de notifications (réception à venir)
     A->>A: Modère, ou l'administrateur décide
     A->>R: Publie listing.approved, listing.rejected ou listing.pending_review
     Note over A,R: En cas de panne de RabbitMQ, l'erreur est journalisée<br/>et la requête de l'utilisateur réussit quand même
