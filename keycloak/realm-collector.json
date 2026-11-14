@@ -64,7 +64,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["ADMIN"]
+      "realmRoles": ["default-roles-collector", "ADMIN"]
     }
   ]
 }
