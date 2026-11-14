@@ -1,49 +1,24 @@
 package com.collector.notification.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    SecretKey jwtSecretKey(@Value("${app.jwt.secret}") String secret) {
-        byte[] key = Base64.getDecoder().decode(secret);
-        if (key.length < 32) {
-            throw new IllegalArgumentException("La clé JWT doit contenir au moins 32 octets.");
-        }
-        return new SecretKeySpec(key, "HmacSHA256");
-    }
-
-    @Bean
-    JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
-        return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
-                .macAlgorithm(MacAlgorithm.HS256)
-                .build();
-    }
-
-    /** Transforme la revendication « role » du jeton (USER ou ADMIN) en autorité ROLE_USER ou ROLE_ADMIN. */
+    /**
+     * Les jetons sont émis et signés par Keycloak. Le service ne possède aucun secret : il télécharge les
+     * clés publiques de Keycloak (adresse spring.security.oauth2.resourceserver.jwt.jwk-set-uri) pour vérifier
+     * la signature, puis contrôle l'émetteur (issuer-uri) et la date d'expiration.
+     */
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName("role");
-        authorities.setAuthorityPrefix("ROLE_");
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authorities);
+        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRealmRolesConverter());
         return converter;
     }
 
