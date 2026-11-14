@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ public class ListingPhoto {
     @Column(nullable = false, length = 20)
     private String contentType;
 
+    @JdbcTypeCode(SqlTypes.VARBINARY)
     @Column(nullable = false, length = PhotoFormat.MAX_BYTES)
     private byte[] data;
 
