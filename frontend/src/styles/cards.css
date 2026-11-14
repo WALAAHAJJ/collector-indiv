@@ -59,9 +59,13 @@
   display: grid;
   place-items: center;
   height: 230px;
+  overflow: hidden;
 }
 
+/* La photo remplit le cadre sans le déformer, quelle que soit sa taille d'origine. */
 .listing-photo {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
