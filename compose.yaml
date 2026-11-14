@@ -27,6 +27,48 @@ services:
       timeout: 10s
       retries: 10
 
+  keycloak-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Serveur d'identité : comptes, connexion, inscription, rôles et jetons.
+  # Mode développement (HTTP) ; la configuration du « realm » collector est importée au premier démarrage.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: start-dev --import-realm
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Définir KEYCLOAK_ADMIN_PASSWORD dans le fichier .env}
+      # Adresse publique : c'est elle qui figure dans les jetons (champ iss).
+      KC_HOSTNAME: http://localhost:8180
+      # Les services du réseau Docker joignent Keycloak par son nom (keycloak:8080).
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      # Valeurs lues par le fichier keycloak/realm-collector.json (compte administrateur du site).
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?Définir ADMIN_USERNAME dans le fichier .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Définir ADMIN_EMAIL dans le fichier .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Définir ADMIN_PASSWORD dans le fichier .env}
+    volumes:
+      - ./keycloak/realm-collector.json:/opt/keycloak/data/import/realm-collector.json:ro
+    ports:
+      - "8180:8080"
+
   collection-service:
     build:
       context: ./backend/microservices/collection-service
@@ -86,3 +128,4 @@ services:
 volumes:
   collection-db-data:
   user-db-data:
+  keycloak-db-data:
