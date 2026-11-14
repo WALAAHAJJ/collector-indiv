@@ -17,7 +17,7 @@ Projet réalisé dans le cadre du bloc **Superviser et assurer le développement
 | Back-office administrateur : API de validation, de refus et de suppression des annonces | Fait |
 | Back-office administrateur : écran « Administration » dans le site (approuver, refuser avec motif, supprimer) | Fait |
 | Catégories créées et supprimées par l'administrateur : API, liste publique, catégories par défaut, annonces limitées aux catégories existantes | Fait |
-| Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | À faire |
+| Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | Fait |
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
 | Intégration de RabbitMQ au site (événements d'annonces, notifications) | À faire |
 | Photos des annonces | À faire |
