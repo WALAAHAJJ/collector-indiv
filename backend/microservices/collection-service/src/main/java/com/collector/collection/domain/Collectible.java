@@ -58,6 +58,9 @@ public class Collectible {
     @Column(length = 255)
     private String moderationReason;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hasPhoto;
+
     protected Collectible() {
     }
 
@@ -138,5 +141,13 @@ public class Collectible {
     public void applyModeration(ListingStatus status, String reason) {
         this.status = status;
         this.moderationReason = reason;
+    }
+
+    public boolean hasPhoto() {
+        return hasPhoto;
+    }
+
+    public void markPhoto(boolean present) {
+        this.hasPhoto = present;
     }
 }

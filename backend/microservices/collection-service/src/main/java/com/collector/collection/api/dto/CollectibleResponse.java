@@ -16,6 +16,7 @@ public record CollectibleResponse(
         BigDecimal shippingCost,
         ItemCondition condition,
         ListingStatus status,
-        String moderationReason
+        String moderationReason,
+        boolean hasPhoto
 ) {
 }

@@ -168,7 +168,8 @@ public class CollectibleService {
                 collectible.getShippingCost(),
                 collectible.getCondition(),
                 collectible.getStatus(),
-                collectible.getModerationReason()
+                collectible.getModerationReason(),
+                collectible.hasPhoto()
         );
     }
 }
