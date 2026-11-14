@@ -31,6 +31,7 @@ Chaque nouveau composant (broker de messages, orchestrateur, base de supervision
 | Erreurs | Codes HTTP exacts (401, 403, 404, 409), sans détail interne | les deux services |
 | Données saisies | Validation côté serveur (prix, longueurs, formats) ; requêtes SQL paramétrées | DTO, repository |
 | Contournement de la plateforme | Modération automatique : e-mail, téléphone et termes interdits refusés, prix très élevé en validation manuelle | collection-service |
+| Photos | Format reconnu par le contenu du fichier (JPEG, PNG, WebP) et non par son nom ; 1 Mo au maximum (413 sinon) ; photo d'une annonce non approuvée visible seulement de son propriétaire et des administrateurs ; photo supprimée avec l'annonce | collection-service |
 | Interface | Identifiants validés (UUID) avant de construire une adresse d'API ; aucun `innerHTML` ; fenêtres natives `<dialog>` | frontend |
 | Secrets | `.env` hors du dépôt, `.env.example` sans valeur réelle, `SONAR_TOKEN` en secret GitHub | dépôt |
 | Conteneurs | Les trois images s'exécutent avec un utilisateur sans privilèges | Dockerfiles |

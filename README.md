@@ -20,7 +20,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Catégories dans le site : filtres et formulaires alimentés par l'API, gestion dans l'écran d'administration | Fait |
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
 | Intégration de RabbitMQ au site (événements d'annonces, notifications) | À faire |
-| Photos des annonces | À faire |
+| Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -77,6 +77,8 @@ Le user-service crée un compte administrateur au démarrage si `ADMIN_USERNAME`
 | `GET /api/collectibles?ownerId=` | jeton | Mes annonces (uniquement les siennes) |
 | `GET /api/collectibles/{id}` | jeton | Une annonce approuvée, ou la sienne |
 | `PUT` / `DELETE /api/collectibles/{id}` | jeton | Modifier ou supprimer sa propre annonce |
+| `POST` / `DELETE /api/collectibles/{id}/photo` | jeton | Ajouter, remplacer ou retirer la photo de sa propre annonce (JPEG, PNG ou WebP, 1 Mo au maximum) |
+| `GET /api/collectibles/{id}/photo` | public si l'annonce est approuvée, sinon propriétaire ou administrateur | Lire la photo d'une annonce |
 | `GET /api/admin/collectibles?status=` | administrateur | Annonces par statut (par défaut : en attente) |
 | `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
 | `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
