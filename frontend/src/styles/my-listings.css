@@ -172,3 +172,7 @@
     height: 170px;
   }
 }
+
+.my-listing-placeholder .listing-photo {
+  border-radius: 4px;
+}
