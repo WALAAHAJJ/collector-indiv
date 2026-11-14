@@ -57,3 +57,11 @@ export function adminCollectibleUrl(
 
   return action ? `${base}/${action}` : base;
 }
+
+export const CATEGORIES_URL = "/api/categories";
+
+export function adminCategoryUrl(id?: string): string {
+  return id
+    ? `/api/admin/categories/${encodeURIComponent(assertUuid(id))}`
+    : "/api/admin/categories";
+}
