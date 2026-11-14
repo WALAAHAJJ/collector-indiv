@@ -13,12 +13,28 @@ services:
       timeout: 5s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-collector}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Définir RABBITMQ_PASSWORD dans le fichier .env}
+    ports:
+      - "5672:5672"
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
   collection-service:
     build:
       context: ./backend/microservices/collection-service
     depends_on:
       collection-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://collection-db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -26,6 +42,9 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
       JWT_SECRET: ${JWT_SECRET}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-collector}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     ports:
       - "8081:8080"
 
