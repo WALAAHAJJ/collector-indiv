@@ -112,6 +112,27 @@ describe("App - catalogue", () => {
     expect(screen.getByRole("button", { name: "Timbres" })).toBeInTheDocument();
   });
 
+  it("affiche la photo d’une annonce qui en a une", async () => {
+    mockApi({
+      catalog: () => jsonResponse([{ ...approvedListing, hasPhoto: true }]),
+    });
+    render(<App />);
+
+    const photo = await screen.findByRole("img", { name: "Lot de timbres" });
+
+    expect(photo).toHaveAttribute("src", `/api/collectibles/${approvedListing.id}/photo`);
+  });
+
+  it("garde l’illustration pour une annonce sans photo", async () => {
+    mockApi({
+      catalog: () => jsonResponse([{ ...approvedListing, hasPhoto: false }]),
+    });
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.queryByRole("img", { name: "Lot de timbres" })).toBeNull();
+  });
+
   it("recherche un objet par son nom", async () => {
     const fetchMock = mockApi();
     const user = userEvent.setup();
