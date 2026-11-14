@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { categoryLabels, visualForLabel } from "../src/categories";
+import {
+  ART_OPTIONS,
+  fallbackCategories,
+  visualForArt,
+  visualForLabel,
+  type Category,
+} from "../src/categories";
 
 describe("visualForLabel", () => {
   it.each([
@@ -15,7 +21,35 @@ describe("visualForLabel", () => {
     expect(visualForLabel("Vinyles")).toEqual({ art: "other", tone: "kraft" });
   });
 
-  it("propose quatre catégories", () => {
-    expect(Object.keys(categoryLabels)).toHaveLength(4);
+  it("utilise l’illustration choisie par l’administrateur", () => {
+    const custom: Category[] = [
+      { id: "1", name: "Vinyles", art: "COINS" },
+    ];
+
+    expect(visualForLabel("Vinyles", custom)).toEqual({
+      art: "coins",
+      tone: "rose",
+    });
+  });
+});
+
+describe("visualForArt", () => {
+  it("retombe sur « autres objets » pour une illustration inconnue", () => {
+    expect(visualForArt("???" as never)).toEqual({ art: "other", tone: "kraft" });
+  });
+});
+
+describe("listes par défaut", () => {
+  it("propose quatre catégories de secours", () => {
+    expect(fallbackCategories).toHaveLength(4);
+  });
+
+  it("propose les quatre illustrations", () => {
+    expect(ART_OPTIONS.map((option) => option.value)).toEqual([
+      "STAMPS",
+      "COINS",
+      "POSTCARDS",
+      "OTHER",
+    ]);
   });
 });

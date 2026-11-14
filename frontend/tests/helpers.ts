@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import type { Category } from "../src/categories";
 
 export function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -34,3 +35,10 @@ export const approvedListing = {
   status: "APPROVED",
   moderationReason: null,
 };
+
+export const defaultCategories: Category[] = [
+  { id: "c0000000-0000-4000-8000-000000000001", name: "Cartes postales", art: "POSTCARDS" },
+  { id: "c0000000-0000-4000-8000-000000000002", name: "Pièces", art: "COINS" },
+  { id: "c0000000-0000-4000-8000-000000000003", name: "Timbres", art: "STAMPS" },
+  { id: "c0000000-0000-4000-8000-000000000004", name: "Autres objets", art: "OTHER" },
+];
