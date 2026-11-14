@@ -206,10 +206,80 @@ function App() {
     setRegistrationMessage("Vous êtes déconnectée.");
   }
 
+  function renderCatalogue() {
+    if (loading) {
+      return <p className="empty-state">Chargement du catalogue…</p>;
+    }
+
+    if (error) {
+      return <p className="empty-state">{error}</p>;
+    }
+
+    if (filteredListings.length === 0) {
+      return (
+        <p className="empty-state">
+          {listings.length === 0
+            ? "Aucune annonce approuvée pour le moment."
+            : "Aucun objet ne correspond à cette recherche."}
+        </p>
+      );
+    }
+
+    return (
+    <div className="listing-grid">
+      {filteredListings.map((item) => (
+        <article className="listing-card" key={item.id}>
+          <div className={`item-visual ${item.tone}`}>
+            {item.image ? (
+              <img
+                className="listing-photo"
+                src={item.image}
+                alt={item.title}
+              />
+            ) : (
+              <ObjectArt kind={item.art} />
+            )}
+
+            <button
+              type="button"
+              className="favorite"
+              aria-label={`Ajouter ${item.title} aux favoris`}
+            >
+              ♡
+            </button>
+          </div>
+
+          <div className="item-details">
+            <span className="item-category">{item.category}</span>
+            <h3>{item.title}</h3>
+
+            <div className="item-bottom">
+              <span className="condition">{item.condition}</span>
+              <strong>{formatEuros(item.price)}</strong>
+            </div>
+
+            <p className="shipping-cost">
+              Expédition : {formatEuros(item.shippingCost)}
+            </p>
+
+            <button
+              type="button"
+              className="details-button"
+              onClick={() => setSelectedListing(item)}
+            >
+              Voir le détail <span>→</span>
+            </button>
+          </div>
+        </article>
+      ))}
+    </div>
+    );
+  }
+
   return (
     <main className="app">
       <header className="topbar">
-        <a className="brand" href="#" aria-label="Collector, accueil">
+        <a className="brand" href="/" aria-label="Collector, accueil">
           <span className="brand-word">
             collector<span className="brand-dot">.</span>
           </span>
@@ -360,65 +430,7 @@ function App() {
           ))}
         </div>
 
-        {loading ? (
-          <p className="empty-state">Chargement du catalogue…</p>
-        ) : error ? (
-          <p className="empty-state">{error}</p>
-        ) : filteredListings.length > 0 ? (
-          <div className="listing-grid">
-            {filteredListings.map((item) => (
-              <article className="listing-card" key={item.id}>
-                <div className={`item-visual ${item.tone}`}>
-                  {item.image ? (
-                    <img
-                      className="listing-photo"
-                      src={item.image}
-                      alt={item.title}
-                    />
-                  ) : (
-                    <ObjectArt kind={item.art} />
-                  )}
-
-                  <button
-                    type="button"
-                    className="favorite"
-                    aria-label={`Ajouter ${item.title} aux favoris`}
-                  >
-                    ♡
-                  </button>
-                </div>
-
-                <div className="item-details">
-                  <span className="item-category">{item.category}</span>
-                  <h3>{item.title}</h3>
-
-                  <div className="item-bottom">
-                    <span className="condition">{item.condition}</span>
-                    <strong>{formatEuros(item.price)}</strong>
-                  </div>
-
-                  <p className="shipping-cost">
-                    Expédition : {formatEuros(item.shippingCost)}
-                  </p>
-
-                  <button
-                    type="button"
-                    className="details-button"
-                    onClick={() => setSelectedListing(item)}
-                  >
-                    Voir le détail <span>→</span>
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-state">
-            {listings.length === 0
-              ? "Aucune annonce approuvée pour le moment."
-              : "Aucun objet ne correspond à cette recherche."}
-          </p>
-        )}
+        {renderCatalogue()}
       </section>
 
       <footer>
