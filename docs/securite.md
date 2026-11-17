@@ -35,7 +35,7 @@ Chaque nouveau composant (broker de messages, orchestrateur, base de supervision
 | Contournement de la plateforme | Modération automatique : e-mail, téléphone et termes interdits refusés, prix très élevé en validation manuelle | collection-service |
 | Paiement | Numéro de carte jamais enregistré ni journalisé (seuls les 4 derniers chiffres sont gardés, `toString` masque le reste) ; acheteur pris dans le jeton et non dans la requête ; achat de sa propre annonce refusé ; annonce verrouillée pendant l'achat contre le double achat ; montants en `BigDecimal` | collection-service |
 | Photos | Format reconnu par le contenu du fichier (JPEG, PNG, WebP) et non par son nom ; 1 Mo au maximum (413 sinon) ; photo d'une annonce non approuvée visible seulement de son propriétaire et des administrateurs ; photo supprimée avec l'annonce | collection-service |
-| Interface | Identifiants validés (UUID) avant de construire une adresse d'API (y compris celle des notifications) ; la cloche n'affiche que les notifications du propriétaire du jeton, filtrées par le service ; aucun `innerHTML` ; fenêtres natives `<dialog>` | frontend |
+| Interface | Identifiants validés (UUID) avant de construire une adresse d'API (y compris celle des notifications) ; la cloche n'affiche que les notifications du propriétaire du jeton, filtrées par le service ; aucun `innerHTML` ; fenêtres natives `<dialog>` ; coordonnées de carte gardées seulement dans le formulaire (jamais dans le stockage du navigateur), numéro et code effacés dès la réponse du serveur, champs déclarés `cc-number` / `cc-csc` pour le remplissage automatique du navigateur | frontend |
 | Secrets | `.env` hors du dépôt, `.env.example` sans valeur réelle, `SONAR_TOKEN` en secret GitHub | dépôt |
 | Conteneurs | Les trois images s'exécutent avec un utilisateur sans privilèges | Dockerfiles |
 
@@ -76,7 +76,7 @@ Gravité = impact si le risque se réalise. Probabilité estimée pour un site d
 | Dépendance vulnérable | haute | moyenne | Dependabot, Trivy bloquant | — |
 | Secret publié dans le dépôt | haute | faible | `.env` ignoré, analyse de secrets par Trivy | rotation régulière des secrets |
 | Conteneur compromis | haute | faible | utilisateur sans privilèges | analyse des images construites |
-| Fuite de données de carte | haute | faible | rien n'est stocké ni journalisé, passerelle simulée | avec un vrai prestataire : formulaire hébergé par lui, pour que la carte ne passe jamais par nos serveurs |
+| Fuite de données de carte | haute | faible | rien n'est stocké ni journalisé, effacé de l'écran après paiement, passerelle simulée | avec un vrai prestataire : formulaire hébergé par lui, pour que la carte ne passe jamais par nos serveurs |
 | Double achat ou achat de sa propre annonce | moyenne | moyenne | verrou sur l'annonce, contrôle du vendeur, tests 403 et 409 | — |
 | Fraude (prix aberrant, vendeur suspect) | moyenne | moyenne | prix > 5 000 € en validation manuelle | composant antifraude dédié alimenté par les changements de prix |
 | Déni de service | moyenne | moyenne | — | limitation de débit |

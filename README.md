@@ -29,7 +29,8 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Notifications : cloche dans le site (compteur de non lues actualisé toutes les 30 s, liste, marquage comme lue) | Fait |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
-| Paiement : écran d'achat dans le site, mes achats et mes ventes, notification de vente | À faire |
+| Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
+| Paiement : notification au vendeur à chaque vente | À faire |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -52,7 +53,7 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
 - **Keycloak** : serveur d'identité (comptes, connexion, inscription, rôles, jetons de 5 minutes signés RS256). Le site n'a jamais le mot de passe : la personne le saisit sur la page de Keycloak. Le compte administrateur du site est créé dans Keycloak au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD`.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton de Keycloak avec ses clés publiques, puis prend le propriétaire (`sub`) et le rôle (`realm_access.roles`) dans le jeton, jamais dans le formulaire.
 - **notification-service** (port 8083, base PostgreSQL dédiée sur 5435) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
-- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le collection-service, `/api/notifications` vers le notification-service ; la connexion passe directement par Keycloak.
+- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories`, `/api/orders` et `/api/admin` vers le collection-service, `/api/notifications` vers le notification-service ; la connexion passe directement par Keycloak.
 
 Chaque service possède sa propre base de données.
 
@@ -116,6 +117,8 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien. Deux acheteurs simultanés : le second reçoit une erreur 409.
 - **Données de carte** : jamais enregistrées ni journalisées ; la commande garde seulement les 4 derniers chiffres.
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
+
+Dans le site : sur le détail d'une annonce, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue et la commande apparaît dans « Mes commandes ».
 
 ## Tests et qualité
 

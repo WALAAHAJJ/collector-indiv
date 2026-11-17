@@ -53,7 +53,7 @@ flowchart LR
 
     nav --> vite
     nav -->|"connexion (PKCE)"| kc
-    vite -->|"/api/collectibles<br/>/api/categories<br/>/api/admin"| cs
+    vite -->|"/api/collectibles<br/>/api/categories<br/>/api/orders<br/>/api/admin"| cs
     vite -->|"/api/notifications"| ns
     kc --- kdb
     cs --- cdb
@@ -64,7 +64,7 @@ flowchart LR
     kc -.->|"clés publiques"| ns
 ```
 
-En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le service des annonces, et `/api/notifications` vers le service de notifications. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
+En développement, le serveur Vite joue le rôle de passerelle : il redirige `/api/collectibles`, `/api/categories`, `/api/orders` et `/api/admin` vers le service des annonces, et `/api/notifications` vers le service de notifications. En production, ce rôle reviendra à une passerelle ou à un contrôleur d'entrée (à venir).
 
 ## 4. Flux principaux
 
@@ -190,7 +190,7 @@ flowchart LR
     bus{{"Messagerie entre services (à venir)"}}
     notif["Notifications (à venir)"]
     fraude["Détection de fraude (à venir)"]
-    paiement["Paiement et commission (API faite, écran à venir)"]
+    paiement["Paiement et commission (fait, notification de vente à venir)"]
     chat["Chat (à venir)"]
 
     site --> comptes
