@@ -299,17 +299,23 @@ export default function MyListings({
               </p>
             )}
 
-            <div className="my-listing-actions">
-              <button onClick={() => startEditing(listing)}>
-                Modifier
-              </button>
-              <button
-                className="delete-listing-button"
-                onClick={() => deleteListing(listing)}
-              >
-                Supprimer
-              </button>
-            </div>
+            {listing.status === "SOLD" ? (
+              <p className="moderation-reason">
+                Cette annonce est vendue : elle n’est plus modifiable.
+              </p>
+            ) : (
+              <div className="my-listing-actions">
+                <button onClick={() => startEditing(listing)}>
+                  Modifier
+                </button>
+                <button
+                  className="delete-listing-button"
+                  onClick={() => deleteListing(listing)}
+                >
+                  Supprimer
+                </button>
+              </div>
+            )}
 
             {editingId === listing.id && (
               <form className="my-listing-edit-form" onSubmit={saveListing}>

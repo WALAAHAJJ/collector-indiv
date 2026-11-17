@@ -35,6 +35,17 @@ function setup() {
 }
 
 describe("MyListings", () => {
+  it("n'offre ni modification ni suppression pour une annonce vendue", async () => {
+    setToken("jeton-123");
+    mockFetch(() => jsonResponse([{ ...approvedListing, status: "SOLD" }]));
+    setup();
+
+    expect(await screen.findByText("Vendue")).toBeInTheDocument();
+    expect(screen.getByText(/elle n’est plus modifiable/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Modifier" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Supprimer" })).toBeNull();
+  });
+
   it("affiche les annonces avec leur statut et le motif de refus", async () => {
     setToken("jeton-123");
     const fetchMock = mockFetch(() =>
