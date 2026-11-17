@@ -4,6 +4,7 @@ import com.collector.collection.api.dto.OrderResponse;
 import com.collector.collection.api.dto.PurchaseRequest;
 import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingStatus;
+import com.collector.collection.domain.OrderStatus;
 import com.collector.collection.domain.PurchaseOrder;
 import com.collector.collection.events.SaleEvent;
 import com.collector.collection.payment.CardDetails;
@@ -97,6 +98,49 @@ public class OrderService {
         ));
 
         return OrderResponse.from(order);
+    }
+
+    /** Le vendeur marque la commande comme expédiée. */
+    @Transactional
+    public OrderResponse ship(UUID userId, UUID orderId) {
+        PurchaseOrder order = findForParticipant(userId, orderId);
+
+        if (!order.getSellerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Seul le vendeur peut expédier la commande.");
+        }
+
+        if (order.getStatus() != OrderStatus.PAID) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette commande n'est plus à expédier.");
+        }
+
+        order.markShipped();
+
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    /** L'acheteur confirme la réception du colis. */
+    @Transactional
+    public OrderResponse deliver(UUID userId, UUID orderId) {
+        PurchaseOrder order = findForParticipant(userId, orderId);
+
+        if (!order.getBuyerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Seul l'acheteur peut confirmer la réception.");
+        }
+
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette commande n'est pas en cours de livraison.");
+        }
+
+        order.markDelivered();
+
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    /** Une commande n'est visible que de son acheteur et de son vendeur : pour les autres, elle n'existe pas. */
+    private PurchaseOrder findForParticipant(UUID userId, UUID orderId) {
+        return orderRepository.findById(orderId)
+                .filter(order -> order.getBuyerId().equals(userId) || order.getSellerId().equals(userId))
+                .orElseThrow(this::notFound);
     }
 
     public List<OrderResponse> purchasesOf(UUID buyerId) {

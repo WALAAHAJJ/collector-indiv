@@ -1,5 +1,6 @@
 package com.collector.collection.api.dto;
 
+import com.collector.collection.domain.OrderStatus;
 import com.collector.collection.domain.PurchaseOrder;
 
 import java.math.BigDecimal;
@@ -18,7 +19,10 @@ public record OrderResponse(
         BigDecimal buyerTotal,
         BigDecimal sellerNet,
         String cardLast4,
-        Instant createdAt
+        Instant createdAt,
+        OrderStatus status,
+        Instant shippedAt,
+        Instant deliveredAt
 ) {
 
     public static OrderResponse from(PurchaseOrder order) {
@@ -34,7 +38,10 @@ public record OrderResponse(
                 order.getBuyerTotal(),
                 order.getSellerNet(),
                 order.getCardLast4(),
-                order.getCreatedAt()
+                order.getCreatedAt(),
+                order.getStatus(),
+                order.getShippedAt(),
+                order.getDeliveredAt()
         );
     }
 }

@@ -3,6 +3,8 @@ package com.collector.collection.domain;
 import com.collector.collection.payment.CommissionCalculator.Breakdown;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,6 +63,15 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private Instant createdAt;
 
+    // « default 'PAID' » : les commandes déjà enregistrées avant l'ajout de cette colonne reçoivent PAID.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(20) default 'PAID'")
+    private OrderStatus status = OrderStatus.PAID;
+
+    private Instant shippedAt;
+
+    private Instant deliveredAt;
+
     protected PurchaseOrder() {
     }
 
@@ -81,6 +92,31 @@ public class PurchaseOrder {
         this.cardLast4 = cardLast4;
         // PostgreSQL garde les microsecondes : sans cet arrondi, la valeur relue différerait de la valeur écrite.
         this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    /** Le vendeur a expédié : seulement possible pour une commande payée. */
+    public void markShipped() {
+        if (status != OrderStatus.PAID) {
+            throw new IllegalStateException("Une commande " + status + " ne peut pas être expédiée.");
+        }
+
+        status = OrderStatus.SHIPPED;
+        shippedAt = now();
+    }
+
+    /** L'acheteur a reçu : seulement possible pour une commande expédiée. */
+    public void markDelivered() {
+        if (status != OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Une commande " + status + " ne peut pas être marquée reçue.");
+        }
+
+        status = OrderStatus.DELIVERED;
+        deliveredAt = now();
+    }
+
+    // Microsecondes, comme createdAt : PostgreSQL ne garde pas les nanosecondes.
+    private static Instant now() {
+        return Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     public UUID getId() {
@@ -129,5 +165,17 @@ public class PurchaseOrder {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public Instant getShippedAt() {
+        return shippedAt;
+    }
+
+    public Instant getDeliveredAt() {
+        return deliveredAt;
     }
 }
