@@ -31,6 +31,10 @@ describe("proxy du serveur de développement", () => {
     },
   );
 
+  it("envoie /api/notifications au notification-service", () => {
+    expect(proxy["/api/notifications"].target).toBe("http://127.0.0.1:8083");
+  });
+
   it("ne redirige que les routes de l’API", () => {
     expect(Object.keys(proxy).every((route) => route.startsWith("/api/"))).toBe(
       true,
