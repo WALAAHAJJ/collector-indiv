@@ -6,6 +6,7 @@ import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.domain.OrderStatus;
 import com.collector.collection.domain.PurchaseOrder;
+import com.collector.collection.events.OrderStatusEvent;
 import com.collector.collection.events.SaleEvent;
 import com.collector.collection.payment.CardDetails;
 import com.collector.collection.payment.CommissionCalculator;
@@ -114,8 +115,10 @@ public class OrderService {
         }
 
         order.markShipped();
+        orderRepository.save(order);
+        announce(order);
 
-        return OrderResponse.from(orderRepository.save(order));
+        return OrderResponse.from(order);
     }
 
     /** L'acheteur confirme la réception du colis. */
@@ -132,8 +135,23 @@ public class OrderService {
         }
 
         order.markDelivered();
+        orderRepository.save(order);
+        announce(order);
 
-        return OrderResponse.from(orderRepository.save(order));
+        return OrderResponse.from(order);
+    }
+
+    /** Transmis à OrderStatusEventRelay, qui ne l'envoie à RabbitMQ qu'une fois la transaction validée. */
+    private void announce(PurchaseOrder order) {
+        events.publishEvent(new OrderStatusEvent(
+                order.getId(),
+                order.getListingId(),
+                order.getBuyerId(),
+                order.getSellerId(),
+                order.getListingName(),
+                order.getStatus(),
+                Instant.now()
+        ));
     }
 
     /** Une commande n'est visible que de son acheteur et de son vendeur : pour les autres, elle n'existe pas. */

@@ -17,10 +17,11 @@ public class RecordingPublisherConfig {
         return new RecordingPublisher();
     }
 
-    public static class RecordingPublisher implements ListingEventPublisher, SaleEventPublisher {
+    public static class RecordingPublisher implements ListingEventPublisher, SaleEventPublisher, OrderStatusEventPublisher {
 
         private final List<ListingStatusEvent> events = new CopyOnWriteArrayList<>();
         private final List<SaleEvent> sales = new CopyOnWriteArrayList<>();
+        private final List<OrderStatusEvent> steps = new CopyOnWriteArrayList<>();
 
         @Override
         public void publish(ListingStatusEvent event) {
@@ -30,6 +31,17 @@ public class RecordingPublisherConfig {
         @Override
         public void publish(SaleEvent event) {
             sales.add(event);
+        }
+
+        @Override
+        public void publish(OrderStatusEvent event) {
+            steps.add(event);
+        }
+
+        public List<OrderStatusEvent> stepsOf(String listingId) {
+            return steps.stream()
+                    .filter(event -> event.listingId().toString().equals(listingId))
+                    .toList();
         }
 
         public List<SaleEvent> salesOf(String listingId) {

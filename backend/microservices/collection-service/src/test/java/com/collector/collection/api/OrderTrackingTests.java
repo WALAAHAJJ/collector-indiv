@@ -1,17 +1,25 @@
 package com.collector.collection.api;
 
+import com.collector.collection.domain.OrderStatus;
+import com.collector.collection.events.OrderStatusEvent;
+import com.collector.collection.events.RecordingPublisherConfig;
+import com.collector.collection.events.RecordingPublisherConfig.RecordingPublisher;
 import com.collector.collection.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.collector.collection.api.PurchaseFlowSupport.user;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /** Suivi d'une commande : payée, expédiée par le vendeur, reçue par l'acheteur. */
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(RecordingPublisherConfig.class)
 class OrderTrackingTests {
 
     @Autowired
@@ -28,6 +37,9 @@ class OrderTrackingTests {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private RecordingPublisher publisher;
 
     private final UUID seller = UUID.randomUUID();
     private final UUID buyer = UUID.randomUUID();
@@ -145,5 +157,33 @@ class OrderTrackingTests {
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/orders/" + UUID.randomUUID() + "/deliver"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shippingAndDeliveryEachPublishOneEvent() throws Exception {
+        String listingId = flow.createListing(seller, "Montre");
+        String orderId = flow.buy(buyer, listingId);
+
+        mockMvc.perform(post("/api/orders/" + orderId + "/ship").with(user(seller))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/orders/" + orderId + "/deliver").with(user(buyer))).andExpect(status().isOk());
+
+        List<OrderStatusEvent> steps = publisher.stepsOf(listingId);
+        assertEquals(List.of(OrderStatus.SHIPPED, OrderStatus.DELIVERED),
+                steps.stream().map(OrderStatusEvent::status).toList());
+        assertEquals(buyer, steps.get(0).buyerId());
+        assertEquals(seller, steps.get(0).sellerId());
+    }
+
+    @Test
+    void aRefusedStepPublishesNothing() throws Exception {
+        String listingId = flow.createListing(seller, "Montre");
+        String orderId = flow.buy(buyer, listingId);
+
+        mockMvc.perform(post("/api/orders/" + orderId + "/deliver").with(user(buyer)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/orders/" + orderId + "/ship").with(user(buyer)))
+                .andExpect(status().isForbidden());
+
+        assertTrue(publisher.stepsOf(listingId).isEmpty());
     }
 }
