@@ -20,6 +20,7 @@ const identity = vi.hoisted(() => ({
 vi.mock("../src/identity", () => identity);
 
 beforeEach(() => {
+  window.location.hash = "";
   identity.login.mockReset().mockResolvedValue(undefined);
   identity.register.mockReset().mockResolvedValue(undefined);
   identity.logout.mockReset().mockImplementation(() => {
@@ -33,11 +34,16 @@ const adminToken = () => fakeToken({ roles: ["default-roles-collector", "ADMIN"]
 type Routes = {
   categories?: () => Response;
   catalog?: () => Response;
+  detail?: () => Response;
   other?: (url: string, init?: RequestInit) => Response;
 };
 
 function mockApi(routes: Routes = {}) {
   return mockFetch((url, init) => {
+    if (/^\/api\/collectibles\/catalog\/[0-9a-f-]{36}$/.test(url)) {
+      return routes.detail?.() ?? jsonResponse(approvedListing);
+    }
+
     if (url.startsWith("/api/collectibles/catalog")) {
       return routes.catalog?.() ?? jsonResponse([approvedListing]);
     }
@@ -168,32 +174,29 @@ describe("App - catalogue", () => {
     ).toBeInTheDocument();
   });
 
-  it("ouvre le détail d’une annonce et le ferme avec Échap", async () => {
+  it("ouvre la page de détail d'une annonce et revient au catalogue", async () => {
     mockApi();
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(await screen.findByRole("button", { name: /Voir le détail/ }));
+    await user.click(await screen.findByRole("link", { name: /Voir le détail/ }));
 
-    const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("Série ancienne")).toBeInTheDocument();
-    expect(within(dialog).getByText("Frais d’expédition : 2,50 €")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Lot de timbres" })).toBeInTheDocument();
+    expect(screen.getByText("Série ancienne")).toBeInTheDocument();
+    expect(screen.getByText("Frais d’expédition : 2,50 €")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "À découvrir" })).toBeNull();
 
-    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("link", { name: /Retour au catalogue/ }));
 
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "À découvrir" })).toBeInTheDocument();
   });
 
-  it("affiche une description par défaut quand elle est vide", async () => {
-    mockApi({
-      catalog: () => jsonResponse([{ ...approvedListing, description: null }]),
-    });
-    const user = userEvent.setup();
+  it("ouvre directement une annonce depuis son adresse", async () => {
+    window.location.hash = `#/annonce/${approvedListing.id}`;
+    mockApi();
     render(<App />);
 
-    await user.click(await screen.findByRole("button", { name: /Voir le détail/ }));
-
-    expect(screen.getByText("Aucune description renseignée.")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Lot de timbres" })).toBeInTheDocument();
   });
 });
 
@@ -447,8 +450,9 @@ describe("App - achat", () => {
   };
 
   async function openDetail(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(await screen.findByRole("button", { name: /Voir le détail/ }));
-    return screen.getByRole("dialog");
+    await user.click(await screen.findByRole("link", { name: /Voir le détail/ }));
+    await screen.findByRole("heading", { level: 1, name: "Lot de timbres" });
+    return screen.getByRole("region", { name: "Lot de timbres" });
   }
 
   it("propose la connexion à un visiteur", async () => {
@@ -487,7 +491,7 @@ describe("App - achat", () => {
     expect(await screen.findByRole("button", { name: "Payer 21,00 €" })).toBeInTheDocument();
   });
 
-  it("confirme l'achat, ferme le détail et recharge le catalogue", async () => {
+  it("confirme l'achat et recharge la fiche et le catalogue", async () => {
     let catalogCalls = 0;
     mockApi({
       catalog: () => {
@@ -516,7 +520,6 @@ describe("App - achat", () => {
 
     expect(await screen.findByText(/Achat confirmé/)).toHaveTextContent("21,00 € payés");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(await screen.findByText("Aucune annonce approuvée pour le moment.")).toBeInTheDocument();
   });
 
   it("ouvre « Mes commandes » pour un utilisateur connecté", async () => {

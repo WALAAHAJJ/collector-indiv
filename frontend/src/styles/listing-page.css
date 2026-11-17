@@ -1,0 +1,123 @@
+/* Page de détail d'une annonce */
+
+.listing-page {
+  padding: 32px 0 56px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid var(--mustard);
+}
+
+.listing-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.listing-page-visual {
+  display: grid;
+  place-items: center;
+  min-height: 380px;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+}
+
+.listing-page-visual .listing-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-page-info h1 {
+  margin: 8px 0 6px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+.listing-page-seller {
+  margin: 0 0 18px;
+  color: var(--ink-soft);
+}
+
+.listing-page-total {
+  margin: 6px 0 20px;
+}
+
+.sold-banner {
+  display: inline-block;
+  margin: 8px 0 16px;
+  padding: 10px 16px;
+  border: 2px solid #1f3d6b;
+  background: #d9e2f1;
+  color: #1f3d6b;
+  font-weight: 700;
+}
+
+.copy-link {
+  display: block;
+  margin-top: 14px;
+}
+
+.listing-page-description {
+  max-width: 70ch;
+  margin-top: 36px;
+}
+
+.listing-page-description p {
+  line-height: 1.6;
+}
+
+.similar-listings {
+  margin-top: 44px;
+}
+
+.similar-listings ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.similar-listings a {
+  display: grid;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.similar-visual {
+  display: grid;
+  place-items: center;
+  height: 110px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+}
+
+.similar-visual .listing-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.similar-title {
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .listing-page-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .listing-page-visual {
+    min-height: 260px;
+  }
+}

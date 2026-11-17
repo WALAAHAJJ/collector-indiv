@@ -17,51 +17,17 @@ import MyOrders from "./MyOrders";
 import { getToken, subscribe, userFromToken } from "./auth";
 import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
-import { catalogUrl, photoUrl } from "./api";
-import Modal from "./Modal";
+import { catalogUrl } from "./api";
+import ListingPage from "./ListingPage";
+import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
+import { formatEuros } from "./money";
+import { listingHref, useRoute } from "./route";
 import PurchaseDialog from "./PurchaseDialog";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
 import ObjectArt from "./ObjectArt";
-import { visualForLabel, type CategoryVisual } from "./categories";
+import { visualForLabel } from "./categories";
 import { useCategories } from "./useCategories";
-
-type ApiListing = {
-  id: string;
-  ownerId: string;
-  name: string;
-  description: string | null;
-  category: string;
-  condition: string;
-  price: number;
-  shippingCost: number;
-  hasPhoto?: boolean;
-};
-
-type CatalogListing = {
-  id: string;
-  ownerId: string;
-  title: string;
-  description: string;
-  category: string;
-  condition: string;
-  price: number;
-  image: string;
-  shippingCost: number;
-};
-
-type Listing = CatalogListing & CategoryVisual;
-
-const conditionLabels: Record<string, string> = {
-  new: "Neuf",
-  very_good: "Très bon état",
-  good: "Bon état",
-  used: "État d’usage",
-};
-
-function formatEuros(value: number): string {
-  return `${value.toFixed(2).replace(".", ",")} €`;
-}
 
 function App() {
   const { categories: apiCategories, reload: reloadCategories } =
@@ -72,7 +38,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const route = useRoute();
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -100,20 +66,7 @@ function App() {
       .then((data) => {
         if (cancelled) return;
 
-        const convertedListings = data.map((item) => {
-          return {
-            id: item.id,
-            ownerId: item.ownerId,
-            title: item.name,
-            description: item.description ?? "",
-            category: item.category,
-            condition:
-              conditionLabels[item.condition.toLowerCase()] ?? item.condition,
-            price: item.price,
-            image: item.hasPhoto ? photoUrl(item.id) : "",
-            shippingCost: item.shippingCost,
-          };
-        });
+        const convertedListings = data.map(toCatalogListing);
 
         setListings(convertedListings);
         setError("");
@@ -259,13 +212,9 @@ function App() {
               Expédition : {formatEuros(item.shippingCost)}
             </p>
 
-            <button
-              type="button"
-              className="details-button"
-              onClick={() => setSelectedListing(item)}
-            >
+            <a className="details-button" href={listingHref(item.id)}>
               Voir le détail <span>→</span>
-            </button>
+            </a>
           </div>
         </article>
       ))}
@@ -346,26 +295,30 @@ function App() {
         </output>
       )}
 
+      {route.name === "home" && (
+        <>
       <section className="hero">
-        <div className="hero-copy">
-          <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
+          <div className="hero-copy">
+            <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
 
-          <h1>
-            Les objets <em className="marker">rares</em> trouvent leur place.
-          </h1>
+            <h1>
+              Les objets <em className="marker">rares</em> trouvent leur place.
+            </h1>
 
-          <p>
-            Découvrez des pièces uniques proposées par des collectionneurs
-            passionnés.
-          </p>
+            <p>
+              Découvrez des pièces uniques proposées par des collectionneurs
+              passionnés.
+            </p>
 
-          <a className="hero-link" href="#catalogue">
-            Explorer le catalogue <span>→</span>
-          </a>
-        </div>
+            <a className="hero-link" href="#catalogue">
+              Explorer le catalogue <span>→</span>
+            </a>
+          </div>
 
-        <HeroArt />
-      </section>
+          <HeroArt />
+        </section>
+        </>
+      )}
 
       {sessionUser && (
         <section className="seller-actions" aria-label="Actions vendeur">
@@ -405,40 +358,51 @@ function App() {
         </section>
       )}
 
+      {route.name === "home" ? (
+        <>
       <section className="catalogue" id="catalogue">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">LE CATALOGUE</span>
-            <h2>À découvrir</h2>
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">LE CATALOGUE</span>
+              <h2>À découvrir</h2>
+            </div>
+
+            <label className="search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                value={search}
+                onChange={(event) => handleSearchChange(event.target.value)}
+                placeholder="Rechercher un objet"
+                aria-label="Rechercher un objet"
+              />
+            </label>
           </div>
 
-          <label className="search">
-            <span aria-hidden="true">⌕</span>
-            <input
-              value={search}
-              onChange={(event) => handleSearchChange(event.target.value)}
-              placeholder="Rechercher un objet"
-              aria-label="Rechercher un objet"
-            />
-          </label>
-        </div>
+          <fieldset className="filters" aria-label="Filtrer par catégorie">
+            {categories.map((item) => (
+              <button
+                type="button"
+                key={item}
+                aria-pressed={category === item}
+                className={category === item ? "filter selected" : "filter"}
+                onClick={() => handleCategoryChange(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </fieldset>
 
-        <fieldset className="filters" aria-label="Filtrer par catégorie">
-          {categories.map((item) => (
-            <button
-              type="button"
-              key={item}
-              aria-pressed={category === item}
-              className={category === item ? "filter selected" : "filter"}
-              onClick={() => handleCategoryChange(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </fieldset>
-
-        {renderCatalogue()}
-      </section>
+          {renderCatalogue()}
+        </section>
+        </>
+      ) : (
+        <ListingPage
+          id={route.id}
+          categories={apiCategories}
+          refreshKey={catalogVersion}
+          renderBuyAction={renderBuyAction}
+        />
+      )}
 
       <footer>
         <span>
@@ -482,63 +446,12 @@ function App() {
         <MyOrders onClose={() => setShowMyOrders(false)} />
       )}
 
-      {selectedListing && (
-        <Modal
-          onClose={() => setSelectedListing(null)}
-          titleId="modal-title"
-          backdropClassName="modal-backdrop"
-          dialogClassName="listing-modal listing-detail-modal"
-        >
-          <button
-            type="button"
-            className="modal-close"
-            onClick={() => setSelectedListing(null)}
-            aria-label="Fermer"
-          >
-            ×
-          </button>
-
-          <div
-            className={`modal-visual item-visual ${selectedListing.tone}`}
-          >
-            {selectedListing.image ? (
-              <img
-                className="listing-photo"
-                src={selectedListing.image}
-                alt={selectedListing.title}
-              />
-            ) : (
-              <ObjectArt kind={selectedListing.art} size={220} />
-            )}
-          </div>
-
-          <span className="item-category">{selectedListing.category}</span>
-          <h2 id="modal-title">{selectedListing.title}</h2>
-          <p>
-            {selectedListing.description ||
-              "Aucune description renseignée."}
-          </p>
-
-          <div className="modal-price">
-            <span>{selectedListing.condition}</span>
-            <strong>{formatEuros(selectedListing.price)}</strong>
-          </div>
-
-          <p className="shipping-cost">
-            Frais d’expédition : {formatEuros(selectedListing.shippingCost)}
-          </p>
-
-          {renderBuyAction(selectedListing)}
-        </Modal>
-      )}
-
       {purchaseTarget && (
         <PurchaseDialog
           listing={purchaseTarget}
           onClose={() => setPurchaseTarget(null)}
           onPurchased={(order) => {
             setPurchaseTarget(null);
-            setSelectedListing(null);
             setCatalogVersion((version) => version + 1);
             setRegistrationMessage(
               `Achat confirmé : « ${order.listingName} », ${formatEuros(order.buyerTotal)} payés.`,
