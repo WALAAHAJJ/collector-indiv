@@ -1,0 +1,146 @@
+/* Cloche des notifications dans l'en-tête */
+
+.notification-bell {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  min-height: 48px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 3px 4px 0 var(--ink);
+  cursor: pointer;
+}
+
+.notification-button:hover {
+  background: var(--paper-warm);
+}
+
+.notification-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 22px;
+  padding: 2px 6px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--tomato);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.notification-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 20;
+  width: min(380px, 86vw);
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow-card);
+}
+
+.notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 2px dashed var(--kraft-deep);
+}
+
+.notification-panel-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.notification-read-all {
+  border: 0;
+  background: transparent;
+  color: var(--tomato-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.notification-read-all:disabled {
+  color: var(--ink-soft);
+  text-decoration: none;
+  cursor: default;
+}
+
+.notification-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--kraft);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: var(--paper-warm);
+}
+
+.notification-item-unread {
+  background: #fdf3d6;
+  font-weight: 700;
+}
+
+.notification-date {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.notification-empty,
+.notification-error {
+  margin: 0;
+  padding: 16px;
+  color: var(--ink-soft);
+}
+
+.notification-error {
+  color: var(--tomato-ink);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
