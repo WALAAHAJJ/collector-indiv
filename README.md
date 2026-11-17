@@ -32,6 +32,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
 | Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
 | Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Fait |
+| Données de démonstration : 42 annonces réalistes, sept catégories, six vendeurs fictifs (`DEMO_DATA=true`) | Fait |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -71,6 +72,10 @@ npm run dev                     # http://localhost:5173 (port imposé : Keycloak
 ```
 
 Ports utilisés : 5173 (site), 8081 (annonces), 5433 (base des annonces), 5434 (base de Keycloak), 8083 (notifications), 5435 (base des notifications), 5672 (RabbitMQ), 15672 (interface de RabbitMQ, identifiants de `.env`) et 8180 (Keycloak : `http://localhost:8180`, compte `KEYCLOAK_ADMIN_USER` du fichier `.env`).
+
+### Annonces de démonstration
+
+Pour présenter le site avec un catalogue rempli, mettre `DEMO_DATA=true` dans le fichier `.env` avant `docker compose up -d --build` (ou `docker compose up -d collection-service` si les conteneurs existent déjà). Le service des annonces crée alors 42 annonces réparties en sept catégories (les quatre de départ, plus « Vinyles », « Figurines » et « Livres anciens »), au nom de six vendeurs fictifs. Elles passent par la modération habituelle : une annonce à 5 400 € reste en attente et apparaît dans l'écran « Administration ». Le chargement n'a lieu qu'une fois ; pour tout recommencer, supprimer le volume de la base des annonces (`docker compose down -v`). Désactivé par défaut, jamais actif dans les tests des autres fonctions.
 
 ### Compte administrateur
 
