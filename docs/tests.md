@@ -79,6 +79,14 @@ flowchart LR
 - Les tests n'ont pas besoin de RabbitMQ : l'interrupteur `app.events.enabled=false` (fixé dans le `pom.xml` des deux services) empêche d'y publier ou d'y écouter, et le service de notifications est testé en appelant son écouteur directement. Un premier essai, qui désactivait seulement le démarrage de l'écoute, échouait quand Spring relançait un contexte de test mis en cache.
 - Le Quality Gate de SonarCloud bloque l'acceptation d'un code insuffisamment testé.
 
+## 4 bis. Exemple : le Quality Gate qui échoue
+
+Après la livraison de l'écran d'achat, tous les jobs GitHub étaient verts mais le Quality Gate de SonarCloud échouait. L'interface publique de SonarCloud (`/api/qualitygates/project_status`) a donné la condition en cause : la **fiabilité du code nouveau** était notée C (il faut A), alors que la couverture (97,2 %), la duplication (0 %), la sécurité et la maintenabilité étaient bonnes. La cause : une promesse de chargement des catégories ni attendue ni terminée par un traitement d'erreur (`void` désormais, car les erreurs sont gérées dans `fetchCategories`).
+
+Les autres remarques ont été traitées dans la foulée : groupes de filtres en `<fieldset>` (rôle natif), texte des libellés dans un `<span>`, `SyntheticEvent` au lieu de `FormEvent` déprécié, ternaire imbriqué extrait, constructeur de commande réduit de 10 à 4 paramètres.
+
+Remarques volontairement laissées : les `!important` de la règle « mouvement réduit » (c'est la forme standard pour désactiver les animations, elles doivent gagner sur toutes les autres règles), la remarque « requête côté client » sur le catalogue (l'adresse est relative, sur le même site, et la catégorie et la recherche sont encodées) et l'usage de `java.util.Date` imposé par l'API d'AMQP pour l'horodatage d'un message.
+
 ## 5. Lancer les tests
 
 ```bash
