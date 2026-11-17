@@ -33,6 +33,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
 | Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Fait |
 | Données de démonstration : 42 annonces réalistes, sept catégories, six vendeurs fictifs (`DEMO_DATA=true`) | Fait |
+| Page de détail d'une annonce avec adresse partageable (`#/annonce/…`), annonces de la même catégorie, bandeau « vendue » | Fait |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -87,6 +88,7 @@ Keycloak crée le compte administrateur du site au premier démarrage à partir 
 |---|---|---|
 | `GET /api/categories` | public | Liste des catégories, avec leur illustration |
 | `GET /api/collectibles/catalog?category=&search=` | public | Annonces approuvées |
+| `GET /api/collectibles/catalog/{id}` | public | Fiche d'une annonce approuvée ou vendue (404 si en attente, refusée ou inconnue) |
 | `POST /api/collectibles` | jeton | Déposer une annonce |
 | `GET /api/collectibles?ownerId=` | jeton | Mes annonces (uniquement les siennes) |
 | `GET /api/collectibles/{id}` | jeton | Une annonce approuvée, ou la sienne |
@@ -128,7 +130,7 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - **Notifications de suivi** : quand le vendeur expédie, l'acheteur reçoit « Votre commande « … » a été expédiée » (`order.shipped`) ; quand l'acheteur confirme la réception, le vendeur est prévenu (`order.delivered`). Même principe : envoi après validation de la transaction, et un RabbitMQ arrêté ne bloque pas la commande.
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
 
-Dans le site : sur le détail d'une annonce, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue et la commande apparaît dans « Mes commandes ».
+Dans le site : « Voir le détail » ouvre la page de l'annonce (adresse `#/annonce/<identifiant>`, copiable). Sur cette page, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue, sa page affiche « Cette annonce a été vendue » et la commande apparaît dans « Mes commandes ».
 
 Suivi : dans « Mes commandes », chaque commande affiche son étape (payée, expédiée, reçue). Le vendeur voit « Marquer comme expédiée » sur l'onglet « Mes ventes » ; l'acheteur voit « J'ai reçu mon colis » sur l'onglet « Mes achats » une fois la commande expédiée. Chacun est prévenu par la cloche de notifications.
 
@@ -163,7 +165,7 @@ Dependabot propose chaque semaine des mises à jour Maven, npm, Docker et GitHub
 ## Sécurité
 
 - Authentification déléguée à Keycloak (SSO, code d'autorisation avec PKCE) : mots de passe jamais vus par le site, politique de mot de passe, blocage après 5 échecs, jetons RS256 de 5 minutes à renouvellement tournant. Justification dans [docs/securite.md](docs/securite.md).
-- API sans état ; seul le catalogue est public.
+- API sans état ; seuls le catalogue et les fiches d'annonces approuvées ou vendues sont publics (une annonce en attente ou refusée répond 404).
 - Contrôle du propriétaire côté serveur sur toutes les opérations d'écriture.
 - Identifiants validés (UUID) avant de construire les URL côté frontend.
 - Secrets hors du dépôt : le fichier `.env` n'est pas versionné, `.env.example` documente les variables, `SONAR_TOKEN` est un secret GitHub.
