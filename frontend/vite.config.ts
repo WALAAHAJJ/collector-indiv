@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_COLLECTION_SERVICE_URL || "http://127.0.0.1:8081",
           changeOrigin: true,
         },
+        "/api/orders": {
+          target: env.VITE_COLLECTION_SERVICE_URL || "http://127.0.0.1:8081",
+          changeOrigin: true,
+        },
         "/api/admin": {
           target: env.VITE_COLLECTION_SERVICE_URL || "http://127.0.0.1:8081",
           changeOrigin: true,

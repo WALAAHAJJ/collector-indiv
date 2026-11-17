@@ -24,6 +24,7 @@ describe("proxy du serveur de développement", () => {
     "/api/collectibles",
     "/api/categories",
     "/api/admin",
+    "/api/orders",
   ])(
     "envoie %s au collection-service",
     (route) => {
