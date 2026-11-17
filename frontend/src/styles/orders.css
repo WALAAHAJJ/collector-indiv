@@ -1,0 +1,50 @@
+/* Paiement simulé et commandes */
+
+.purchase-summary {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+}
+
+.purchase-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.purchase-summary dt {
+  color: var(--ink-soft);
+}
+
+.purchase-summary dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.purchase-total {
+  padding-top: 10px;
+  border-top: 2px solid var(--ink);
+  font-size: 19px;
+}
+
+.purchase-total dt {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.purchase-note {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.purchase-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.buy-button {
+  margin-top: 18px;
+}
