@@ -35,7 +35,7 @@ export function useCategories() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchCategories().then((data) => {
+    void fetchCategories().then((data) => {
       if (!cancelled && data) {
         setCategories(data);
       }
