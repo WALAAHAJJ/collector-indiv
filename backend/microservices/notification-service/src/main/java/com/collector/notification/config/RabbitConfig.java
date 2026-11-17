@@ -24,6 +24,9 @@ public class RabbitConfig {
     /** Toutes les décisions sur une annonce : listing.approved, listing.rejected, listing.pending_review. */
     public static final String ROUTING_KEY = "listing.*";
 
+    /** Une vente a eu lieu : le vendeur doit en être prévenu. */
+    public static final String SALE_ROUTING_KEY = "order.paid";
+
     @Bean
     TopicExchange eventsExchange() {
         return new TopicExchange(EXCHANGE, true, false);
@@ -37,5 +40,11 @@ public class RabbitConfig {
     @Bean
     Binding listingEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
         return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(ROUTING_KEY);
+    }
+
+    /** La même file reçoit aussi les ventes : un seul écouteur, deux sortes d'événements. */
+    @Bean
+    Binding saleEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(SALE_ROUTING_KEY);
     }
 }

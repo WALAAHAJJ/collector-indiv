@@ -38,4 +38,13 @@ class RabbitConfigTests {
         assertEquals("collector.events", binding.getExchange());
         assertEquals("notification.listing-events", binding.getDestination());
     }
+
+    @Test
+    void sameQueueAlsoReceivesSales() {
+        Binding binding = config.saleEventsBinding(config.listingEventsQueue(), config.eventsExchange());
+
+        assertEquals("order.paid", binding.getRoutingKey());
+        assertEquals("collector.events", binding.getExchange());
+        assertEquals("notification.listing-events", binding.getDestination());
+    }
 }

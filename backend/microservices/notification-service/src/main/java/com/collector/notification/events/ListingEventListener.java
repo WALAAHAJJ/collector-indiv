@@ -10,11 +10,14 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
- * Transforme chaque événement d'annonce en notification pour son propriétaire.
+ * Transforme chaque événement en notification : une décision sur une annonce prévient son propriétaire,
+ * une vente (clé {@code order.paid}) prévient le vendeur.
  *
  * <p>Le corps du message est le nom de l'annonce ; l'identifiant de l'annonce, celui du propriétaire,
  * le statut et l'éventuel motif sont dans les en-têtes (voir le service des annonces).
@@ -42,7 +45,11 @@ public class ListingEventListener {
     @RabbitListener(queues = RabbitConfig.QUEUE)
     public void onListingEvent(Message message) {
         try {
-            handle(message);
+            if (RabbitConfig.SALE_ROUTING_KEY.equals(message.getMessageProperties().getReceivedRoutingKey())) {
+                handleSale(message);
+            } else {
+                handle(message);
+            }
         } catch (IllegalArgumentException exception) {
             LOGGER.warn("Événement d'annonce ignoré : {}", exception.getMessage());
         }
@@ -57,6 +64,24 @@ public class ListingEventListener {
 
         NotificationType type = typeOf(status);
         service.create(ownerId, type, text(type, listingName, reason), listingId);
+    }
+
+    /** Corps : nom de l'annonce ; en-têtes : sellerId, listingId et sellerNet (gain net, en texte). */
+    private void handleSale(Message message) {
+        UUID sellerId = uuidHeader(message, "sellerId");
+        UUID listingId = uuidHeader(message, "listingId");
+        BigDecimal sellerNet = new BigDecimal(header(message, "sellerNet"));
+        String listingName = new String(message.getBody(), StandardCharsets.UTF_8);
+
+        service.create(sellerId, NotificationType.ORDER_SOLD, saleText(listingName, sellerNet), listingId);
+    }
+
+    static String saleText(String listingName, BigDecimal sellerNet) {
+        String amount = sellerNet.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
+        String text = "Bonne nouvelle : « " + listingName + " » est vendu ! Vous gagnez " + amount
+                + " € (commission du site déduite, frais d'expédition inclus).";
+
+        return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);
     }
 
     static NotificationType typeOf(String status) {
@@ -77,6 +102,7 @@ public class ListingEventListener {
                     : "Votre annonce « " + listingName + " » a été refusée : " + reason;
             case LISTING_PENDING_REVIEW ->
                     "Votre annonce « " + listingName + " » est en attente de validation par un administrateur.";
+            case ORDER_SOLD -> throw new IllegalArgumentException("une vente se rédige avec saleText");
         };
 
         return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);

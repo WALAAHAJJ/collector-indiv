@@ -132,4 +132,69 @@ class ListingEventListenerTests {
 
         assertEquals(500, text.length());
     }
+
+    private Message sale(String name, String sellerNet) {
+        MessageProperties properties = new MessageProperties();
+        properties.setReceivedRoutingKey("order.paid");
+        properties.setHeader("orderId", UUID.randomUUID().toString());
+        properties.setHeader("listingId", listing.toString());
+        properties.setHeader("sellerId", owner.toString());
+        if (sellerNet != null) {
+            properties.setHeader("sellerNet", sellerNet);
+        }
+        return new Message(name.getBytes(StandardCharsets.UTF_8), properties);
+    }
+
+    @Test
+    void aSaleNotifiesTheSellerWithTheNetGain() {
+        listener.onListingEvent(sale("Lot de timbres", "22.00"));
+
+        Notification notification = onlyNotification();
+        assertEquals(owner, notification.getUserId());
+        assertEquals(listing, notification.getListingId());
+        assertEquals(NotificationType.ORDER_SOLD, notification.getType());
+        assertTrue(notification.getMessage().contains("« Lot de timbres » est vendu"));
+        assertTrue(notification.getMessage().contains("Vous gagnez 22,00 €"));
+    }
+
+    @Test
+    void theGainIsAlwaysShownWithTwoDecimals() {
+        listener.onListingEvent(sale("Montre", "7.5"));
+
+        assertTrue(onlyNotification().getMessage().contains("Vous gagnez 7,50 €"));
+    }
+
+    @Test
+    void aSaleWithoutAmountIsIgnored() {
+        assertDoesNotThrow(() -> listener.onListingEvent(sale("Montre", null)));
+
+        assertTrue(repository.findAll().isEmpty());
+    }
+
+    @Test
+    void aSaleWithAnInvalidAmountIsIgnored() {
+        assertDoesNotThrow(() -> listener.onListingEvent(sale("Montre", "beaucoup")));
+
+        assertTrue(repository.findAll().isEmpty());
+    }
+
+    @Test
+    void aSaleWithoutSellerIsIgnored() {
+        Message message = sale("Montre", "22.00");
+        message.getMessageProperties().getHeaders().remove("sellerId");
+
+        assertDoesNotThrow(() -> listener.onListingEvent(message));
+
+        assertTrue(repository.findAll().isEmpty());
+    }
+
+    @Test
+    void aListingDecisionIsStillHandledWhenARoutingKeyIsPresent() {
+        Message message = event("Lot de timbres", "APPROVED", null);
+        message.getMessageProperties().setReceivedRoutingKey("listing.approved");
+
+        listener.onListingEvent(message);
+
+        assertEquals(NotificationType.LISTING_APPROVED, onlyNotification().getType());
+    }
 }
