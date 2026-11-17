@@ -515,4 +515,23 @@ describe("App - achat", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(await screen.findByText("Aucune annonce approuvée pour le moment.")).toBeInTheDocument();
   });
+
+  it("ouvre « Mes commandes » pour un utilisateur connecté", async () => {
+    mockApi();
+    setToken(fakeToken({ sub: buyerId }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Mes commandes" }));
+
+    expect(await screen.findByRole("heading", { name: "Mes commandes" })).toBeInTheDocument();
+  });
+
+  it("ne montre pas « Mes commandes » à un visiteur", async () => {
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.queryByRole("button", { name: "Mes commandes" })).toBeNull();
+  });
 });

@@ -13,6 +13,7 @@ import "./styles/orders.css";
 import "./styles/footer.css";
 import ListingForm from "./ListingForm";
 import MyListings from "./MyListings";
+import MyOrders from "./MyOrders";
 import { getToken, subscribe, userFromToken } from "./auth";
 import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
@@ -75,6 +76,7 @@ function App() {
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showMyOrders, setShowMyOrders] = useState(false);
   const [purchaseTarget, setPurchaseTarget] = useState<Listing | null>(null);
   // Incrémenté après un achat pour recharger le catalogue : l'objet vendu doit en disparaître.
   const [catalogVersion, setCatalogVersion] = useState(0);
@@ -167,6 +169,7 @@ function App() {
 
   function handleLogout() {
     setShowMyListings(false);
+    setShowMyOrders(false);
     setShowAdmin(false);
     void logout();
   }
@@ -376,6 +379,14 @@ function App() {
 
           <button
             type="button"
+            className="my-listings-button"
+            onClick={() => setShowMyOrders(true)}
+          >
+            Mes commandes
+          </button>
+
+          <button
+            type="button"
             className="sell-button"
             onClick={() => setShowListingForm(true)}
           >
@@ -465,6 +476,10 @@ function App() {
           categories={apiCategories}
           onClose={() => setShowMyListings(false)}
         />
+      )}
+
+      {showMyOrders && sessionUser && (
+        <MyOrders onClose={() => setShowMyOrders(false)} />
       )}
 
       {selectedListing && (
