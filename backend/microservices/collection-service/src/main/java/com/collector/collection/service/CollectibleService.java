@@ -188,7 +188,7 @@ public class CollectibleService {
     }
 
     public CollectibleResponse approve(UUID id) {
-        Collectible collectible = findEntityById(id);
+        Collectible collectible = requireNotSold(findEntityById(id));
         ListingStatus previousStatus = collectible.getStatus();
         collectible.applyModeration(ListingStatus.APPROVED, null);
 
@@ -202,7 +202,7 @@ public class CollectibleService {
     }
 
     public CollectibleResponse reject(UUID id, String reason) {
-        Collectible collectible = findEntityById(id);
+        Collectible collectible = requireNotSold(findEntityById(id));
         ListingStatus previousStatus = collectible.getStatus();
         collectible.applyModeration(ListingStatus.REJECTED, reason);
 
@@ -217,7 +217,7 @@ public class CollectibleService {
 
     @Transactional
     public void deleteAsAdmin(UUID id) {
-        Collectible collectible = findEntityById(id);
+        Collectible collectible = requireNotSold(findEntityById(id));
         photoRepository.deleteById(id);
         repository.delete(collectible);
     }
@@ -247,6 +247,18 @@ public class CollectibleService {
 
         if (!collectible.getOwnerId().equals(currentUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accès refusé");
+        }
+
+        return requireNotSold(collectible);
+    }
+
+    /**
+     * Une annonce vendue est figée : la modifier ou la supprimer fausserait la commande, et la
+     * modération la remettrait en vente (applyModeration écrase le statut).
+     */
+    private Collectible requireNotSold(Collectible collectible) {
+        if (collectible.getStatus() == ListingStatus.SOLD) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette annonce est vendue : elle n'est plus modifiable.");
         }
 
         return collectible;

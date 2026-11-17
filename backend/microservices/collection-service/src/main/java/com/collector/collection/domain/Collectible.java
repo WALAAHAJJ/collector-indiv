@@ -143,6 +143,12 @@ public class Collectible {
         this.moderationReason = reason;
     }
 
+    /** Appelée à l'achat, dans la même transaction que la création de la commande. */
+    public void markSold() {
+        this.status = ListingStatus.SOLD;
+        this.moderationReason = null;
+    }
+
     public boolean hasPhoto() {
         return hasPhoto;
     }
