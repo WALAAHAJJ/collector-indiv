@@ -217,6 +217,31 @@ describe("App - compte", () => {
     expect(screen.getByRole("button", { name: "Mes annonces" })).toBeInTheDocument();
   });
 
+  it("affiche la cloche des notifications pour une personne connectée", async () => {
+    setToken(fakeToken());
+    mockApi({
+      other: (url) =>
+        url === "/api/notifications/unread-count"
+          ? jsonResponse({ count: 2 })
+          : jsonResponse([]),
+    });
+    render(<App />);
+
+    expect(
+      await screen.findByRole("button", { name: "Notifications, 2 non lues" }),
+    ).toBeInTheDocument();
+  });
+
+  it("n’affiche pas la cloche aux visiteurs", async () => {
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(
+      screen.queryByRole("button", { name: /Notifications/ }),
+    ).not.toBeInTheDocument();
+  });
+
   it("affiche l’identité dès que Keycloak fournit le jeton", async () => {
     mockApi();
     render(<App />);

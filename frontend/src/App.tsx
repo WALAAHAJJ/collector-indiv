@@ -13,6 +13,7 @@ import "./styles/footer.css";
 import ListingForm from "./ListingForm";
 import MyListings from "./MyListings";
 import { getToken, subscribe, userFromToken } from "./auth";
+import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
 import { catalogUrl, photoUrl } from "./api";
 import Modal from "./Modal";
@@ -266,6 +267,8 @@ function App() {
               <span className="account-greeting">
                 Bonjour, {sessionUser.username}
               </span>
+
+              <NotificationBell />
 
               <button
                 type="button"
