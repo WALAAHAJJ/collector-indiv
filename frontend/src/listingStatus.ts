@@ -1,7 +1,8 @@
-export type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+export type ListingStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "SOLD";
 
 export const statusLabels: Record<ListingStatus, string> = {
   PENDING_REVIEW: "En attente de vérification",
   APPROVED: "Approuvée",
   REJECTED: "Refusée",
+  SOLD: "Vendue",
 };

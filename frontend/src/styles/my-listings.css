@@ -85,6 +85,11 @@
   color: #8e2a1a;
 }
 
+.status-sold {
+  background: #d9e2f1;
+  color: #1f3d6b;
+}
+
 .status-pending_review {
   background: #f6e7b8;
   color: #5b4210;

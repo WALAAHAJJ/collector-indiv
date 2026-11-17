@@ -6,5 +6,6 @@ describe("statusLabels", () => {
     expect(statusLabels.PENDING_REVIEW).toBe("En attente de vérification");
     expect(statusLabels.APPROVED).toBe("Approuvée");
     expect(statusLabels.REJECTED).toBe("Refusée");
+    expect(statusLabels.SOLD).toBe("Vendue");
   });
 });
