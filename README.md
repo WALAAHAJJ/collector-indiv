@@ -31,7 +31,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
 | Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
 | Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
-| Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Backend fait, boutons sur le site à venir |
+| Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Fait |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -124,6 +124,8 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
 
 Dans le site : sur le détail d'une annonce, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue et la commande apparaît dans « Mes commandes ».
+
+Suivi : dans « Mes commandes », chaque commande affiche son étape (payée, expédiée, reçue). Le vendeur voit « Marquer comme expédiée » sur l'onglet « Mes ventes » ; l'acheteur voit « J'ai reçu mon colis » sur l'onglet « Mes achats » une fois la commande expédiée. Chacun est prévenu par la cloche de notifications.
 
 ## Tests et qualité
 
