@@ -58,6 +58,11 @@ public class CollectibleController {
         return service.findCatalog(category, search);
     }
 
+    @GetMapping("/catalog/{id}")
+    public CollectibleResponse publicListing(@PathVariable UUID id) {
+        return service.findPublic(id);
+    }
+
     @GetMapping
     public List<CollectibleResponse> findByOwnerId(
             @AuthenticationPrincipal Jwt jwt,

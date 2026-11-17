@@ -26,6 +26,10 @@ final class PurchaseFlowSupport {
         categoryRepository.save(new Category(category, CategoryArt.OTHER));
     }
 
+    String category() {
+        return category;
+    }
+
     static RequestPostProcessor user(UUID id) {
         return jwt().jwt(token -> token.subject(id.toString()));
     }

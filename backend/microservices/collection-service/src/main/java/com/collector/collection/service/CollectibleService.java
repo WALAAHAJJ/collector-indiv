@@ -83,6 +83,21 @@ public class CollectibleService {
                 .toList();
     }
 
+    /**
+     * Fiche publique d'une annonce, pour la page de détail : visible tant qu'elle est approuvée,
+     * et aussi une fois vendue (le lien partagé affiche alors « Vendue » au lieu d'une erreur).
+     * Une annonce en attente ou refusée n'existe pas pour le public.
+     */
+    public CollectibleResponse findPublic(UUID id) {
+        Collectible collectible = findEntityById(id);
+
+        if (collectible.getStatus() != ListingStatus.APPROVED && collectible.getStatus() != ListingStatus.SOLD) {
+            throw notFound();
+        }
+
+        return toResponse(collectible);
+    }
+
     public CollectibleResponse findById(UUID id, UUID currentUserId) {
         Collectible collectible = findEntityById(id);
 
