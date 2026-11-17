@@ -48,3 +48,28 @@
 .buy-button {
   margin-top: 18px;
 }
+
+.orders-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.order-card {
+  padding: 16px 18px;
+  border: 1px solid #e3d6b8;
+  background: var(--paper);
+  box-shadow: var(--shadow-card);
+}
+
+.order-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  overflow-wrap: anywhere;
+}
+
+.order-date {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
