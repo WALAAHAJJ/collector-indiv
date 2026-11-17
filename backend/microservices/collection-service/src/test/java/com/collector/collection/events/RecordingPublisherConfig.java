@@ -17,13 +17,25 @@ public class RecordingPublisherConfig {
         return new RecordingPublisher();
     }
 
-    public static class RecordingPublisher implements ListingEventPublisher {
+    public static class RecordingPublisher implements ListingEventPublisher, SaleEventPublisher {
 
         private final List<ListingStatusEvent> events = new CopyOnWriteArrayList<>();
+        private final List<SaleEvent> sales = new CopyOnWriteArrayList<>();
 
         @Override
         public void publish(ListingStatusEvent event) {
             events.add(event);
+        }
+
+        @Override
+        public void publish(SaleEvent event) {
+            sales.add(event);
+        }
+
+        public List<SaleEvent> salesOf(String listingId) {
+            return sales.stream()
+                    .filter(event -> event.listingId().toString().equals(listingId))
+                    .toList();
         }
 
         public List<ListingStatusEvent> eventsFor(String listingId) {

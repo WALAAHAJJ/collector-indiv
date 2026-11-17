@@ -5,6 +5,7 @@ import com.collector.collection.api.dto.PurchaseRequest;
 import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.domain.PurchaseOrder;
+import com.collector.collection.events.SaleEvent;
 import com.collector.collection.payment.CardDetails;
 import com.collector.collection.payment.CommissionCalculator;
 import com.collector.collection.payment.CommissionCalculator.Breakdown;
@@ -12,12 +13,14 @@ import com.collector.collection.payment.PaymentDeclinedException;
 import com.collector.collection.payment.PaymentGateway;
 import com.collector.collection.repository.CollectibleRepository;
 import com.collector.collection.repository.OrderRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,17 +31,20 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CommissionCalculator commissionCalculator;
     private final PaymentGateway paymentGateway;
+    private final ApplicationEventPublisher events;
 
     public OrderService(
             CollectibleRepository collectibleRepository,
             OrderRepository orderRepository,
             CommissionCalculator commissionCalculator,
-            PaymentGateway paymentGateway
+            PaymentGateway paymentGateway,
+            ApplicationEventPublisher events
     ) {
         this.collectibleRepository = collectibleRepository;
         this.orderRepository = orderRepository;
         this.commissionCalculator = commissionCalculator;
         this.paymentGateway = paymentGateway;
+        this.events = events;
     }
 
     /**
@@ -89,6 +95,16 @@ public class OrderService {
                 breakdown.buyerTotal(),
                 breakdown.sellerNet(),
                 card.last4()
+        ));
+
+        // Transmis à SaleEventRelay, qui ne l'envoie à RabbitMQ qu'une fois la transaction validée.
+        events.publishEvent(new SaleEvent(
+                order.getId(),
+                order.getListingId(),
+                order.getSellerId(),
+                order.getListingName(),
+                order.getSellerNet(),
+                Instant.now()
         ));
 
         return OrderResponse.from(order);
