@@ -26,6 +26,9 @@ const order = {
   sellerNet: 22,
   cardLast4: "4242",
   createdAt: "2026-11-17T10:00:00Z",
+  status: "PAID" as const,
+  shippedAt: null,
+  deliveredAt: null,
 };
 
 beforeEach(() => setToken("jeton"));

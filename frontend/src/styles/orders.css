@@ -73,3 +73,34 @@
   color: var(--ink-soft);
   font-size: 14px;
 }
+
+/* Suivi de commande */
+
+.order-status {
+  display: inline-block;
+  margin: 8px 0 0 10px;
+  padding: 4px 10px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.order-status-paid {
+  background: #f6e7b8;
+  color: #5b4210;
+}
+
+.order-status-shipped {
+  background: #d9e2f1;
+  color: #1f3d6b;
+}
+
+.order-status-delivered {
+  background: #dcebdd;
+  color: var(--green);
+}
+
+.order-action {
+  margin-top: 16px;
+}

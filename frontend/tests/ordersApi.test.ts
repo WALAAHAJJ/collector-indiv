@@ -5,9 +5,12 @@ import {
   CVC_PATTERN,
   EXPIRY_PATTERN,
   fetchPurchases,
+  deliverOrder,
   fetchSales,
   purchase,
   purchaseErrorMessage,
+  shipOrder,
+  trackingErrorMessage,
 } from "../src/ordersApi";
 import { jsonResponse, listingId, mockFetch } from "./helpers";
 
@@ -32,6 +35,9 @@ const order = {
   sellerNet: 22,
   cardLast4: "4242",
   createdAt: "2026-11-17T10:00:00Z",
+  status: "PAID" as const,
+  shippedAt: null,
+  deliveredAt: null,
 };
 
 beforeEach(() => setToken("jeton"));
@@ -128,5 +134,48 @@ describe("formats de carte", () => {
     expect(EXPIRY_PATTERN.test("13/30")).toBe(false);
     expect(EXPIRY_PATTERN.test("1/30")).toBe(false);
     expect(CVC_PATTERN.test("12")).toBe(false);
+  });
+});
+
+describe("suivi de commande", () => {
+  it("expédie une commande avec le jeton", async () => {
+    const shipped = { ...order, status: "SHIPPED" as const, shippedAt: "2026-11-18T09:00:00Z" };
+    const fetchMock = mockFetch(() => jsonResponse(shipped));
+
+    await expect(shipOrder(order.id)).resolves.toEqual(shipped);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(`/api/orders/${order.id}/ship`);
+    expect(init?.method).toBe("POST");
+    expect(init?.headers).toMatchObject({ Authorization: "Bearer jeton" });
+  });
+
+  it("confirme la réception d'une commande", async () => {
+    const delivered = { ...order, status: "DELIVERED" as const };
+    const fetchMock = mockFetch(() => jsonResponse(delivered));
+
+    await expect(deliverOrder(order.id)).resolves.toEqual(delivered);
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`/api/orders/${order.id}/deliver`);
+  });
+
+  it.each([
+    [401, "Session expirée"],
+    [403, "le vendeur expédie"],
+    [404, "introuvable"],
+    [409, "déjà changé d’étape"],
+    [500, "momentanément indisponible"],
+  ])("traduit l'erreur %i", async (status, fragment) => {
+    expect(trackingErrorMessage(status)).toContain(fragment);
+
+    mockFetch(() => jsonResponse({}, status));
+
+    await expect(shipOrder(order.id)).rejects.toThrow(fragment);
+  });
+
+  it("signale un serveur injoignable", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("réseau")));
+
+    await expect(deliverOrder(order.id)).rejects.toThrow("Impossible de contacter le serveur.");
   });
 });

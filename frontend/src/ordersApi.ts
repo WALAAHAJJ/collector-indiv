@@ -1,5 +1,13 @@
 import { getToken } from "./auth";
 
+export type OrderStatus = "PAID" | "SHIPPED" | "DELIVERED";
+
+export const orderStatusLabels: Record<OrderStatus, string> = {
+  PAID: "Payée, à expédier",
+  SHIPPED: "Expédiée",
+  DELIVERED: "Reçue",
+};
+
 export type Order = {
   id: string;
   listingId: string;
@@ -13,6 +21,9 @@ export type Order = {
   sellerNet: number;
   cardLast4: string;
   createdAt: string;
+  status: OrderStatus;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 };
 
 /** Coordonnées de carte saisies par l'acheteur. Elles ne sont envoyées qu'une fois, jamais gardées par le site. */
@@ -97,3 +108,44 @@ async function fetchOrders(url: string): Promise<Order[]> {
 export const fetchPurchases = () => fetchOrders(PURCHASES_URL);
 
 export const fetchSales = () => fetchOrders(SALES_URL);
+
+/** Message affiché quand le vendeur ou l'acheteur ne peut pas faire avancer la commande. */
+export function trackingErrorMessage(status: number): string {
+  switch (status) {
+    case 401:
+      return "Session expirée : reconnectez-vous.";
+    case 403:
+      return "Cette action n’est pas la vôtre : le vendeur expédie, l’acheteur confirme la réception.";
+    case 404:
+      return "Cette commande est introuvable.";
+    case 409:
+      return "Cette commande a déjà changé d’étape. Actualisez la liste.";
+    default:
+      return "Le suivi de commande est momentanément indisponible. Réessayez plus tard.";
+  }
+}
+
+async function advanceOrder(orderId: string, action: "ship" | "deliver"): Promise<Order> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${ORDERS_URL}/${encodeURIComponent(orderId)}/${action}`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+  } catch {
+    throw new Error("Impossible de contacter le serveur.");
+  }
+
+  if (!response.ok) {
+    throw new Error(trackingErrorMessage(response.status));
+  }
+
+  return (await response.json()) as Order;
+}
+
+/** Le vendeur marque la commande expédiée. */
+export const shipOrder = (orderId: string) => advanceOrder(orderId, "ship");
+
+/** L'acheteur confirme avoir reçu le colis. */
+export const deliverOrder = (orderId: string) => advanceOrder(orderId, "deliver");

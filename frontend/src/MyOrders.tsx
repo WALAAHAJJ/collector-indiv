@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { formatEuros } from "./money";
-import { fetchPurchases, fetchSales, type Order } from "./ordersApi";
+import {
+  deliverOrder,
+  fetchPurchases,
+  fetchSales,
+  orderStatusLabels,
+  shipOrder,
+  type Order,
+} from "./ordersApi";
 
 type Tab = "purchases" | "sales";
 
@@ -26,6 +33,8 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +72,47 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
 
     setLoading(true);
     setError("");
+    setActionError("");
     setTab(next);
+  }
+
+  /** Remplace la commande mise à jour dans la liste, sans tout recharger. */
+  async function advance(order: Order, action: (id: string) => Promise<Order>) {
+    setBusyOrderId(order.id);
+    setActionError("");
+
+    try {
+      const updated = await action(order.id);
+      setOrders((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    } catch (requestError: unknown) {
+      setActionError(
+        requestError instanceof Error ? requestError.message : "Le suivi est momentanément indisponible.",
+      );
+    } finally {
+      setBusyOrderId(null);
+    }
+  }
+
+  function renderAction(order: Order) {
+    const busy = busyOrderId === order.id;
+
+    if (tab === "sales" && order.status === "PAID") {
+      return (
+        <button className="auth-submit order-action" type="button" disabled={busy} onClick={() => void advance(order, shipOrder)}>
+          Marquer comme expédiée
+        </button>
+      );
+    }
+
+    if (tab === "purchases" && order.status === "SHIPPED") {
+      return (
+        <button className="auth-submit order-action" type="button" disabled={busy} onClick={() => void advance(order, deliverOrder)}>
+          J’ai reçu mon colis
+        </button>
+      );
+    }
+
+    return null;
   }
 
   function renderOrder(order: Order) {
@@ -71,6 +120,9 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
       <article className="order-card" key={order.id}>
         <h3>{order.listingName}</h3>
         <span className="order-date">{formatDate(order.createdAt)}</span>
+        <span className={`order-status order-status-${order.status.toLowerCase()}`}>
+          {orderStatusLabels[order.status]}
+        </span>
 
         <dl className="purchase-summary">
           <div>
@@ -106,6 +158,8 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
             </>
           )}
         </dl>
+
+        {renderAction(order)}
       </article>
     );
   }
@@ -123,7 +177,12 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
       return <p className="empty-state">{emptyMessages[tab]}</p>;
     }
 
-    return <div className="orders-list">{orders.map(renderOrder)}</div>;
+    return (
+      <>
+        {actionError && <p role="alert">{actionError}</p>}
+        <div className="orders-list">{orders.map(renderOrder)}</div>
+      </>
+    );
   }
 
   return (

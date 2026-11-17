@@ -18,6 +18,9 @@ const order = {
   sellerNet: 22,
   cardLast4: "4242",
   createdAt: "2026-11-17T10:00:00Z",
+  status: "PAID" as const,
+  shippedAt: null,
+  deliveredAt: null,
 };
 
 beforeEach(() => setToken("jeton"));
@@ -26,6 +29,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
   clearToken();
 });
+
+const shippedOrder = { ...order, status: "SHIPPED" as const, shippedAt: "2026-11-18T09:00:00Z" };
 
 function mockOrders(purchases: unknown[], sales: unknown[]) {
   return mockFetch((url) =>
@@ -93,5 +98,77 @@ describe("MyOrders", () => {
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Fermer" }));
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("affiche l'étape de chaque commande", async () => {
+    mockOrders([shippedOrder], []);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    expect(await screen.findByText("Expédiée")).toBeInTheDocument();
+  });
+
+  it("laisse le vendeur marquer une commande payée comme expédiée", async () => {
+    const fetchMock = mockFetch((url, init) => {
+      if (url === "/api/orders/purchases") return jsonResponse([]);
+      if (url === `/api/orders/${order.id}/ship` && init?.method === "POST") return jsonResponse(shippedOrder);
+      return jsonResponse([order]);
+    });
+    const user = userEvent.setup();
+    render(<MyOrders onClose={vi.fn()} />);
+    await screen.findByText("Vous n’avez encore rien acheté.");
+    await user.click(screen.getByRole("button", { name: "Mes ventes" }));
+    expect(await screen.findByText("Payée, à expédier")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Marquer comme expédiée" }));
+
+    expect(await screen.findByText("Expédiée")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Marquer comme expédiée" })).toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(`/api/orders/${order.id}/ship`, expect.objectContaining({ method: "POST" }));
+  });
+
+  it("laisse l'acheteur confirmer la réception d'une commande expédiée", async () => {
+    mockFetch((url, init) => {
+      if (url === `/api/orders/${order.id}/deliver` && init?.method === "POST") {
+        return jsonResponse({ ...shippedOrder, status: "DELIVERED" });
+      }
+      return jsonResponse([shippedOrder]);
+    });
+    const user = userEvent.setup();
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await user.click(await screen.findByRole("button", { name: "J’ai reçu mon colis" }));
+
+    expect(await screen.findByText("Reçue")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "J’ai reçu mon colis" })).toBeNull();
+  });
+
+  it("ne propose pas la mauvaise action à chaque rôle", async () => {
+    mockOrders([order], [shippedOrder]);
+    const user = userEvent.setup();
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await screen.findByText("Payée, à expédier");
+    expect(screen.queryByRole("button", { name: "Marquer comme expédiée" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "J’ai reçu mon colis" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Mes ventes" }));
+    await screen.findByText("Expédiée");
+
+    expect(screen.queryByRole("button", { name: "Marquer comme expédiée" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "J’ai reçu mon colis" })).toBeNull();
+  });
+
+  it("affiche l'erreur quand l'étape est refusée", async () => {
+    mockFetch((_url, init) => {
+      if (init?.method === "POST") return jsonResponse({}, 409);
+      return jsonResponse([shippedOrder]);
+    });
+    const user = userEvent.setup();
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await user.click(await screen.findByRole("button", { name: "J’ai reçu mon colis" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("déjà changé d’étape");
+    expect(screen.getByRole("button", { name: "J’ai reçu mon colis" })).toBeEnabled();
   });
 });
