@@ -83,6 +83,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
+      # Annonces de démonstration : DEMO_DATA=true dans .env (désactivé par défaut)
+      APP_DEMO_DATA_ENABLED: ${DEMO_DATA:-false}
       # Jetons de Keycloak : l'émetteur par défaut (http://localhost:8180/realms/collector) est l'adresse publique ;
       # les clés publiques se téléchargent par le réseau Docker.
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/collector/protocol/openid-connect/certs
