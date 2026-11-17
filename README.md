@@ -26,9 +26,9 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Authentification par Keycloak : les services vérifient les jetons (clés publiques RS256) et le site se connecte par Keycloak | Fait |
 | Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | Fait |
 | Notifications : service et sa base dans Docker Compose, job de CI, suivi par Dependabot | Fait |
-| Notifications : cloche dans le site (compteur de non lues, liste, marquage comme lue) | À faire |
+| Notifications : cloche dans le site (compteur de non lues actualisé toutes les 30 s, liste, marquage comme lue) | Fait |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
-| Notifications, chat, paiement par carte et commission de 5 %, notes | À faire |
+| Paiement simulé avec commission de 5 %, notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
 Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse depuis l'écran « Administration » du site.
@@ -50,7 +50,7 @@ Une annonce au prix supérieur à 5 000 € reste en attente de validation manue
 - **Keycloak** : serveur d'identité (comptes, connexion, inscription, rôles, jetons de 5 minutes signés RS256). Le site n'a jamais le mot de passe : la personne le saisit sur la page de Keycloak. Le compte administrateur du site est créé dans Keycloak au premier démarrage à partir de `ADMIN_USERNAME`, `ADMIN_EMAIL` et `ADMIN_PASSWORD`.
 - **collection-service** : annonces, modération automatique, catalogue public. Il vérifie la signature du jeton de Keycloak avec ses clés publiques, puis prend le propriétaire (`sub`) et le rôle (`realm_access.roles`) dans le jeton, jamais dans le formulaire.
 - **notification-service** (port 8083, base PostgreSQL dédiée sur 5435) : notifications de chaque utilisateur. Il vérifie le même jeton JWT et ne renvoie que les notifications du propriétaire du jeton ; une notification d'un autre utilisateur répond « introuvable ». Il consomme les événements RabbitMQ du service des annonces (file `notification.listing-events`) et en fait des notifications en français.
-- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le collection-service ; la connexion passe directement par Keycloak.
+- **frontend** : React, TypeScript et Vite. En développement, Vite redirige `/api/collectibles`, `/api/categories` et `/api/admin` vers le collection-service, `/api/notifications` vers le notification-service ; la connexion passe directement par Keycloak.
 
 Chaque service possède sa propre base de données.
 
