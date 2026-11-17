@@ -27,6 +27,12 @@ public class RabbitConfig {
     /** Une vente a eu lieu : le vendeur doit en être prévenu. */
     public static final String SALE_ROUTING_KEY = "order.paid";
 
+    /** Le vendeur a expédié : l'acheteur doit en être prévenu. */
+    public static final String SHIPPED_ROUTING_KEY = "order.shipped";
+
+    /** L'acheteur a reçu : le vendeur doit en être prévenu. */
+    public static final String DELIVERED_ROUTING_KEY = "order.delivered";
+
     @Bean
     TopicExchange eventsExchange() {
         return new TopicExchange(EXCHANGE, true, false);
@@ -46,5 +52,15 @@ public class RabbitConfig {
     @Bean
     Binding saleEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
         return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(SALE_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding shippedEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(SHIPPED_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding deliveredEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(DELIVERED_ROUTING_KEY);
     }
 }

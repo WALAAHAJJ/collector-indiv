@@ -18,6 +18,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -196,5 +197,65 @@ class ListingEventListenerTests {
         listener.onListingEvent(message);
 
         assertEquals(NotificationType.LISTING_APPROVED, onlyNotification().getType());
+    }
+
+    private final UUID buyer = UUID.randomUUID();
+
+    private Message step(String routingKey, String name) {
+        MessageProperties properties = new MessageProperties();
+        properties.setReceivedRoutingKey(routingKey);
+        properties.setHeader("orderId", UUID.randomUUID().toString());
+        properties.setHeader("listingId", listing.toString());
+        properties.setHeader("buyerId", buyer.toString());
+        properties.setHeader("sellerId", owner.toString());
+        return new Message(name.getBytes(StandardCharsets.UTF_8), properties);
+    }
+
+    @Test
+    void shippingNotifiesTheBuyer() {
+        listener.onListingEvent(step("order.shipped", "Montre"));
+
+        Notification notification = onlyNotification();
+        assertEquals(buyer, notification.getUserId());
+        assertEquals(listing, notification.getListingId());
+        assertEquals(NotificationType.ORDER_SHIPPED, notification.getType());
+        assertTrue(notification.getMessage().contains("« Montre » a été expédiée"));
+    }
+
+    @Test
+    void deliveryNotifiesTheSeller() {
+        listener.onListingEvent(step("order.delivered", "Montre"));
+
+        Notification notification = onlyNotification();
+        assertEquals(owner, notification.getUserId());
+        assertEquals(NotificationType.ORDER_DELIVERED, notification.getType());
+        assertTrue(notification.getMessage().contains("confirmé la réception de « Montre »"));
+    }
+
+    @Test
+    void anOrderStepWithoutRecipientIsIgnored() {
+        Message message = step("order.shipped", "Montre");
+        message.getMessageProperties().getHeaders().remove("buyerId");
+
+        assertDoesNotThrow(() -> listener.onListingEvent(message));
+
+        assertTrue(repository.findAll().isEmpty());
+    }
+
+    @Test
+    void orderStepTextsAreCutToTheColumnSize() {
+        assertEquals(500, ListingEventListener.orderStepText(NotificationType.ORDER_SHIPPED, "x".repeat(600)).length());
+    }
+
+    @Test
+    void orderStepTextRefusesOtherTypes() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ListingEventListener.orderStepText(NotificationType.ORDER_SOLD, "Montre"));
+    }
+
+    @Test
+    void listingTextRefusesOrderTypes() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ListingEventListener.text(NotificationType.ORDER_SHIPPED, "Montre", null));
     }
 }

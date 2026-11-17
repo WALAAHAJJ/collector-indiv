@@ -17,7 +17,8 @@ import java.util.UUID;
 
 /**
  * Transforme chaque événement en notification : une décision sur une annonce prévient son propriétaire,
- * une vente (clé {@code order.paid}) prévient le vendeur.
+ * une vente (clé {@code order.paid}) prévient le vendeur,
+ * une expédition ({@code order.shipped}) prévient l'acheteur, une réception ({@code order.delivered}) le vendeur.
  *
  * <p>Le corps du message est le nom de l'annonce ; l'identifiant de l'annonce, celui du propriétaire,
  * le statut et l'éventuel motif sont dans les en-têtes (voir le service des annonces).
@@ -45,8 +46,13 @@ public class ListingEventListener {
     @RabbitListener(queues = RabbitConfig.QUEUE)
     public void onListingEvent(Message message) {
         try {
-            if (RabbitConfig.SALE_ROUTING_KEY.equals(message.getMessageProperties().getReceivedRoutingKey())) {
+            String routingKey = message.getMessageProperties().getReceivedRoutingKey();
+            if (RabbitConfig.SALE_ROUTING_KEY.equals(routingKey)) {
                 handleSale(message);
+            } else if (RabbitConfig.SHIPPED_ROUTING_KEY.equals(routingKey)) {
+                handleOrderStep(message, "buyerId", NotificationType.ORDER_SHIPPED);
+            } else if (RabbitConfig.DELIVERED_ROUTING_KEY.equals(routingKey)) {
+                handleOrderStep(message, "sellerId", NotificationType.ORDER_DELIVERED);
             } else {
                 handle(message);
             }
@@ -76,6 +82,26 @@ public class ListingEventListener {
         service.create(sellerId, NotificationType.ORDER_SOLD, saleText(listingName, sellerNet), listingId);
     }
 
+    /** Corps : nom de l'annonce ; en-têtes : listingId et l'identifiant du destinataire (acheteur ou vendeur). */
+    private void handleOrderStep(Message message, String recipientHeader, NotificationType type) {
+        UUID recipientId = uuidHeader(message, recipientHeader);
+        UUID listingId = uuidHeader(message, "listingId");
+        String listingName = new String(message.getBody(), StandardCharsets.UTF_8);
+
+        service.create(recipientId, type, orderStepText(type, listingName), listingId);
+    }
+
+    static String orderStepText(NotificationType type, String listingName) {
+        String text = switch (type) {
+            case ORDER_SHIPPED -> "Votre commande « " + listingName
+                    + " » a été expédiée. Confirmez la réception dès que vous l'avez reçue.";
+            case ORDER_DELIVERED -> "Bonne nouvelle : l'acheteur a confirmé la réception de « " + listingName + " ».";
+            default -> throw new IllegalArgumentException("pas une étape de commande : " + type);
+        };
+
+        return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);
+    }
+
     static String saleText(String listingName, BigDecimal sellerNet) {
         String amount = sellerNet.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
         String text = "Bonne nouvelle : « " + listingName + " » est vendu ! Vous gagnez " + amount
@@ -103,6 +129,8 @@ public class ListingEventListener {
             case LISTING_PENDING_REVIEW ->
                     "Votre annonce « " + listingName + " » est en attente de validation par un administrateur.";
             case ORDER_SOLD -> throw new IllegalArgumentException("une vente se rédige avec saleText");
+            case ORDER_SHIPPED, ORDER_DELIVERED ->
+                    throw new IllegalArgumentException("une étape de commande se rédige avec orderStepText");
         };
 
         return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);

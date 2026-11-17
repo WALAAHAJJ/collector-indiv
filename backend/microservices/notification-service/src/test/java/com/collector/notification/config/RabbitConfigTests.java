@@ -47,4 +47,15 @@ class RabbitConfigTests {
         assertEquals("collector.events", binding.getExchange());
         assertEquals("notification.listing-events", binding.getDestination());
     }
+
+    @Test
+    void sameQueueAlsoReceivesShippingAndDelivery() {
+        Binding shipped = config.shippedEventsBinding(config.listingEventsQueue(), config.eventsExchange());
+        Binding delivered = config.deliveredEventsBinding(config.listingEventsQueue(), config.eventsExchange());
+
+        assertEquals("order.shipped", shipped.getRoutingKey());
+        assertEquals("order.delivered", delivered.getRoutingKey());
+        assertEquals("notification.listing-events", shipped.getDestination());
+        assertEquals("notification.listing-events", delivered.getDestination());
+    }
 }
