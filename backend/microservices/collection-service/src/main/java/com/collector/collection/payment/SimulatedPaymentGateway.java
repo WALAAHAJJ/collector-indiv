@@ -35,7 +35,7 @@ public class SimulatedPaymentGateway implements PaymentGateway {
     public void charge(CardDetails card, BigDecimal amount) {
         String digits = card.digits();
 
-        if (!digits.matches("[0-9]{13,19}") || !passesLuhn(digits)) {
+        if (!digits.matches("\\d{13,19}") || !passesLuhn(digits)) {
             throw new PaymentDeclinedException("Numéro de carte invalide.");
         }
 

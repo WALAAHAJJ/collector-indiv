@@ -84,18 +84,7 @@ public class OrderService {
         listing.markSold();
         collectibleRepository.save(listing);
 
-        PurchaseOrder order = orderRepository.save(new PurchaseOrder(
-                listing.getId(),
-                listing.getName(),
-                buyerId,
-                listing.getOwnerId(),
-                breakdown.itemPrice(),
-                breakdown.shippingCost(),
-                breakdown.commission(),
-                breakdown.buyerTotal(),
-                breakdown.sellerNet(),
-                card.last4()
-        ));
+        PurchaseOrder order = orderRepository.save(new PurchaseOrder(listing, buyerId, breakdown, card.last4()));
 
         // Transmis à SaleEventRelay, qui ne l'envoie à RabbitMQ qu'une fois la transaction validée.
         events.publishEvent(new SaleEvent(

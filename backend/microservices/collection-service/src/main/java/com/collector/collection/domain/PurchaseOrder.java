@@ -1,5 +1,6 @@
 package com.collector.collection.domain;
 
+import com.collector.collection.payment.CommissionCalculator.Breakdown;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -63,27 +64,20 @@ public class PurchaseOrder {
     protected PurchaseOrder() {
     }
 
-    public PurchaseOrder(
-            UUID listingId,
-            String listingName,
-            UUID buyerId,
-            UUID sellerId,
-            BigDecimal itemPrice,
-            BigDecimal shippingCost,
-            BigDecimal commission,
-            BigDecimal buyerTotal,
-            BigDecimal sellerNet,
-            String cardLast4
-    ) {
-        this.listingId = listingId;
-        this.listingName = listingName;
+    /**
+     * Fige l'annonce et les montants au moment de la vente. Les montants viennent du calcul
+     * de commission : {@code breakdown} regroupe prix, port, commission, total et gain du vendeur.
+     */
+    public PurchaseOrder(Collectible listing, UUID buyerId, Breakdown breakdown, String cardLast4) {
+        this.listingId = listing.getId();
+        this.listingName = listing.getName();
         this.buyerId = buyerId;
-        this.sellerId = sellerId;
-        this.itemPrice = itemPrice;
-        this.shippingCost = shippingCost;
-        this.commission = commission;
-        this.buyerTotal = buyerTotal;
-        this.sellerNet = sellerNet;
+        this.sellerId = listing.getOwnerId();
+        this.itemPrice = breakdown.itemPrice();
+        this.shippingCost = breakdown.shippingCost();
+        this.commission = breakdown.commission();
+        this.buyerTotal = breakdown.buyerTotal();
+        this.sellerNet = breakdown.sellerNet();
         this.cardLast4 = cardLast4;
         // PostgreSQL garde les microsecondes : sans cet arrondi, la valeur relue différerait de la valeur écrite.
         this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
