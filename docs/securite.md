@@ -76,6 +76,7 @@ Gravité = impact si le risque se réalise. Probabilité estimée pour un site d
 | Dépendance vulnérable | haute | moyenne | Dependabot, Trivy bloquant | — |
 | Secret publié dans le dépôt | haute | faible | `.env` ignoré, analyse de secrets par Trivy | rotation régulière des secrets |
 | Conteneur compromis | haute | faible | utilisateur sans privilèges | analyse des images construites |
+| Notification de vente trompeuse | faible | faible | événement envoyé seulement après validation de l'achat, message incomplet ou au montant invalide abandonné, aucune donnée de carte dans l'événement | — |
 | Fuite de données de carte | haute | faible | rien n'est stocké ni journalisé, effacé de l'écran après paiement, passerelle simulée | avec un vrai prestataire : formulaire hébergé par lui, pour que la carte ne passe jamais par nos serveurs |
 | Double achat ou achat de sa propre annonce | moyenne | moyenne | verrou sur l'annonce, contrôle du vendeur, tests 403 et 409 | — |
 | Fraude (prix aberrant, vendeur suspect) | moyenne | moyenne | prix > 5 000 € en validation manuelle | composant antifraude dédié alimenté par les changements de prix |

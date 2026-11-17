@@ -21,7 +21,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Comparaison RabbitMQ et Kafka avec démonstration mesurée (`demos/messaging`) | Fait |
 | Événements d'annonces publiés sur RabbitMQ (publiée, refusée, en attente de vérification) | Fait |
 | Service de notifications : API des notifications de chaque utilisateur (liste, non lues, marquage comme lue) | Fait |
-| Service de notifications : réception des événements RabbitMQ, une notification par décision sur une annonce | Fait |
+| Service de notifications : réception des événements RabbitMQ, une notification par décision sur une annonce et par vente | Fait |
 | Keycloak dans Docker Compose (serveur d'identité, realm `collector` importé) | Fait |
 | Authentification par Keycloak : les services vérifient les jetons (clés publiques RS256) et le site se connecte par Keycloak | Fait |
 | Retrait de la connexion maison du user-service, règles de mot de passe et justification de l'authentification | Fait |
@@ -30,7 +30,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
 | Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
 | Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
-| Paiement : notification au vendeur à chaque vente | À faire |
+| Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -116,6 +116,7 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - **Cartes de test** : `4242 4242 4242 4242` est acceptée ; `4000 0000 0000 0002` est toujours refusée ; un numéro dont la clé de Luhn est fausse ou une date dépassée est refusé.
 - **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien. Deux acheteurs simultanés : le second reçoit une erreur 409.
 - **Données de carte** : jamais enregistrées ni journalisées ; la commande garde seulement les 4 derniers chiffres.
+- **Notification de vente** : une fois l'achat validé, le service des annonces publie `order.paid` sur RabbitMQ ; le vendeur reçoit dans sa cloche « Bonne nouvelle : « … » est vendu ! Vous gagnez 22,00 € ». L'envoi attend la fin de la transaction : un achat annulé ne prévient personne.
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
 
 Dans le site : sur le détail d'une annonce, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue et la commande apparaît dans « Mes commandes ».

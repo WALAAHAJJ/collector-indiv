@@ -111,3 +111,11 @@ Un vrai prestataire (Stripe, PayPal) demande un compte, des clés secrètes et m
 - *Où est stocké le numéro de carte ?* Nulle part : seuls les 4 derniers chiffres sont gardés, et le numéro n'apparaît ni dans les journaux ni dans les réponses.
 - *Pourquoi la commission ne porte-t-elle pas sur le port ?* Le port couvre un coût réel du vendeur ; le site se rémunère sur la vente de l'objet.
 - *Comment calculer ce que reçoit le vendeur ?* Prix − commission + port. Un test vérifie que cette somme redonne toujours le prix.
+
+### Prévenir le vendeur : après la validation, pas pendant l'achat
+
+| Question | Choix | Pourquoi |
+|---|---|---|
+| Quand envoyer l'événement de vente ? | Après le « commit » de la transaction (`@TransactionalEventListener`, phase `AFTER_COMMIT`) | Envoyé pendant l'achat, il partirait même si la base refusait ensuite d'enregistrer la commande : le vendeur serait prévenu d'une vente fictive. |
+| Que se passe-t-il si RabbitMQ est arrêté ? | La vente réussit, l'erreur est journalisée | L'argent est déjà pris : une notification manquée est un moindre mal qu'un achat annulé. Limite connue : la notification est alors perdue (la parade serait une table « boîte d'envoi », patron *outbox*, non retenue ici). |
+| Faut-il une nouvelle file ? | Non, la file des notifications se lie aussi à `order.paid` | Un seul écouteur suffit, et renommer la file en laisserait une orpheline dans RabbitMQ. |

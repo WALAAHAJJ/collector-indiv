@@ -127,12 +127,15 @@ sequenceDiagram
     participant N as Service de notifications
     A->>A: Modère, ou l'administrateur décide
     A->>R: Publie listing.approved, listing.rejected ou listing.pending_review
+    A->>R: Après un achat validé, publie order.paid (vente)
     Note over A,R: En cas de panne de RabbitMQ, l'erreur est journalisée<br/>et la requête de l'utilisateur réussit quand même
     R-->>N: Livre le message à sa file « notification.listing-events »
-    N->>N: Crée une notification pour le vendeur, rédigée en français
+    N->>N: Crée une notification pour le propriétaire ou le vendeur, rédigée en français
 ```
 
-Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'annonce, le nouveau statut et le motif voyagent dans les en-têtes AMQP.
+Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'annonce, le nouveau statut et le motif voyagent dans les en-têtes AMQP. Une vente suit le même principe avec la clé `order.paid` : en-têtes `orderId`, `listingId`, `sellerId` et `sellerNet` (le gain net, en texte pour éviter toute perte de précision). La file `notification.listing-events` est liée aux deux clés (`listing.*` et `order.paid`) : elle garde son nom pour ne pas laisser une file orpheline dans RabbitMQ.
+
+L'événement de vente n'est envoyé qu'après validation (« commit ») de la transaction d'achat. Sans cela, un échec d'enregistrement après l'envoi préviendrait le vendeur d'une vente qui n'a pas eu lieu.
 
 ### Achat d'une annonce (paiement simulé)
 
