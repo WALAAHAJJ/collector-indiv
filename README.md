@@ -31,6 +31,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
 | Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
 | Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
+| Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Backend fait, boutons sur le site à venir |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -119,6 +120,7 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien. Deux acheteurs simultanés : le second reçoit une erreur 409.
 - **Données de carte** : jamais enregistrées ni journalisées ; la commande garde seulement les 4 derniers chiffres.
 - **Notification de vente** : une fois l'achat validé, le service des annonces publie `order.paid` sur RabbitMQ ; le vendeur reçoit dans sa cloche « Bonne nouvelle : « … » est vendu ! Vous gagnez 22,00 € ». L'envoi attend la fin de la transaction : un achat annulé ne prévient personne.
+- **Notifications de suivi** : quand le vendeur expédie, l'acheteur reçoit « Votre commande « … » a été expédiée » (`order.shipped`) ; quand l'acheteur confirme la réception, le vendeur est prévenu (`order.delivered`). Même principe : envoi après validation de la transaction, et un RabbitMQ arrêté ne bloque pas la commande.
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
 
 Dans le site : sur le détail d'une annonce, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue et la commande apparaît dans « Mes commandes ».

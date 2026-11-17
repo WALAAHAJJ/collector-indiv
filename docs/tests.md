@@ -17,7 +17,7 @@ Ce document décrit les types de tests de Collector, leur rôle, leur place dans
 
 Le paiement est couvert à trois niveaux : `CommissionCalculatorTests` (arrondis au centime, taux hors limites, la somme vendeur + commission − port redonne toujours le prix), `SimulatedPaymentGatewayTests` (clé de Luhn, carte expirée avec une horloge figée, carte toujours refusée, numéro masqué) et `OrderApiTests` (achat, 402, 403, 404, 409, 400, listes d'achats et de ventes, numéro de carte absent de la réponse).
 
-Le suivi de commande est testé par `PurchaseOrderTests` (les transitions PAID → SHIPPED → DELIVERED et leurs interdits, sans base) et `OrderTrackingTests` (les rôles : vendeur expédie, acheteur confirme ; 403, 404 pour un tiers, 409 hors ordre, 401). Un petit utilitaire de test, `PurchaseFlowSupport`, évite de recopier la mise en vente et l'achat dans chaque test.
+Le suivi de commande est testé par `PurchaseOrderTests` (les transitions PAID → SHIPPED → DELIVERED et leurs interdits, sans base) et `OrderTrackingTests` (les rôles : vendeur expédie, acheteur confirme ; 403, 404 pour un tiers, 409 hors ordre, 401). `RabbitOrderStatusEventPublisherTests` vérifie les clés `order.shipped` / `order.delivered` et les en-têtes ; côté notifications, `ListingEventListenerTests` et `RabbitConfigTests` couvrent le bon destinataire (acheteur à l'expédition, vendeur à la réception) et les messages incomplets. Un petit utilitaire de test, `PurchaseFlowSupport`, évite de recopier la mise en vente et l'achat dans chaque test.
 
 Les tests d'intégration utilisent une base H2 en mémoire, jamais les bases PostgreSQL : ils sont rapides et ne dépendent d'aucun service lancé.
 
