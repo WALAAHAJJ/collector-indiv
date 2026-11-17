@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class NotificationService {
 
     @Transactional
     public Notification create(UUID userId, NotificationType type, String message, UUID listingId) {
-        return repository.save(new Notification(userId, type, message, listingId, Instant.now(clock)));
+        return repository.save(new Notification(userId, type, message, listingId, now()));
     }
 
     @Transactional(readOnly = true)
@@ -48,12 +49,17 @@ public class NotificationService {
     public Notification markRead(UUID id, UUID userId) {
         Notification notification = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification introuvable"));
-        notification.markRead(Instant.now(clock));
+        notification.markRead(now());
         return notification;
     }
 
     @Transactional
     public int markAllRead(UUID userId) {
-        return repository.markAllRead(userId, Instant.now(clock));
+        return repository.markAllRead(userId, now());
+    }
+
+    /** L'heure est tronquée à la microseconde, la précision de la base : ce qu'on renvoie est ce qui est stocké. */
+    private Instant now() {
+        return Instant.now(clock).truncatedTo(ChronoUnit.MICROS);
     }
 }
