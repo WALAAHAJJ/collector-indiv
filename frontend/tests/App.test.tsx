@@ -424,3 +424,95 @@ describe("App - espace vendeuse", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
+
+describe("App - achat", () => {
+  const buyerId = "77777777-7777-4777-8777-777777777777";
+
+  const order = {
+    id: "44444444-4444-4444-8444-444444444444",
+    listingId: approvedListing.id,
+    listingName: "Lot de timbres",
+    buyerId,
+    sellerId: approvedListing.ownerId,
+    itemPrice: 18.5,
+    shippingCost: 2.5,
+    commission: 0.93,
+    buyerTotal: 21,
+    sellerNet: 20.07,
+    cardLast4: "4242",
+    createdAt: "2026-11-17T10:00:00Z",
+  };
+
+  async function openDetail(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(await screen.findByRole("button", { name: /Voir le détail/ }));
+    return screen.getByRole("dialog");
+  }
+
+  it("propose la connexion à un visiteur", async () => {
+    mockApi();
+    const user = userEvent.setup();
+    render(<App />);
+
+    const dialog = await openDetail(user);
+    await user.click(within(dialog).getByRole("button", { name: "Se connecter pour acheter" }));
+
+    expect(identity.login).toHaveBeenCalled();
+    expect(within(dialog).queryByRole("button", { name: "Acheter" })).toBeNull();
+  });
+
+  it("ne propose pas au vendeur d'acheter sa propre annonce", async () => {
+    mockApi();
+    setToken(fakeToken({ sub: approvedListing.ownerId }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    const dialog = await openDetail(user);
+
+    expect(within(dialog).getByText("C’est votre annonce.")).toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "Acheter" })).toBeNull();
+  });
+
+  it("ouvre la fenêtre de paiement pour un autre utilisateur", async () => {
+    mockApi();
+    setToken(fakeToken({ sub: buyerId }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    const dialog = await openDetail(user);
+    await user.click(within(dialog).getByRole("button", { name: "Acheter" }));
+
+    expect(await screen.findByRole("button", { name: "Payer 21,00 €" })).toBeInTheDocument();
+  });
+
+  it("confirme l'achat, ferme le détail et recharge le catalogue", async () => {
+    let catalogCalls = 0;
+    mockApi({
+      catalog: () => {
+        catalogCalls += 1;
+        return jsonResponse(catalogCalls === 1 ? [approvedListing] : []);
+      },
+      other: (url, init) =>
+        url === "/api/orders" && init?.method === "POST"
+          ? jsonResponse(order, 201)
+          : jsonResponse([]),
+    });
+    setToken(fakeToken({ sub: buyerId }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    const dialog = await openDetail(user);
+    await user.click(within(dialog).getByRole("button", { name: "Acheter" }));
+    await user.type(screen.getByLabelText("Numéro de carte"), "4242 4242 4242 4242");
+    await user.type(screen.getByLabelText("Nom sur la carte"), "Walaa Test");
+    await user.type(screen.getByLabelText("Expiration"), "1240");
+    await user.type(screen.getByLabelText("Code de sécurité"), "123");
+    await user.click(screen.getByRole("button", { name: "Payer 21,00 €" }));
+    await screen.findByRole("heading", { name: "Paiement accepté" });
+    // le reçu est la fenêtre la plus récente : son bouton « Fermer » est le dernier de la page
+    await user.click(screen.getAllByRole("button", { name: "Fermer" }).at(-1)!);
+
+    expect(await screen.findByText(/Achat confirmé/)).toHaveTextContent("21,00 € payés");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(await screen.findByText("Aucune annonce approuvée pour le moment.")).toBeInTheDocument();
+  });
+});

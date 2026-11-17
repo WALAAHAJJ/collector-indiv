@@ -9,6 +9,7 @@ import "./styles/modal.css";
 import "./styles/forms.css";
 import "./styles/my-listings.css";
 import "./styles/admin.css";
+import "./styles/orders.css";
 import "./styles/footer.css";
 import ListingForm from "./ListingForm";
 import MyListings from "./MyListings";
@@ -17,6 +18,7 @@ import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
 import { catalogUrl, photoUrl } from "./api";
 import Modal from "./Modal";
+import PurchaseDialog from "./PurchaseDialog";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
 import ObjectArt from "./ObjectArt";
@@ -25,6 +27,7 @@ import { useCategories } from "./useCategories";
 
 type ApiListing = {
   id: string;
+  ownerId: string;
   name: string;
   description: string | null;
   category: string;
@@ -36,6 +39,7 @@ type ApiListing = {
 
 type CatalogListing = {
   id: string;
+  ownerId: string;
   title: string;
   description: string;
   category: string;
@@ -71,6 +75,9 @@ function App() {
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [purchaseTarget, setPurchaseTarget] = useState<Listing | null>(null);
+  // Incrémenté après un achat pour recharger le catalogue : l'objet vendu doit en disparaître.
+  const [catalogVersion, setCatalogVersion] = useState(0);
   const [registrationMessage, setRegistrationMessage] = useState("");
   // L'identité vient du jeton de Keycloak : elle apparaît dès que la connexion est établie.
   const sessionUser = userFromToken(useSyncExternalStore(subscribe, getToken));
@@ -94,6 +101,7 @@ function App() {
         const convertedListings = data.map((item) => {
           return {
             id: item.id,
+            ownerId: item.ownerId,
             title: item.name,
             description: item.description ?? "",
             category: item.category,
@@ -122,7 +130,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [category, search]);
+  }, [category, search, catalogVersion]);
 
   const filteredListings = listings
     .map((item) => ({
@@ -161,6 +169,35 @@ function App() {
     setShowMyListings(false);
     setShowAdmin(false);
     void logout();
+  }
+
+  /** Bouton d'achat du détail : connexion pour un visiteur, rien à acheter pour le vendeur lui-même. */
+  function renderBuyAction(listing: Listing) {
+    if (!sessionUser) {
+      return (
+        <button
+          type="button"
+          className="sell-button buy-button"
+          onClick={() => void login()}
+        >
+          Se connecter pour acheter
+        </button>
+      );
+    }
+
+    if (sessionUser.id === listing.ownerId) {
+      return <p className="purchase-note">C’est votre annonce.</p>;
+    }
+
+    return (
+      <button
+        type="button"
+        className="sell-button buy-button"
+        onClick={() => setPurchaseTarget(listing)}
+      >
+        Acheter
+      </button>
+    );
   }
 
   function renderCatalogue() {
@@ -475,7 +512,24 @@ function App() {
           <p className="shipping-cost">
             Frais d’expédition : {formatEuros(selectedListing.shippingCost)}
           </p>
+
+          {renderBuyAction(selectedListing)}
         </Modal>
+      )}
+
+      {purchaseTarget && (
+        <PurchaseDialog
+          listing={purchaseTarget}
+          onClose={() => setPurchaseTarget(null)}
+          onPurchased={(order) => {
+            setPurchaseTarget(null);
+            setSelectedListing(null);
+            setCatalogVersion((version) => version + 1);
+            setRegistrationMessage(
+              `Achat confirmé : « ${order.listingName} », ${formatEuros(order.buyerTotal)} payés.`,
+            );
+          }}
+        />
       )}
     </main>
   );
