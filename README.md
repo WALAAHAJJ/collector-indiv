@@ -90,6 +90,8 @@ Keycloak crée le compte administrateur du site au premier démarrage à partir 
 | `POST /api/orders` | jeton | Acheter une annonce approuvée avec une carte simulée (402 si la carte est refusée, 409 si déjà vendue, 403 pour sa propre annonce) |
 | `GET /api/orders/purchases` | jeton | Mes achats |
 | `GET /api/orders/sales` | jeton | Mes ventes, avec la commission et mon gain net |
+| `POST /api/orders/{id}/ship` | jeton | Le vendeur marque la commande expédiée (403 si ce n'est pas le vendeur, 409 si pas dans l'état « payée ») |
+| `POST /api/orders/{id}/deliver` | jeton | L'acheteur confirme la réception (403 si ce n'est pas l'acheteur, 409 si pas encore expédiée) |
 | `GET /api/admin/collectibles?status=` | administrateur | Annonces par statut (par défaut : en attente) |
 | `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
 | `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
