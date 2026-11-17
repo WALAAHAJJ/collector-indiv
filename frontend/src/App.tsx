@@ -423,7 +423,7 @@ function App() {
           </label>
         </div>
 
-        <div className="filters" role="group" aria-label="Filtrer par catégorie">
+        <fieldset className="filters" aria-label="Filtrer par catégorie">
           {categories.map((item) => (
             <button
               type="button"
@@ -435,7 +435,7 @@ function App() {
               {item}
             </button>
           ))}
-        </div>
+        </fieldset>
 
         {renderCatalogue()}
       </section>

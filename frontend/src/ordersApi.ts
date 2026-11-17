@@ -29,9 +29,9 @@ export const PURCHASES_URL = "/api/orders/purchases";
 export const SALES_URL = "/api/orders/sales";
 
 /** Mêmes formats que ceux contrôlés par le serveur (PurchaseRequest) : l'erreur s'affiche avant l'envoi. */
-export const CARD_NUMBER_PATTERN = /^[0-9 -]{13,23}$/;
-export const EXPIRY_PATTERN = /^(0[1-9]|1[0-2])\/[0-9]{2}$/;
-export const CVC_PATTERN = /^[0-9]{3,4}$/;
+export const CARD_NUMBER_PATTERN = /^[\d -]{13,23}$/;
+export const EXPIRY_PATTERN = /^(0[1-9]|1[0-2])\/\d{2}$/;
+export const CVC_PATTERN = /^\d{3,4}$/;
 
 function authHeaders(): Record<string, string> {
   const token = getToken();

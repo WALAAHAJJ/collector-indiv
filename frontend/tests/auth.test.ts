@@ -33,8 +33,8 @@ describe("jeton en mémoire", () => {
   it("ne confie jamais le jeton au stockage du navigateur", () => {
     setToken("jeton-test");
 
-    expect(sessionStorage.length).toBe(0);
-    expect(localStorage.length).toBe(0);
+    expect(sessionStorage).toHaveLength(0);
+    expect(localStorage).toHaveLength(0);
   });
 
   it("prévient les abonnés à chaque changement, puis plus après désabonnement", () => {

@@ -173,7 +173,7 @@ export default function PurchaseDialog({
 
       <form className="listing-form" onSubmit={handleSubmit} noValidate>
         <label>
-          Numéro de carte
+          <span>Numéro de carte</span>
           <input
             inputMode="numeric"
             autoComplete="cc-number"
@@ -185,7 +185,7 @@ export default function PurchaseDialog({
         </label>
 
         <label>
-          Nom sur la carte
+          <span>Nom sur la carte</span>
           <input
             autoComplete="cc-name"
             maxLength={60}
@@ -196,7 +196,7 @@ export default function PurchaseDialog({
 
         <div className="purchase-row">
           <label>
-            Expiration
+            <span>Expiration</span>
             <input
               inputMode="numeric"
               autoComplete="cc-exp"
@@ -208,7 +208,7 @@ export default function PurchaseDialog({
           </label>
 
           <label>
-            Code de sécurité
+            <span>Code de sécurité</span>
             <input
               inputMode="numeric"
               autoComplete="cc-csc"

@@ -102,10 +102,8 @@ export default function NotificationBell() {
     }
   }
 
-  const label =
-    unread > 0
-      ? `Notifications, ${unread} non lue${unread > 1 ? "s" : ""}`
-      : "Notifications";
+  const plural = unread > 1 ? "s" : "";
+  const label = unread > 0 ? `Notifications, ${unread} non lue${plural}` : "Notifications";
 
   return (
     <div className="notification-bell" ref={container}>

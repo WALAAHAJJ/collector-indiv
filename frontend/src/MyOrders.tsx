@@ -140,7 +140,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
       <span className="eyebrow">MON ESPACE</span>
       <h2 id="my-orders-title">Mes commandes</h2>
 
-      <div className="filters" role="group" aria-label="Type de commandes">
+      <fieldset className="filters" aria-label="Type de commandes">
         {tabs.map((item) => (
           <button
             type="button"
@@ -152,7 +152,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
             {item.label}
           </button>
         ))}
-      </div>
+      </fieldset>
 
       {renderOrders()}
     </Modal>

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { adminCategoryUrl } from "./api";
 import { getToken } from "./auth";
 import {
@@ -71,7 +71,7 @@ export default function AdminCategories({
     }
   }
 
-  async function create(event: FormEvent<HTMLFormElement>) {
+  async function create(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmed = name.trim();
@@ -122,7 +122,7 @@ export default function AdminCategories({
 
       <form className="admin-category-form" onSubmit={create}>
         <label>
-          Nom de la catégorie
+          <span>Nom de la catégorie</span>
           <input
             required
             maxLength={MAX_NAME_LENGTH}
@@ -132,7 +132,7 @@ export default function AdminCategories({
         </label>
 
         <label>
-          Illustration
+          <span>Illustration</span>
           <select
             value={art}
             onChange={(event) => setArt(event.target.value as CategoryArtName)}

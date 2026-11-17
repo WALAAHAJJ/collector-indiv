@@ -78,6 +78,10 @@
 }
 
 .filters {
+  /* fieldset : rôle « group » natif ; on retire son cadre et sa marge intérieure par défaut */
+  min-width: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 14px;

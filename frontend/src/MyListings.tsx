@@ -415,7 +415,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  Photo (facultative)
+                  <span>Photo (facultative)</span>
                   <input
                     type="file"
                     accept={PHOTO_TYPES.join(",")}

@@ -220,7 +220,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          Photo (facultative)
+          <span>Photo (facultative)</span>
           <input
             type="file"
             accept={PHOTO_TYPES.join(",")}

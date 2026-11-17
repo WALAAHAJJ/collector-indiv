@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import { adminCollectibleUrl, adminListUrl, type AdminStatus } from "./api";
 import { getToken } from "./auth";
 import AdminCategories from "./AdminCategories";
@@ -167,7 +167,7 @@ export default function AdminPanel({
     );
   }
 
-  function reject(event: FormEvent<HTMLFormElement>, listing: AdminListing) {
+  function reject(event: SyntheticEvent<HTMLFormElement>, listing: AdminListing) {
     event.preventDefault();
 
     if (reason.trim() === "") {
@@ -284,7 +284,7 @@ export default function AdminPanel({
                     onSubmit={(event) => reject(event, listing)}
                   >
                     <label>
-                      Motif du refus
+                      <span>Motif du refus</span>
                       <input
                         required
                         maxLength={255}
@@ -312,7 +312,7 @@ export default function AdminPanel({
   function renderListingsSection() {
     return (
       <>
-      <div className="filters" role="group" aria-label="Filtrer par statut">
+      <fieldset className="filters" aria-label="Filtrer par statut">
         {tabs.map((tab) => (
           <button
             type="button"
@@ -324,7 +324,7 @@ export default function AdminPanel({
             {tab.label}
           </button>
         ))}
-      </div>
+      </fieldset>
 
       {message && <output>{message}</output>}
       {error && <p role="alert">{error}</p>}
@@ -348,7 +348,7 @@ export default function AdminPanel({
       <span className="eyebrow">back-office</span>
       <h2 id="admin-title">Administration</h2>
 
-      <div className="filters" role="group" aria-label="Section">
+      <fieldset className="filters" aria-label="Section">
         <button
           type="button"
           aria-pressed={section === "listings"}
@@ -365,7 +365,7 @@ export default function AdminPanel({
         >
           Catégories
         </button>
-      </div>
+      </fieldset>
 
       {section === "categories" ? (
         <AdminCategories
