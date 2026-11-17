@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
  * soit utilisable dès le premier lancement. L'administrateur les gère ensuite.
  */
 @Component
+@Order(1)
 public class CategorySeeder implements ApplicationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CategorySeeder.class);

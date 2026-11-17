@@ -16,6 +16,8 @@ public interface CollectibleRepository extends JpaRepository<Collectible, UUID> 
 
     List<Collectible> findByOwnerId(UUID ownerId);
 
+    boolean existsByOwnerId(UUID ownerId);
+
     List<Collectible> findByStatus(ListingStatus status);
 
     /**
