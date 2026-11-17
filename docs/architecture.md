@@ -134,6 +134,30 @@ sequenceDiagram
 
 Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'annonce, le nouveau statut et le motif voyagent dans les en-têtes AMQP.
 
+### Achat d'une annonce (paiement simulé)
+
+```mermaid
+sequenceDiagram
+    participant U as Acheteur
+    participant A as Service des annonces
+    participant P as Passerelle de paiement (simulée)
+    participant B as Base des annonces
+    U->>A: POST /api/orders (annonce, carte) avec le jeton
+    A->>B: Lit l'annonce en la verrouillant
+    A->>A: Contrôles : approuvée, pas déjà vendue, pas la sienne
+    A->>A: Calcule commission, total, gain du vendeur
+    A->>P: Prélever le total sur la carte
+    alt carte refusée
+        P-->>A: Refus
+        A-->>U: 402, rien n'est modifié
+    else carte acceptée
+        A->>B: Annonce vendue + commande (4 derniers chiffres seulement)
+        A-->>U: 201, détail de la commande
+    end
+```
+
+Le verrou sur l'annonce fait attendre un second acheteur arrivé au même instant ; quand il obtient la main, l'annonce est vendue et il reçoit 409.
+
 ## 5. Décisions d'architecture
 
 | Décision | Raison | Limite ou conséquence |
@@ -144,6 +168,8 @@ Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'a
 | Modération exécutée dans le service des annonces, au moment du dépôt | Simple et immédiate, sans composant supplémentaire | Ajouter la détection de fraude ou les notifications obligerait à modifier ce service ; la messagerie entre services (à venir) lèvera cette limite |
 | Rôle `ADMIN` porté par le jeton (`realm_access.roles`) | Le service des annonces décide des droits sans rappeler Keycloak | Un changement de rôle ne prend effet qu'à l'expiration du jeton, soit 5 minutes au plus |
 | Les changements de statut sont publiés sur RabbitMQ, « au mieux » | Les notifications et la détection de fraude s'ajoutent sans modifier la modération ; une panne de RabbitMQ ne bloque jamais un dépôt d'annonce | Un événement peut être perdu si RabbitMQ est arrêté au mauvais moment ; en production, on utiliserait un journal d'envoi en base (patron « outbox ») |
+| Paiement derrière une interface `PaymentGateway`, simulé pour l'instant | Aucun vrai argent à manipuler dans un projet scolaire ; un vrai prestataire (Stripe, par exemple) remplacerait la simulation sans toucher au reste | La simulation ne couvre ni le remboursement, ni la contestation, ni le versement au vendeur |
+| Achat dans le service des annonces, avec un verrou sur l'annonce | Marquer vendue et enregistrer la commande doivent réussir ou échouer ensemble ; une seule base, donc une seule transaction | Si les commandes devenaient un service séparé, il faudrait une transaction répartie (patron « saga ») |
 | Passerelle assurée par Vite en développement | Une seule adresse pour le navigateur, pas de réglage de partage entre origines | À remplacer par une vraie passerelle en production |
 
 ## 6. Évolutivité
@@ -164,7 +190,7 @@ flowchart LR
     bus{{"Messagerie entre services (à venir)"}}
     notif["Notifications (à venir)"]
     fraude["Détection de fraude (à venir)"]
-    paiement["Paiement et commission (à venir)"]
+    paiement["Paiement et commission (API faite, écran à venir)"]
     chat["Chat (à venir)"]
 
     site --> comptes

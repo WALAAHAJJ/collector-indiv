@@ -91,3 +91,23 @@ Limites assumées : Keycloak est un composant lourd (environ 1 Go de mémoire) e
 - *Que se passe-t-il si un jeton est volé ?* Il expire en 5 minutes, il est gardé en mémoire (pas dans le stockage du navigateur) et le renouvellement est à usage unique (rotation) : un jeton de renouvellement rejoué est refusé.
 - *Comment un service sait-il que le jeton est authentique ?* Il vérifie la signature RS256 avec la clé publique de Keycloak, l'émetteur et la date d'expiration.
 - *Comment devient-on administrateur ?* Uniquement par le compte créé au démarrage depuis `.env` ou par un administrateur dans Keycloak ; l'inscription publique ne donne jamais ce rôle.
+
+## Paiement : simulation ou vrai prestataire
+
+### Choix : une simulation derrière une interface
+
+Un vrai prestataire (Stripe, PayPal) demande un compte, des clés secrètes et manipule de l'argent réel : hors de propos pour un projet scolaire. Le service des commandes dépend uniquement de l'interface `PaymentGateway` ; la simulation (`SimulatedPaymentGateway`) applique pourtant les contrôles réels d'une carte (clé de Luhn, expiration) et offre un numéro de test qui échoue toujours, comme les prestataires. Passer à un vrai prestataire reviendrait à écrire une autre implémentation, sans toucher au reste.
+
+### Deux choix techniques à justifier
+
+| Question | Choix | Pourquoi |
+|---|---|---|
+| Quel type pour les montants ? | `BigDecimal` | Un `double` n'est pas exact en binaire (0,1 + 0,2 ≠ 0,3) : sur de l'argent, les centimes se perdraient. L'arrondi (au centime, moitié vers le haut) est explicite. |
+| Comment éviter que deux acheteurs achètent le même objet ? | Verrou pessimiste sur l'annonce | Le second acheteur attend la fin de la transaction du premier, puis voit « vendue ». L'alternative (verrou optimiste, avec un numéro de version) laisse les deux aller jusqu'au paiement avant d'en refuser un : il faudrait alors rembourser. |
+
+### Questions probables du jury
+
+- *Que se passe-t-il si le paiement est refusé ?* Rien n'est modifié (tout est dans une transaction) et l'API répond 402, le code HTTP prévu pour cela.
+- *Où est stocké le numéro de carte ?* Nulle part : seuls les 4 derniers chiffres sont gardés, et le numéro n'apparaît ni dans les journaux ni dans les réponses.
+- *Pourquoi la commission ne porte-t-elle pas sur le port ?* Le port couvre un coût réel du vendeur ; le site se rémunère sur la vente de l'objet.
+- *Comment calculer ce que reçoit le vendeur ?* Prix − commission + port. Un test vérifie que cette somme redonne toujours le prix.

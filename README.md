@@ -28,7 +28,9 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Notifications : service et sa base dans Docker Compose, job de CI, suivi par Dependabot | Fait |
 | Notifications : cloche dans le site (compteur de non lues actualisé toutes les 30 s, liste, marquage comme lue) | Fait |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
-| Paiement simulé avec commission de 5 %, notes, chat | À faire |
+| Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
+| Paiement : écran d'achat dans le site, mes achats et mes ventes, notification de vente | À faire |
+| Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
 Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse depuis l'écran « Administration » du site.
@@ -84,6 +86,9 @@ Keycloak crée le compte administrateur du site au premier démarrage à partir 
 | `PUT` / `DELETE /api/collectibles/{id}` | jeton | Modifier ou supprimer sa propre annonce |
 | `POST` / `DELETE /api/collectibles/{id}/photo` | jeton | Ajouter, remplacer ou retirer la photo de sa propre annonce (JPEG, PNG ou WebP, 1 Mo au maximum) |
 | `GET /api/collectibles/{id}/photo` | public si l'annonce est approuvée, sinon propriétaire ou administrateur | Lire la photo d'une annonce |
+| `POST /api/orders` | jeton | Acheter une annonce approuvée avec une carte simulée (402 si la carte est refusée, 409 si déjà vendue, 403 pour sa propre annonce) |
+| `GET /api/orders/purchases` | jeton | Mes achats |
+| `GET /api/orders/sales` | jeton | Mes ventes, avec la commission et mon gain net |
 | `GET /api/admin/collectibles?status=` | administrateur | Annonces par statut (par défaut : en attente) |
 | `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
 | `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
@@ -101,6 +106,16 @@ Chaque annonce créée ou modifiée est contrôlée sans intervention humaine :
 - sinon : **approuvée** et visible dans le catalogue.
 
 Les motifs de refus sont affichés au vendeur. La détection du téléphone n'utilise pas d'expression régulière, pour éviter les blocages sur des textes hostiles.
+
+## Paiement simulé
+
+Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle applique les vrais contrôles d'une carte.
+
+- **Commission** : 5 % du prix de l'objet (réglable par `app.payment.commission-rate`), arrondie au centime. Le port revient au vendeur. Pour un objet à 20,00 € avec 3,00 € de port : l'acheteur paie 23,00 €, le site garde 1,00 €, le vendeur reçoit 22,00 €.
+- **Cartes de test** : `4242 4242 4242 4242` est acceptée ; `4000 0000 0000 0002` est toujours refusée ; un numéro dont la clé de Luhn est fausse ou une date dépassée est refusé.
+- **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien. Deux acheteurs simultanés : le second reçoit une erreur 409.
+- **Données de carte** : jamais enregistrées ni journalisées ; la commande garde seulement les 4 derniers chiffres.
+- Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
 
 ## Tests et qualité
 
