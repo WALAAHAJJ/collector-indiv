@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { catalogUrl, collectibleUrl, myCollectiblesUrl } from "../src/api";
+import { catalogUrl, collectibleUrl, myCollectiblesUrl, publicListingUrl } from "../src/api";
 
 const validId = "123e4567-e89b-42d3-a456-426614174000";
 
@@ -44,5 +44,15 @@ describe("catalogUrl", () => {
     const url = catalogUrl("", "a".repeat(250));
 
     expect(url).toBe(`/api/collectibles/catalog?search=${"a".repeat(100)}`);
+  });
+});
+
+describe("publicListingUrl", () => {
+  it("construit l’adresse de la fiche publique", () => {
+    expect(publicListingUrl(validId)).toBe(`/api/collectibles/catalog/${validId}`);
+  });
+
+  it.each(["", "abc", "../admin", `${validId}/../x`])("refuse l’identifiant invalide %j", (value) => {
+    expect(() => publicListingUrl(value)).toThrow("Identifiant invalide.");
   });
 });

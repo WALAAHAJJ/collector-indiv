@@ -15,6 +15,11 @@ export function collectibleUrl(id: string): string {
   return `/api/collectibles/${encodeURIComponent(assertUuid(id))}`;
 }
 
+/** Fiche publique d'une annonce (approuvée ou vendue), sans connexion. */
+export function publicListingUrl(id: string): string {
+  return `/api/collectibles/catalog/${encodeURIComponent(assertUuid(id))}`;
+}
+
 export function myCollectiblesUrl(ownerId: string): string {
   return `/api/collectibles?ownerId=${encodeURIComponent(assertUuid(ownerId))}`;
 }
