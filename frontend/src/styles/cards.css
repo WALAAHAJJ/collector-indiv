@@ -93,6 +93,11 @@
   background: var(--paper-warm);
 }
 
+.favorite[aria-pressed="true"] {
+  background: var(--tomato-ink);
+  color: var(--paper);
+}
+
 .item-details {
   display: flex;
   flex: 1;

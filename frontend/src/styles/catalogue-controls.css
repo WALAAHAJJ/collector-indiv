@@ -57,6 +57,23 @@
   background: var(--paper);
 }
 
+.favorites-toggle {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 2px solid var(--tomato-ink);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tomato-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.favorites-toggle.active {
+  background: var(--tomato-ink);
+  color: var(--paper);
+}
+
 .pagination {
   display: flex;
   flex-wrap: wrap;

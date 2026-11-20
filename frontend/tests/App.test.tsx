@@ -20,6 +20,7 @@ const identity = vi.hoisted(() => ({
 vi.mock("../src/identity", () => identity);
 
 beforeEach(() => {
+  localStorage.clear();
   window.location.hash = "";
   identity.login.mockReset().mockResolvedValue(undefined);
   identity.register.mockReset().mockResolvedValue(undefined);
@@ -599,6 +600,66 @@ describe("App - tri, filtres et pagination du catalogue", () => {
 
     expect(
       await screen.findByText("Aucun objet ne correspond à cette recherche."),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("App - favoris", () => {
+  it("ajoute et retire une annonce des favoris", async () => {
+    mockApi();
+    render(<App />);
+
+    const add = await screen.findByRole("button", {
+      name: "Ajouter Lot de timbres aux favoris",
+    });
+    await userEvent.click(add);
+
+    const remove = screen.getByRole("button", {
+      name: "Retirer Lot de timbres des favoris",
+    });
+    expect(remove).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("♡ Mes favoris (1)")).toBeInTheDocument();
+
+    await userEvent.click(remove);
+
+    expect(screen.getByText("♡ Mes favoris (0)")).toBeInTheDocument();
+  });
+
+  it("n'affiche que les favoris quand le filtre est actif", async () => {
+    const other = { ...approvedListing, id: "33333333-3333-4333-8333-333333333333", name: "Autre objet" };
+    mockApi({ catalog: () => jsonResponse([approvedListing, other]) });
+    render(<App />);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Ajouter Autre objet aux favoris" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Mes favoris/ }));
+
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Autre objet" })).toBeInTheDocument();
+  });
+
+  it("explique quoi faire quand il n'y a pas encore de favori", async () => {
+    mockApi();
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole("button", { name: /Mes favoris/ }));
+
+    expect(screen.getByText(/pas encore de favori/)).toBeInTheDocument();
+  });
+
+  it("conserve les favoris après un rechargement de la page", async () => {
+    mockApi();
+    const first = render(<App />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Ajouter Lot de timbres aux favoris" }),
+    );
+    first.unmount();
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole("button", { name: "Retirer Lot de timbres des favoris" }),
     ).toBeInTheDocument();
   });
 });

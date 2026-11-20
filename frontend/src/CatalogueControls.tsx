@@ -12,10 +12,12 @@ type Props = {
   onChange: (filters: CatalogFilters) => void;
   /** Nombre d'annonces correspondant aux filtres. */
   count: number;
+  /** Filtre « Mes favoris » : affiché seulement si le parent le gère. */
+  favorites?: { count: number; active: boolean; onToggle: () => void };
 };
 
 /** Barre de tri et de filtres du catalogue : fourchette de prix, état, ordre d'affichage. */
-export function CatalogueControls({ filters, onChange, count }: Props) {
+export function CatalogueControls({ filters, onChange, count, favorites }: Props) {
   function update(patch: Partial<CatalogFilters>) {
     onChange({ ...filters, ...patch });
   }
@@ -76,6 +78,17 @@ export function CatalogueControls({ filters, onChange, count }: Props) {
           ))}
         </select>
       </label>
+
+      {favorites && (
+        <button
+          type="button"
+          className={favorites.active ? "favorites-toggle active" : "favorites-toggle"}
+          aria-pressed={favorites.active}
+          onClick={favorites.onToggle}
+        >
+          {favorites.active ? "♥" : "♡"} Mes favoris ({favorites.count})
+        </button>
+      )}
 
       <p className="catalogue-count" aria-live="polite">
         {count} annonce{count > 1 ? "s" : ""}

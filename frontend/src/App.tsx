@@ -38,6 +38,7 @@ import {
 } from "./catalogue";
 import { CatalogueControls } from "./CatalogueControls";
 import { Pagination } from "./Pagination";
+import { VISITOR_KEY, useFavorites } from "./favorites";
 import { useCategories } from "./useCategories";
 
 function App() {
@@ -62,6 +63,8 @@ function App() {
   const [registrationMessage, setRegistrationMessage] = useState("");
   // L'identité vient du jeton de Keycloak : elle apparaît dès que la connexion est établie.
   const sessionUser = userFromToken(useSyncExternalStore(subscribe, getToken));
+  const favorites = useFavorites(sessionUser?.id ?? VISITOR_KEY);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,8 +115,15 @@ function App() {
         .toLowerCase()
         .includes(search.toLowerCase());
 
-      return matchesCategory && matchesSearch;
+      return (
+        matchesCategory &&
+        matchesSearch &&
+        (!onlyFavorites || favorites.isFavorite(item.id))
+      );
     });
+  const favoritesCount = listings.filter((item) =>
+    favorites.isFavorite(item.id),
+  ).length;
   const filteredListings = sortListings(
     applyFilters(matchingListings, filters),
     filters.sort,
@@ -121,6 +131,11 @@ function App() {
   const totalPages = pageCount(filteredListings.length);
   const currentPage = Math.min(page, totalPages);
   const pageListings = paginate(filteredListings, currentPage);
+
+  function handleToggleFavorites() {
+    setOnlyFavorites((current) => !current);
+    setPage(1);
+  }
 
   function handleFiltersChange(value: CatalogFilters) {
     setFilters(value);
@@ -197,6 +212,15 @@ function App() {
       return <p className="empty-state">{error}</p>;
     }
 
+    if (filteredListings.length === 0 && onlyFavorites && favoritesCount === 0) {
+      return (
+        <p className="empty-state">
+          Vous n’avez pas encore de favori : cliquez sur ♡ sur une annonce pour
+          la retrouver ici.
+        </p>
+      );
+    }
+
     if (filteredListings.length === 0) {
       return (
         <p className="empty-state">
@@ -225,9 +249,15 @@ function App() {
             <button
               type="button"
               className="favorite"
-              aria-label={`Ajouter ${item.title} aux favoris`}
+              aria-pressed={favorites.isFavorite(item.id)}
+              aria-label={
+                favorites.isFavorite(item.id)
+                  ? `Retirer ${item.title} des favoris`
+                  : `Ajouter ${item.title} aux favoris`
+              }
+              onClick={() => favorites.toggle(item.id)}
             >
-              ♡
+              {favorites.isFavorite(item.id) ? "♥" : "♡"}
             </button>
           </div>
 
@@ -428,6 +458,11 @@ function App() {
             filters={filters}
             onChange={handleFiltersChange}
             count={filteredListings.length}
+            favorites={{
+              count: favoritesCount,
+              active: onlyFavorites,
+              onToggle: handleToggleFavorites,
+            }}
           />
 
           {renderCatalogue()}
