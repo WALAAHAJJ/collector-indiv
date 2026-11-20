@@ -4,6 +4,7 @@ import "./styles/tones.css";
 import "./styles/header.css";
 import "./styles/hero.css";
 import "./styles/catalogue.css";
+import "./styles/catalogue-controls.css";
 import "./styles/cards.css";
 import "./styles/modal.css";
 import "./styles/forms.css";
@@ -27,6 +28,16 @@ import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
 import ObjectArt from "./ObjectArt";
 import { visualForLabel } from "./categories";
+import {
+  NO_FILTERS,
+  type CatalogFilters,
+  applyFilters,
+  pageCount,
+  paginate,
+  sortListings,
+} from "./catalogue";
+import { CatalogueControls } from "./CatalogueControls";
+import { Pagination } from "./Pagination";
 import { useCategories } from "./useCategories";
 
 function App() {
@@ -36,6 +47,8 @@ function App() {
   const [listings, setListings] = useState<CatalogListing[]>([]);
   const [category, setCategory] = useState("Tout");
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<CatalogFilters>(NO_FILTERS);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const route = useRoute();
@@ -87,7 +100,7 @@ function App() {
     };
   }, [category, search, catalogVersion]);
 
-  const filteredListings = listings
+  const matchingListings = listings
     .map((item) => ({
       ...item,
       ...visualForLabel(item.category, apiCategories),
@@ -101,6 +114,23 @@ function App() {
 
       return matchesCategory && matchesSearch;
     });
+  const filteredListings = sortListings(
+    applyFilters(matchingListings, filters),
+    filters.sort,
+  );
+  const totalPages = pageCount(filteredListings.length);
+  const currentPage = Math.min(page, totalPages);
+  const pageListings = paginate(filteredListings, currentPage);
+
+  function handleFiltersChange(value: CatalogFilters) {
+    setFilters(value);
+    setPage(1);
+  }
+
+  function handlePageChange(value: number) {
+    setPage(value);
+    document.getElementById("catalogue")?.scrollIntoView?.({ block: "start" });
+  }
 
   function handleSearchChange(value: string) {
     if (value !== search) {
@@ -108,6 +138,7 @@ function App() {
     }
 
     setError("");
+    setPage(1);
     setSearch(value);
   }
 
@@ -117,6 +148,7 @@ function App() {
     }
 
     setError("");
+    setPage(1);
     setCategory(value);
   }
 
@@ -177,7 +209,7 @@ function App() {
 
     return (
     <div className="listing-grid">
-      {filteredListings.map((item) => (
+      {pageListings.map((item) => (
         <article className="listing-card" key={item.id}>
           <div className={`item-visual ${item.tone}`}>
             {item.image ? (
@@ -392,7 +424,19 @@ function App() {
             ))}
           </fieldset>
 
+          <CatalogueControls
+            filters={filters}
+            onChange={handleFiltersChange}
+            count={filteredListings.length}
+          />
+
           {renderCatalogue()}
+
+          <Pagination
+            page={currentPage}
+            pages={totalPages}
+            onChange={handlePageChange}
+          />
         </section>
         </>
       ) : (

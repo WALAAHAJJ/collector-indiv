@@ -66,7 +66,9 @@ describe("App - catalogue", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("18,50 €")).toBeInTheDocument();
     expect(screen.getByText("Expédition : 2,50 €")).toBeInTheDocument();
-    expect(screen.getByText("Bon état")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("article")).getByText("Bon état"),
+    ).toBeInTheDocument();
   });
 
   it("affiche un message quand le catalogue est vide", async () => {
@@ -539,5 +541,64 @@ describe("App - achat", () => {
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
     expect(screen.queryByRole("button", { name: "Mes commandes" })).toBeNull();
+  });
+});
+
+describe("App - tri, filtres et pagination du catalogue", () => {
+  const many = Array.from({ length: 15 }, (_, index) => ({
+    ...approvedListing,
+    id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+    name: `Objet ${String(index + 1).padStart(2, "0")}`,
+    price: index + 1,
+  }));
+
+  it("découpe le catalogue en pages de 12 annonces", async () => {
+    mockApi({ catalog: () => jsonResponse(many) });
+    render(<App />);
+
+    expect(await screen.findByText("Page 1 sur 2")).toBeInTheDocument();
+    expect(screen.getAllByRole("article")).toHaveLength(12);
+    expect(screen.getByText("15 annonces")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Suivant/ }));
+
+    expect(screen.getByText("Page 2 sur 2")).toBeInTheDocument();
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+  });
+
+  it("trie par prix décroissant", async () => {
+    mockApi({ catalog: () => jsonResponse(many) });
+    render(<App />);
+    await screen.findByText("Page 1 sur 2");
+
+    await userEvent.selectOptions(screen.getByLabelText("Trier par"), "price-desc");
+
+    const first = screen.getAllByRole("article")[0];
+    expect(within(first).getByRole("heading", { name: "Objet 15" })).toBeInTheDocument();
+  });
+
+  it("filtre par prix maximum et revient à la première page", async () => {
+    mockApi({ catalog: () => jsonResponse(many) });
+    render(<App />);
+    await screen.findByText("Page 1 sur 2");
+    await userEvent.click(screen.getByRole("button", { name: /Suivant/ }));
+
+    await userEvent.type(screen.getByLabelText("Prix max (€)"), "3");
+
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+    expect(screen.getByText("3 annonces")).toBeInTheDocument();
+    expect(screen.queryByText(/Page \d sur/)).toBeNull();
+  });
+
+  it("indique quand aucun objet ne correspond aux filtres", async () => {
+    mockApi({ catalog: () => jsonResponse(many) });
+    render(<App />);
+    await screen.findByText("Page 1 sur 2");
+
+    await userEvent.type(screen.getByLabelText("Prix min (€)"), "500");
+
+    expect(
+      await screen.findByText("Aucun objet ne correspond à cette recherche."),
+    ).toBeInTheDocument();
   });
 });
