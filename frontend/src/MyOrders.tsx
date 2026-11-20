@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import Modal from "./Modal";
+import ReviewForm from "./ReviewForm";
+import Stars from "./Stars";
+import { fetchMyReviews, type Review } from "./reviewsApi";
 import { formatEuros } from "./money";
 import {
   deliverOrder,
@@ -35,6 +38,25 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
+  // Avis déjà écrits, par numéro de commande.
+  const [reviews, setReviews] = useState<Record<string, Review>>({});
+  const needsReviews = tab === "purchases" && orders.some((item) => item.status === "DELIVERED");
+
+  useEffect(() => {
+    if (!needsReviews) return;
+
+    let cancelled = false;
+
+    fetchMyReviews().then((mine) => {
+      if (!cancelled) {
+        setReviews(Object.fromEntries(mine.map((item) => [item.orderId, item])));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [needsReviews]);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +137,32 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     return null;
   }
 
+  /** Sous un achat reçu : l'avis déjà donné, ou le formulaire pour en donner un. */
+  function renderReview(order: Order) {
+    if (tab !== "purchases" || order.status !== "DELIVERED") {
+      return null;
+    }
+
+    const written = reviews[order.id];
+
+    if (written) {
+      return (
+        <div className="my-review">
+          <span>Votre avis</span>
+          <Stars value={written.rating} />
+          {written.comment && <p>{written.comment}</p>}
+        </div>
+      );
+    }
+
+    return (
+      <ReviewForm
+        orderId={order.id}
+        onSaved={(saved) => setReviews((current) => ({ ...current, [saved.orderId]: saved }))}
+      />
+    );
+  }
+
   function renderOrder(order: Order) {
     return (
       <article className="order-card" key={order.id}>
@@ -160,6 +208,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
         </dl>
 
         {renderAction(order)}
+        {renderReview(order)}
       </article>
     );
   }

@@ -172,3 +172,72 @@ describe("MyOrders", () => {
     expect(screen.getByRole("button", { name: "J’ai reçu mon colis" })).toBeEnabled();
   });
 });
+
+describe("MyOrders - avis sur le vendeur", () => {
+  const deliveredOrder = { ...order, status: "DELIVERED" as const, deliveredAt: "2026-11-19T09:00:00Z" };
+  const written = {
+    id: "r1",
+    orderId: order.id,
+    buyerId: order.buyerId,
+    sellerId: order.sellerId,
+    rating: 4,
+    comment: "Envoi soigné",
+    createdAt: "2026-11-20T10:00:00Z",
+  };
+
+  function mockWithReviews(reviews: unknown[]) {
+    return mockFetch((url, init) => {
+      if (url === "/api/reviews/mine") return jsonResponse(reviews);
+      if (url.endsWith("/review") && init?.method === "POST") return jsonResponse(written, 201);
+      return url === "/api/orders/purchases" ? jsonResponse([deliveredOrder]) : jsonResponse([]);
+    });
+  }
+
+  it("propose de noter le vendeur d'un achat reçu", async () => {
+    mockWithReviews([]);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    expect(await screen.findByText("Notez le vendeur")).toBeInTheDocument();
+  });
+
+  it("affiche l'avis déjà donné au lieu du formulaire", async () => {
+    mockWithReviews([written]);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    expect(await screen.findByText("Envoi soigné")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "4,0 sur 5" })).toBeInTheDocument();
+    expect(screen.queryByText("Notez le vendeur")).toBeNull();
+  });
+
+  it("remplace le formulaire par l'avis une fois publié", async () => {
+    mockWithReviews([]);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "4 étoiles" }));
+    await userEvent.click(screen.getByRole("button", { name: "Publier mon avis" }));
+
+    expect(await screen.findByText("Votre avis")).toBeInTheDocument();
+    expect(screen.queryByText("Notez le vendeur")).toBeNull();
+  });
+
+  it("ne propose pas d'avis sur une commande pas encore reçue", async () => {
+    mockOrders([shippedOrder], []);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.queryByText("Notez le vendeur")).toBeNull();
+  });
+
+  it("ne propose pas de noter sa propre vente", async () => {
+    mockWithReviews([]);
+    render(<MyOrders onClose={vi.fn()} />);
+    await screen.findByText("Notez le vendeur");
+
+    mockFetch((url) => (url === "/api/orders/sales" ? jsonResponse([deliveredOrder]) : jsonResponse([deliveredOrder])));
+    await userEvent.click(screen.getByRole("button", { name: "Mes ventes" }));
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.queryByText("Notez le vendeur")).toBeNull();
+  });
+});
