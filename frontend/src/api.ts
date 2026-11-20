@@ -20,6 +20,18 @@ export function publicListingUrl(id: string): string {
   return `/api/collectibles/catalog/${encodeURIComponent(assertUuid(id))}`;
 }
 
+/** Avis d'un vendeur : consultation publique. */
+export function sellerReviewsUrl(sellerId: string): string {
+  return `/api/sellers/${encodeURIComponent(assertUuid(sellerId))}/reviews`;
+}
+
+/** Avis laissé par l'acheteur sur une commande reçue. */
+export function orderReviewUrl(orderId: string): string {
+  return `/api/orders/${encodeURIComponent(assertUuid(orderId))}/review`;
+}
+
+export const MY_REVIEWS_URL = "/api/reviews/mine";
+
 export function myCollectiblesUrl(ownerId: string): string {
   return `/api/collectibles?ownerId=${encodeURIComponent(assertUuid(ownerId))}`;
 }
