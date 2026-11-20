@@ -6,6 +6,9 @@ Routes du collection-service (port 8081) et du notification-service (port 8083).
 |---|---|---|
 | `GET /api/categories` | public | Liste des catégories, avec leur illustration |
 | `GET /api/collectibles/catalog?category=&search=` | public | Annonces approuvées |
+| `POST /api/orders/{id}/review` | acheteur | Note (1 à 5) et commentaire (500 caractères) sur une commande reçue : 403 si ce n'est pas l'acheteur, 404 pour un tiers, 409 si la commande n'est pas reçue ou déjà notée |
+| `GET /api/reviews/mine` | jeton | Avis écrits par l'utilisateur |
+| `GET /api/sellers/{id}/reviews` | public | Moyenne (au dixième), nombre d'avis et 20 derniers avis d'un vendeur |
 | `GET /api/collectibles/catalog/{id}` | public | Fiche d'une annonce approuvée ou vendue (404 si en attente, refusée ou inconnue) |
 | `POST /api/collectibles` | jeton | Déposer une annonce |
 | `GET /api/collectibles?ownerId=` | jeton | Mes annonces (uniquement les siennes) |

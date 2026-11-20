@@ -34,7 +34,8 @@ Ce document détaille ce que fait le site, fonctionnalité par fonctionnalité. 
 | Page de détail d'une annonce avec adresse partageable (`#/annonce/…`), annonces de la même catégorie, bandeau « vendue » | Fait |
 | Catalogue enrichi : recherche, tri (prix, nom), filtres par fourchette de prix et par état, pagination de 12 annonces | Fait |
 | Favoris : cœur cliquable sur chaque annonce et filtre « Mes favoris » (liste conservée par compte dans le navigateur) | Fait |
-| Notes, chat | À faire |
+| Avis sur les vendeurs : note de 1 à 5 et commentaire après réception, une seule fois par commande, moyenne et derniers avis sur la page de l'annonce | Fait |
+| Chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
 Une annonce au prix supérieur à 5 000 € reste en attente de validation manuelle : un administrateur la valide ou la refuse depuis l'écran « Administration » du site.
