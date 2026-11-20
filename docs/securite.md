@@ -56,6 +56,7 @@ Le cycle est toujours le même : **détecter, analyser, corriger, vérifier, doc
 |---|---|---|
 | Trivy | Règle DS-0002 : les trois Dockerfiles s'exécutaient en root | Création d'un utilisateur dédié (`USER app`, `USER node`), puis Trivy rendu bloquant |
 | SonarCloud | Alertes « Client-Side Request Forgery » : identifiants utilisateur collés dans des adresses d'API | Module `api.ts` : identifiants validés par expression régulière d'UUID et encodés |
+| SonarCloud | Règle `tssecurity:S8476` (Client-Side Request Forgery) sur l'appel du catalogue, `App.tsx` et `ListingPage.tsx` : la note de sécurité du Quality Gate passe à B | Analysées une à une puis classées **faux positifs**, avec justification : le chemin appelé est fixe (`/api/collectibles/catalog`), le seul paramètre variable passe par `URLSearchParams` (encodé) et la recherche est limitée à 100 caractères ; l'utilisateur ne choisit ni l'hôte ni le chemin. Décision tracée dans SonarCloud |
 | SonarCloud | Expression régulière à coût super-linéaire dans la modération (risque de blocage sur un texte hostile) | E-mail borné, téléphone détecté par un parcours linéaire, test sur une entrée d'un million de caractères |
 | SonarCloud | Fenêtres cliquables sans équivalent clavier (accessibilité) | Composant `Modal` : balise `<dialog>`, bouton de fermeture, touche Échap |
 | Essai manuel | Les erreurs d'authentification (409, 400) arrivaient en 401 vide, route `/error` interdite | Route autorisée, tests ajoutés |

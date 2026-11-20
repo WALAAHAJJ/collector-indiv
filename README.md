@@ -34,6 +34,7 @@ Projet (CESI). L'entreprise Collector , le cahier des charges décrit une commis
 | Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Fait |
 | Données de démonstration : 42 annonces réalistes, sept catégories, six vendeurs fictifs (`DEMO_DATA=true`) | Fait |
 | Page de détail d'une annonce avec adresse partageable (`#/annonce/…`), annonces de la même catégorie, bandeau « vendue » | Fait |
+| Catalogue enrichi : recherche, tri (prix, nom), filtres par fourchette de prix et par état, pagination de 12 annonces | Fait |
 | Notes, chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
@@ -129,6 +130,8 @@ Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle 
 - **Notification de vente** : une fois l'achat validé, le service des annonces publie `order.paid` sur RabbitMQ ; le vendeur reçoit dans sa cloche « Bonne nouvelle : « … » est vendu ! Vous gagnez 22,00 € ». L'envoi attend la fin de la transaction : un achat annulé ne prévient personne.
 - **Notifications de suivi** : quand le vendeur expédie, l'acheteur reçoit « Votre commande « … » a été expédiée » (`order.shipped`) ; quand l'acheteur confirme la réception, le vendeur est prévenu (`order.delivered`). Même principe : envoi après validation de la transaction, et un RabbitMQ arrêté ne bloque pas la commande.
 - Une annonce vendue quitte le catalogue et ne peut plus être modifiée, supprimée ni remise en vente.
+
+Catalogue : la recherche et la catégorie sont traitées par l'API (`category`, `search`) ; le tri (pertinence, prix croissant ou décroissant, nom), le filtre de prix minimum et maximum, le filtre d'état et la pagination (12 annonces par page) sont appliqués dans le navigateur, par des fonctions pures testées (`frontend/src/catalogue.ts`). Choix assumé : à l'échelle de quelques centaines d'annonces c'est instantané et sans appel réseau ; au-delà de plusieurs milliers, il faudrait déplacer le tri et la pagination dans l'API (`page`, `size`, `sort`).
 
 Dans le site : « Voir le détail » ouvre la page de l'annonce (adresse `#/annonce/<identifiant>`, copiable). Sur cette page, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue, sa page affiche « Cette annonce a été vendue » et la commande apparaît dans « Mes commandes ».
 
