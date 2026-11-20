@@ -104,3 +104,76 @@
 .order-action {
   margin-top: 16px;
 }
+
+/* Avis sur les vendeurs */
+
+.stars {
+  color: var(--tomato-ink);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.review-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--ink);
+}
+
+.review-form fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.review-form legend {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.star-picker {
+  display: flex;
+  gap: 4px;
+}
+
+.star-button {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--tomato-ink);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.review-form label {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.review-form textarea {
+  padding: 8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.my-review {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--ink);
+}
+
+.my-review p {
+  margin: 0;
+  color: var(--ink-soft);
+}
