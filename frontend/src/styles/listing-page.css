@@ -148,3 +148,38 @@
     min-height: 260px;
   }
 }
+
+.seller-rating {
+  white-space: nowrap;
+}
+
+.seller-reviews {
+  max-width: 70ch;
+  margin-top: 44px;
+}
+
+.seller-reviews ul {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seller-reviews li {
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px;
+  border-left: 4px solid var(--mustard);
+  background: var(--paper);
+}
+
+.seller-reviews p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.review-meta {
+  color: var(--ink-soft);
+  font-size: 13px;
+}

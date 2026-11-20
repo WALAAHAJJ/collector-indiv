@@ -9,11 +9,14 @@ const otherId = "33333333-3333-4333-8333-333333333333";
 type Handlers = {
   detail?: () => Response;
   catalog?: () => Response;
+  reviews?: () => Response;
 };
 
 function mockApi(handlers: Handlers = {}) {
   return mockFetch((url) =>
-    url === `/api/collectibles/catalog/${listingId}`
+    url.startsWith("/api/sellers/")
+      ? (handlers.reviews?.() ?? jsonResponse({ average: null, count: 0, reviews: [] }))
+      : url === `/api/collectibles/catalog/${listingId}`
       ? (handlers.detail?.() ?? jsonResponse(approvedListing))
       : (handlers.catalog?.() ??
         jsonResponse([approvedListing, { ...approvedListing, id: otherId, name: "Série Europa" }])),
@@ -163,5 +166,33 @@ describe("ListingPage", () => {
 
     await screen.findByRole("heading", { level: 1, name: "Lot de timbres" });
     expect(fetchMock.mock.calls.length).toBeGreaterThan(callsBefore);
+  });
+
+  it("affiche la note moyenne du vendeur et ses derniers avis", async () => {
+    mockApi({
+      reviews: () =>
+        jsonResponse({
+          average: 4.5,
+          count: 2,
+          reviews: [
+            { id: "r1", orderId: listingId, buyerId: otherId, sellerId: approvedListing.ownerId, rating: 5, comment: "Impeccable", createdAt: "2026-11-20T10:00:00Z" },
+          ],
+        }),
+    });
+    renderPage();
+
+    expect(await screen.findByText("Avis sur ce vendeur")).toBeInTheDocument();
+    expect(screen.getByText("Impeccable")).toBeInTheDocument();
+    expect(screen.getByText(/4,5/, { selector: ".seller-rating" })).toHaveTextContent("(2 avis)");
+  });
+
+  it("n'affiche aucun bloc d'avis pour un vendeur sans avis", async () => {
+    mockApi();
+    renderPage();
+
+    await screen.findByRole("heading", { level: 1, name: "Lot de timbres" });
+
+    expect(screen.queryByText("Avis sur ce vendeur")).toBeNull();
+    expect(document.querySelector(".seller-rating")).toBeNull();
   });
 });

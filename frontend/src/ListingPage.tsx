@@ -6,6 +6,8 @@ import { sellerLabel, toCatalogListing, type ApiListing, type Listing } from "./
 import { listingHref } from "./route";
 import { formatEuros } from "./money";
 import ObjectArt from "./ObjectArt";
+import Stars from "./Stars";
+import { fetchSellerReviews, formatRating, type SellerReviews } from "./reviewsApi";
 
 type ListingPageProps = Readonly<{
   id: string;
@@ -22,11 +24,13 @@ type State =
   | { status: "ready"; listing: Listing };
 
 const MAX_SIMILAR = 4;
+const MAX_REVIEWS_SHOWN = 5;
 
 export default function ListingPage({ id, categories, refreshKey, renderBuyAction }: ListingPageProps) {
   const [state, setState] = useState<State>({ status: "loading" });
   const [similar, setSimilar] = useState<Listing[]>([]);
   const [copied, setCopied] = useState(false);
+  const [sellerReviews, setSellerReviews] = useState<SellerReviews | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,6 +70,21 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
   }, [id, categories, refreshKey]);
 
   const category = state.status === "ready" ? state.listing.category : "";
+  const ownerId = state.status === "ready" ? state.listing.ownerId : "";
+
+  useEffect(() => {
+    if (!ownerId) return;
+
+    let cancelled = false;
+
+    fetchSellerReviews(ownerId).then((data) => {
+      if (!cancelled) setSellerReviews(data);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ownerId]);
 
   useEffect(() => {
     if (!category) return;
@@ -152,7 +171,16 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
           <span className="item-category">{listing.category}</span>
           <h1 id="listing-page-title">{listing.title}</h1>
 
-          <p className="listing-page-seller">Proposé par {sellerLabel(listing.ownerId)}</p>
+          <p className="listing-page-seller">
+            Proposé par {sellerLabel(listing.ownerId)}
+            {sellerReviews && sellerReviews.average !== null && (
+              <span className="seller-rating">
+                {" · "}
+                <Stars value={sellerReviews.average} /> {formatRating(sellerReviews.average)} (
+                {sellerReviews.count} avis)
+              </span>
+            )}
+          </p>
 
           <div className="modal-price">
             <span>{listing.condition}</span>
@@ -183,6 +211,23 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
         <h2>Description</h2>
         <p>{listing.description || "Aucune description renseignée."}</p>
       </div>
+
+      {sellerReviews && sellerReviews.reviews.length > 0 && (
+        <div className="seller-reviews">
+          <h2>Avis sur ce vendeur</h2>
+          <ul>
+            {sellerReviews.reviews.slice(0, MAX_REVIEWS_SHOWN).map((item) => (
+              <li key={item.id}>
+                <Stars value={item.rating} />
+                {item.comment && <p>{item.comment}</p>}
+                <span className="review-meta">
+                  {sellerLabel(item.buyerId)} · {new Date(item.createdAt).toLocaleDateString("fr-FR")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {similar.length > 0 && (
         <div className="similar-listings">
