@@ -33,7 +33,7 @@
   align-items: start;
   gap: 20px;
   padding: 16px;
-  border: 1px solid #e3d6b8;
+  border: 1px solid var(--kraft-deep);
   background: var(--paper);
   box-shadow: var(--shadow-card);
 }

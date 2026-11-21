@@ -57,7 +57,7 @@
 
 .order-card {
   padding: 16px 18px;
-  border: 1px solid #e3d6b8;
+  border: 1px solid var(--kraft-deep);
   background: var(--paper);
   box-shadow: var(--shadow-card);
 }

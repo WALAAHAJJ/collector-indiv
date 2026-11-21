@@ -96,7 +96,7 @@ describe("App - catalogue", () => {
     render(<App />);
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
-    await user.click(screen.getByRole("button", { name: "Timbres" }));
+    await user.click(within(screen.getByRole("navigation", { name: "Navigation principale" })).getByRole("link", { name: "Timbres" }));
 
     await waitFor(() =>
       expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
@@ -113,11 +113,10 @@ describe("App - catalogue", () => {
     render(<App />);
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
-    expect(
-      await screen.findByRole("button", { name: "Vinyles" }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Timbres" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Tout" })).toBeInTheDocument();
+    const tabs = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    expect(await tabs.findByRole("link", { name: "Vinyles" })).toBeInTheDocument();
+    expect(tabs.queryByRole("link", { name: "Timbres" })).toBeNull();
+    expect(tabs.getByRole("link", { name: "Catalogue" })).toBeInTheDocument();
   });
 
   it("garde les filtres par défaut si l’API des catégories est en panne", async () => {
@@ -125,7 +124,9 @@ describe("App - catalogue", () => {
     render(<App />);
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
-    expect(screen.getByRole("button", { name: "Timbres" })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("navigation", { name: "Navigation principale" })).getByRole("link", { name: "Timbres" }),
+    ).toBeInTheDocument();
   });
 
   it("affiche la photo d’une annonce qui en a une", async () => {
@@ -755,7 +756,6 @@ describe("App - onglets du catalogue", () => {
     await user.click(tabs.getByRole("link", { name: "Timbres" }));
 
     expect(tabs.getByRole("link", { name: "Timbres" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("button", { name: "Timbres" })).toHaveAttribute("aria-pressed", "true");
   });
 });
 

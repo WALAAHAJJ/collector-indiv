@@ -1,0 +1,467 @@
+/* Thème « Galerie » : noir et jaune, grandes capitales, cartes arrondies.
+   Chargé en dernier : il remplace l'habillage « album » des autres feuilles. */
+
+body {
+  background-image: none;
+}
+
+.eyebrow {
+  display: inline-block;
+  transform: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* En-tête */
+
+.topbar {
+  border-bottom: 0;
+}
+
+.brand-word {
+  font-size: 30px;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.topbar .brand-word {
+  font-size: 30px;
+}
+
+.brand-dot {
+  color: var(--tomato-ink);
+}
+
+.topbar .header-search {
+  min-height: 46px;
+  border: 1px solid var(--kraft-deep);
+  border-radius: 23px;
+  background: var(--paper);
+}
+
+.topbar .header-search:focus-within {
+  outline: 2px solid var(--tomato);
+  outline-offset: 2px;
+}
+
+.navigation a,
+.topbar .navigation a {
+  border-bottom: 0;
+  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.navigation a:hover,
+.navigation a.active {
+  color: var(--ink);
+}
+
+.language-toggle {
+  border-radius: 23px;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.topbar .login-button,
+.topbar .sell-button,
+.login-button,
+.sell-button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 23px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.topbar .login-button,
+.login-button {
+  border: 1px solid var(--kraft-deep);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.topbar .sell-button,
+.sell-button {
+  box-shadow: none;
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+.topbar .sell-button:hover,
+.sell-button:hover {
+  background: #ffe55c;
+  color: var(--ink);
+}
+
+.login-button:hover {
+  background: var(--paper-warm);
+  color: var(--ink);
+}
+
+.account-dropdown {
+  border: 0;
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: 0 16px 32px -12px rgb(42 37 24 / 30%);
+}
+
+.account-dropdown button,
+.account-dropdown a {
+  color: var(--ink);
+}
+
+.account-dropdown button:hover,
+.account-dropdown a:hover {
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+/* Bande de confiance : discrète */
+
+.trust-band {
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Onglets : pastilles, une seule fois sur la page */
+
+.category-tabs {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.category-tabs a {
+  flex-direction: row;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 18px 6px 8px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.category-tabs a:hover {
+  background: var(--paper-warm);
+}
+
+.category-tabs a.active {
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+.category-tabs .object-art,
+.category-tabs svg {
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--paper-warm);
+}
+
+.category-tabs a.active .object-art,
+.category-tabs a.active svg {
+  background: var(--paper);
+}
+
+/* Bannière d'accueil : grand bloc jaune */
+
+.hero {
+  display: block;
+  padding-block: 0 8px;
+}
+
+.hero-copy {
+  max-width: none;
+  min-height: 260px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  padding: clamp(28px, 4vw, 48px);
+  border-radius: 28px;
+  background: var(--tomato);
+  color: var(--ink);
+  text-align: left;
+}
+
+.hero .eyebrow {
+  color: var(--ink);
+}
+
+.hero h1 {
+  max-width: 880px;
+  color: var(--ink);
+  font-size: clamp(40px, 6.4vw, 84px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.hero .marker {
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 6px;
+  text-underline-offset: 6px;
+  transform: none;
+}
+
+.hero p {
+  max-width: 520px;
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.hero-link {
+  min-height: 52px;
+  border: 0;
+  border-radius: 26px;
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--tomato);
+  font-size: 16px;
+}
+
+.hero-link:hover {
+  background: var(--ink);
+  color: var(--tomato);
+}
+
+/* Catalogue : plus de feuille de papier, les cartes reposent sur le fond noir */
+
+.catalogue {
+  margin: 0 clamp(20px, 4vw, 64px) 72px;
+  padding: 56px 0 24px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.catalogue::before {
+  display: none;
+}
+
+.section-heading h2 {
+  color: var(--ink);
+  font-size: clamp(36px, 4vw, 48px);
+  letter-spacing: -0.03em;
+}
+
+.section-heading .eyebrow {
+  color: var(--tomato-ink);
+}
+
+.catalogue-controls {
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.catalogue-controls input,
+.catalogue-controls select,
+.reset-filters,
+.favorites-toggle {
+  min-height: 44px;
+  border: 1px solid var(--kraft-deep);
+  border-radius: 22px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.catalogue-controls input,
+.catalogue-controls select {
+  padding-inline: 16px;
+}
+
+.reset-filters:hover,
+.favorites-toggle:hover {
+  background: var(--paper-warm);
+}
+
+.favorites-toggle[aria-pressed="true"] {
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+/* Cartes : coins arrondis, grand prix */
+
+.listing-grid {
+  gap: 20px;
+}
+
+.listing-card {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px;
+  background: var(--paper);
+  transform: none;
+}
+
+.listing-card::before {
+  display: none;
+}
+
+.listing-card:hover {
+  box-shadow: none;
+  transform: translateY(-4px);
+}
+
+.item-visual {
+  height: 220px;
+}
+
+.favorite {
+  background: var(--paper);
+  color: var(--tomato-ink);
+}
+
+.favorite[aria-pressed="true"] {
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+.item-details {
+  padding: 16px 20px 20px;
+}
+
+.item-category {
+  align-self: flex-start;
+  padding: 4px 11px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.item-details h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.item-bottom strong {
+  color: var(--ink);
+  font-size: 40px;
+  letter-spacing: -0.03em;
+}
+
+.details-button {
+  border: 0;
+  border-radius: 24px;
+  background: var(--paper-warm);
+  color: var(--ink);
+}
+
+.details-button:hover {
+  background: var(--tomato);
+  color: var(--ink);
+}
+
+/* Comment ça marche */
+
+.home-steps {
+  margin: 0 clamp(20px, 4vw, 64px);
+  padding: 48px;
+  border-radius: 28px;
+  background: var(--paper);
+}
+
+.home-steps .eyebrow {
+  color: var(--tomato-ink);
+}
+
+.home-steps h2 {
+  color: var(--ink);
+  font-size: clamp(32px, 4vw, 44px);
+  letter-spacing: -0.03em;
+}
+
+.home-steps li {
+  padding: 0 0 0 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-top: 56px;
+}
+
+.home-steps li::before {
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  background: var(--tomato);
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.home-steps li strong {
+  font-size: 18px;
+}
+
+/* Pied de page */
+
+footer {
+  margin-top: 56px;
+  background: transparent;
+  border-top: 1px solid var(--kraft-deep);
+  color: var(--ink-soft);
+}
+
+.footer-logo {
+  color: var(--ink);
+  font-size: 22px;
+  font-style: normal;
+  letter-spacing: -0.03em;
+}
+
+.footer-tagline {
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.footer-links a {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  color: var(--tomato-ink);
+  border-bottom-color: transparent;
+}
+
+/* Fonds des « photos » : tons clairs, l'illustration reste lisible */
+
+.sage {
+  background: #9ad7c0;
+}
+
+.rose {
+  background: #f2a79b;
+}
+
+.gold {
+  background: #f2e08a;
+}
+
+.kraft {
+  background: #d8d0a8;
+}

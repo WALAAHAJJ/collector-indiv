@@ -1,27 +1,28 @@
 :root {
-  /* Palette « Album » : papier kraft, encre, vert profond, tomate, moutarde */
-  --kraft: #eadcc0;
-  --kraft-deep: #d9c6a0;
-  --paper: #fffdf8;
-  --paper-warm: #f4ead2;
-  --ink: #2b2118;
-  --ink-soft: #5b4b3b;
-  --green: #1f4a3e;
-  --tomato: #c23a22;
-  --tomato-ink: #a12f1a;
-  --mustard: #e9c46a;
-  --pink: #e8b4a6;
-  --sage: #8db09c;
+  /* Palette « Galerie » : crème, blanc, jaune, texte brun foncé */
+  --kraft: #fff8e1;
+  --kraft-deep: #efe3b8;
+  --paper: #ffffff;
+  --paper-warm: #fff1bf;
+  --ink: #2a2518;
+  --ink-soft: #6b6350;
+  --green: #2a2518;
+  --tomato: #ffd60a;
+  --tomato-ink: #8a6a00;
+  --mustard: #ffd60a;
+  --pink: #f2a79b;
+  --sage: #9ad7c0;
 
-  --font-display: "Fraunces Variable", Georgia, serif;
-  --font-hand: "Caveat Variable", cursive;
-  --font-body: "Karla Variable", system-ui, sans-serif;
+  --font-display: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-hand: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-body: "Space Grotesk Variable", system-ui, sans-serif;
 
-  --shadow-card: 0 12px 24px -12px rgb(43 33 24 / 50%);
+  --shadow-card: 0 10px 24px -14px rgb(42 37 24 / 35%);
 
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--kraft);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -36,8 +37,6 @@ body {
   min-width: 320px;
   margin: 0;
   background-color: var(--kraft);
-  background-image: radial-gradient(rgb(43 33 24 / 8%) 1px, transparent 1.4px);
-  background-size: 14px 14px;
 }
 
 button,

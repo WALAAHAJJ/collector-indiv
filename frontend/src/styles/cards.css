@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   padding: 14px 14px 20px;
-  border: 1px solid #e3d6b8;
+  border: 1px solid var(--kraft-deep);
   background: var(--paper);
   box-shadow: var(--shadow-card);
   transform: rotate(var(--tilt, 0deg));

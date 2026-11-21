@@ -46,7 +46,7 @@ export default function ObjectArt({ kind, size = 140, title }: ObjectArtProps) {
           <circle cx="75" cy="75" r="68" fill={PAPER} stroke={INK} strokeWidth="4" />
           <circle cx="75" cy="75" r="55" fill="none" stroke={INK} strokeWidth="2.5" strokeDasharray="2 7" strokeLinecap="round" />
           <circle cx="75" cy="75" r="44" fill={GREEN} stroke={INK} strokeWidth="3" />
-          <text x="75" y="93" textAnchor="middle" fontFamily="Fraunces Variable, Georgia, serif" fontWeight="700" fontSize="56" fill={PAPER}>2</text>
+          <text x="75" y="93" textAnchor="middle" fontFamily="Space Grotesk Variable, sans-serif" fontWeight="700" fontSize="56" fill={PAPER}>2</text>
         </svg>
       );
     case "postcards":

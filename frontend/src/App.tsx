@@ -73,7 +73,6 @@ import { useCategories } from "./useCategories";
 function App() {
   const { categories: apiCategories, reload: reloadCategories } =
     useCategories();
-  const categories = ["Tout", ...apiCategories.map((item) => item.name)];
   const [listings, setListings] = useState<CatalogListing[]>([]);
   const [category, setCategory] = useState("Tout");
   const [search, setSearch] = useState("");
@@ -84,10 +83,8 @@ function App() {
   const route = useRoute();
   const { language, t } = useLanguage();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [categoriesMenuOpen, setCategoriesMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
-  const categoriesMenuRef = useRef<HTMLDivElement>(null);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
@@ -103,7 +100,7 @@ function App() {
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   // Les menus déroulants (compte, catégories, langue) se ferment avec Échap ou un clic en dehors.
-  const anyMenuOpen = accountMenuOpen || categoriesMenuOpen || languageMenuOpen;
+  const anyMenuOpen = accountMenuOpen || languageMenuOpen;
   useEffect(() => {
     if (!anyMenuOpen) {
       return;
@@ -117,14 +114,12 @@ function App() {
         const target = event.target as Node;
         if (
           accountMenuRef.current?.contains(target) ||
-          categoriesMenuRef.current?.contains(target) ||
           languageMenuRef.current?.contains(target)
         ) {
           return;
         }
       }
       setAccountMenuOpen(false);
-      setCategoriesMenuOpen(false);
       setLanguageMenuOpen(false);
     };
 
@@ -243,7 +238,6 @@ function App() {
     setFilters(view === "bargains" ? BARGAIN_FILTERS : NO_FILTERS);
     setOnlyFavorites(view === "favorites");
     setPage(1);
-    setCategoriesMenuOpen(false);
   }
 
   /** La recherche de l'en-tête fonctionne depuis n'importe quelle page. */
@@ -387,43 +381,7 @@ function App() {
           <span className="brand-word">
             collector<span className="brand-dot">.</span>
           </span>
-          <svg
-            className="brand-underline"
-            viewBox="0 0 160 10"
-            aria-hidden="true"
-          >
-            <path
-              d="M2 6 C20 1 34 9 54 5 C74 1 90 9 110 5 C128 2 144 8 158 4"
-              fill="none"
-              stroke="#e9c46a"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-          </svg>
         </a>
-
-        <div className="categories-menu" ref={categoriesMenuRef}>
-          <button
-            type="button"
-            className="categories-toggle"
-            aria-haspopup="true"
-            aria-expanded={categoriesMenuOpen}
-            onClick={() => setCategoriesMenuOpen((open) => !open)}
-          >
-            {t("categories")}
-          </button>
-
-          <div
-            className={categoriesMenuOpen ? "account-dropdown open" : "account-dropdown"}
-            aria-label={t("allCategories")}
-          >
-            {apiCategories.map((item) => (
-              <a key={item.name} href="#catalogue" onClick={() => showCatalogueView("all", item.name)}>
-                {item.name}
-              </a>
-            ))}
-          </div>
-        </div>
 
         <label className="search header-search">
           <span aria-hidden="true">⌕</span>
@@ -658,20 +616,6 @@ function App() {
               <h2>À découvrir</h2>
             </div>
           </div>
-
-          <fieldset className="filters" aria-label="Filtrer par catégorie">
-            {categories.map((item) => (
-              <button
-                type="button"
-                key={item}
-                aria-pressed={category === item}
-                className={category === item ? "filter selected" : "filter"}
-                onClick={() => handleCategoryChange(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </fieldset>
 
           <CatalogueControls
             filters={filters}
