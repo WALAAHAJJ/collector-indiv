@@ -494,6 +494,28 @@ function App() {
             onChange={handlePageChange}
           />
         </section>
+
+        <section className="home-steps" aria-labelledby="home-steps-title">
+          <span className="eyebrow">EN TROIS GESTES</span>
+          <h2 id="home-steps-title">Comment ça marche</h2>
+          <ol>
+            <li>
+              <strong>Trouvez</strong>
+              <span>Parcourez le catalogue, filtrez, gardez vos coups de cœur en favoris.</span>
+            </li>
+            <li>
+              <strong>Achetez</strong>
+              <span>Payez en un clic ; le vendeur est prévenu et prépare l'envoi.</span>
+            </li>
+            <li>
+              <strong>Recevez et notez</strong>
+              <span>Confirmez la réception, puis laissez un avis au vendeur.</span>
+            </li>
+          </ol>
+          <a className="details-button" href={infoHref("comment-ca-marche")}>
+            Lire le mode d'emploi <span>→</span>
+          </a>
+        </section>
         </>
       )}
 

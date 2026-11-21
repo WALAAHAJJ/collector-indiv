@@ -699,3 +699,18 @@ describe("App - pages d'information", () => {
     expect(screen.getByRole("link", { name: "Catalogue", current: "page" })).toBeInTheDocument();
   });
 });
+
+describe("App - accueil", () => {
+  it("résume le fonctionnement du site en trois étapes avec un lien vers le détail", async () => {
+    mockApi();
+    render(<App />);
+
+    const steps = await screen.findByRole("region", { name: "Comment ça marche" });
+
+    expect(within(steps).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(steps).getByRole("link", { name: /Lire le mode d'emploi/ })).toHaveAttribute(
+      "href",
+      "#/comment-ca-marche",
+    );
+  });
+});
