@@ -420,7 +420,7 @@ function App() {
         </section>
       )}
 
-      {route.name === "home" ? (
+      {route.name === "home" && (
         <>
       <section className="catalogue" id="catalogue">
           <div className="section-heading">
@@ -474,7 +474,9 @@ function App() {
           />
         </section>
         </>
-      ) : (
+      )}
+
+      {route.name === "listing" && (
         <ListingPage
           id={route.id}
           categories={apiCategories}

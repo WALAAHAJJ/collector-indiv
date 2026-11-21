@@ -5,14 +5,33 @@ import { useMemo, useSyncExternalStore } from "react";
  * cette partie au serveur, donc aucune configuration serveur ni retour de Keycloak à adapter,
  * et un lien d'annonce peut être copié et partagé.
  */
-export type Route = { name: "home" } | { name: "listing"; id: string };
+export const INFO_PAGES = ["comment-ca-marche", "faq", "cgu", "contact"] as const;
+
+export type InfoPageSlug = (typeof INFO_PAGES)[number];
+
+export type Route =
+  | { name: "home" }
+  | { name: "listing"; id: string }
+  | { name: "info"; slug: InfoPageSlug };
 
 const LISTING_HASH = /^#\/annonce\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+
+function isInfoPage(value: string): value is InfoPageSlug {
+  return (INFO_PAGES as readonly string[]).includes(value);
+}
 
 export function parseRoute(hash: string): Route {
   const match = LISTING_HASH.exec(hash);
 
-  return match ? { name: "listing", id: match[1] } : { name: "home" };
+  if (match) return { name: "listing", id: match[1] };
+
+  const slug = hash.startsWith("#/") ? hash.slice(2) : "";
+
+  return isInfoPage(slug) ? { name: "info", slug } : { name: "home" };
+}
+
+export function infoHref(slug: InfoPageSlug): string {
+  return `#/${slug}`;
 }
 
 export function listingHref(id: string): string {
