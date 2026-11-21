@@ -35,6 +35,7 @@ Ce document détaille ce que fait le site, fonctionnalité par fonctionnalité. 
 | Catalogue enrichi : recherche, tri (prix, nom), filtres par fourchette de prix et par état, pagination de 12 annonces | Fait |
 | Favoris : cœur cliquable sur chaque annonce et filtre « Mes favoris » (liste conservée par compte dans le navigateur) | Fait |
 | Avis sur les vendeurs : note de 1 à 5 et commentaire après réception, une seule fois par commande, moyenne et derniers avis sur la page de l'annonce, avis reçu visible par le vendeur dans « Mes ventes » | Fait |
+| Pages d'un site complet : « Comment ça marche », FAQ, conditions d'utilisation, contact (adresses `#/faq`, `#/cgu`…), liens dans l'en-tête et le pied de page, bandeau en trois étapes sur l'accueil | Fait |
 | Chat | À faire |
 | Détection de fraude, recommandations, internationalisation | À faire |
 
