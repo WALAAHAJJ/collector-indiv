@@ -25,11 +25,8 @@ import SiteFooter from "./SiteFooter";
 import ListingPage from "./ListingPage";
 import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
-import { INFO_PAGE_CONTENT } from "./infoPages";
-import { infoHref, listingHref, useRoute, type InfoPageSlug } from "./route";
+import { infoHref, listingHref, useRoute } from "./route";
 
-/** Pages d'information proposées dans l'en-tête ; les autres restent accessibles depuis le pied de page. */
-const NAV_PAGES: InfoPageSlug[] = ["comment-ca-marche", "faq"];
 import PurchaseDialog from "./PurchaseDialog";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
@@ -39,10 +36,14 @@ import {
   NO_FILTERS,
   type CatalogFilters,
   applyFilters,
+  hasActiveFilters,
   pageCount,
   paginate,
   sortListings,
 } from "./catalogue";
+
+/** « Bonnes affaires » : les annonces à 20 € ou moins, les moins chères d'abord. */
+const BARGAIN_FILTERS: CatalogFilters = { ...NO_FILTERS, maxPrice: "20", sort: "price-asc" };
 import { CatalogueControls } from "./CatalogueControls";
 import { Pagination } from "./Pagination";
 import { VISITOR_KEY, useFavorites } from "./favorites";
@@ -200,6 +201,14 @@ function App() {
     setCategory(value);
   }
 
+  /** Entrées de l'en-tête : une même page, trois façons de regarder le catalogue. */
+  function showCatalogueView(view: "all" | "bargains" | "favorites") {
+    handleCategoryChange("Tout");
+    setFilters(view === "bargains" ? BARGAIN_FILTERS : NO_FILTERS);
+    setOnlyFavorites(view === "favorites");
+    setPage(1);
+  }
+
   function handleLogout() {
     setShowMyListings(false);
     setShowMyOrders(false);
@@ -317,6 +326,13 @@ function App() {
     );
   }
 
+  const onCatalogue = route.name !== "info";
+  const bargainsActive =
+    onCatalogue && !onlyFavorites && filters.maxPrice === BARGAIN_FILTERS.maxPrice && filters.sort === BARGAIN_FILTERS.sort;
+  const favoritesActive = onCatalogue && onlyFavorites;
+  const catalogueActive =
+    onCatalogue && !bargainsActive && !favoritesActive && category === "Tout" && !hasActiveFilters(filters);
+
   return (
     <main className="app">
       <header className="topbar">
@@ -341,22 +357,29 @@ function App() {
 
         <nav className="navigation" aria-label="Navigation principale">
           <a
-            className={route.name === "info" ? undefined : "active"}
-            aria-current={route.name === "info" ? undefined : "page"}
+            className={catalogueActive ? "active" : undefined}
+            aria-current={catalogueActive ? "page" : undefined}
             href="#catalogue"
+            onClick={() => showCatalogueView("all")}
           >
             Catalogue
           </a>
-          {NAV_PAGES.map((slug) => (
-            <a
-              key={slug}
-              className={route.name === "info" && route.slug === slug ? "active" : undefined}
-              aria-current={route.name === "info" && route.slug === slug ? "page" : undefined}
-              href={infoHref(slug)}
-            >
-              {INFO_PAGE_CONTENT[slug].label}
-            </a>
-          ))}
+          <a
+            className={bargainsActive ? "active" : undefined}
+            aria-current={bargainsActive ? "page" : undefined}
+            href="#catalogue"
+            onClick={() => showCatalogueView("bargains")}
+          >
+            Bonnes affaires
+          </a>
+          <a
+            className={favoritesActive ? "active" : undefined}
+            aria-current={favoritesActive ? "page" : undefined}
+            href="#catalogue"
+            onClick={() => showCatalogueView("favorites")}
+          >
+            Mes favoris
+          </a>
         </nav>
 
         <div className="account-actions">
