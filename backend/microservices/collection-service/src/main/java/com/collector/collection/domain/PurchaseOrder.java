@@ -60,6 +60,10 @@ public class PurchaseOrder {
     @Column(nullable = false, length = 4)
     private String cardLast4;
 
+    /** Identifiant du paiement dans payment-service (vide pour les commandes anciennes). */
+    @Column(length = 40)
+    private String paymentId;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -92,6 +96,16 @@ public class PurchaseOrder {
         this.cardLast4 = cardLast4;
         // PostgreSQL garde les microsecondes : sans cet arrondi, la valeur relue différerait de la valeur écrite.
         this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
+    }
+
+    /** Même commande, avec la référence du paiement qui l'a réglée. */
+    public PurchaseOrder(Collectible listing, UUID buyerId, Breakdown breakdown, String cardLast4, String paymentId) {
+        this(listing, buyerId, breakdown, cardLast4);
+        this.paymentId = paymentId;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
     }
 
     /** Le vendeur a expédié : seulement possible pour une commande payée. */
