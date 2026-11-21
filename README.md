@@ -55,7 +55,7 @@ cd backend/microservices/notification-service && ./mvnw -B verify
 cd frontend && npm run test:coverage && npm run lint && npm run build
 ```
 
-À chaque push, la CI (`.github/workflows/ci.yml`) lance le lint, les tests avec couverture, l'analyse SonarCloud (couverture d'au moins 80 % sur le code nouveau), un scan Trivy et le build des images Docker. Dependabot propose chaque semaine les mises à jour. Stratégie complète : [docs/tests.md](docs/tests.md).
+À chaque push, la CI (`.github/workflows/ci.yml`) lance le lint, les tests avec couverture, l'analyse SonarCloud (couverture d'au moins 80 % sur le code nouveau), un scan Trivy et le build des images Docker. Une fois la CI verte sur `main`, le CD (`.github/workflows/cd.yml`) publie les trois images sur GitHub Container Registry (`ghcr.io/walaahajj/collector-indiv/<service>`, étiquettes `latest` et hash du commit). Dependabot propose chaque semaine les mises à jour. Stratégie complète : [docs/tests.md](docs/tests.md).
 
 ## Sécurité
 
@@ -76,7 +76,7 @@ keycloak/                                  configuration du realm (SSO)
 demos/messaging/                           comparaison RabbitMQ et Kafka
 docs/                                      documentation détaillée
 compose.yaml                               bases de données et services
-.github/                                   CI et Dependabot
+.github/                                   CI, CD et Dependabot
 ```
 
 ## Documentation
