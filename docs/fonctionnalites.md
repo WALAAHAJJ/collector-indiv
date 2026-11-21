@@ -34,6 +34,8 @@ Ce document détaille ce que fait le site, fonctionnalité par fonctionnalité. 
 | Page de détail d'une annonce avec adresse partageable (`#/annonce/…`), annonces de la même catégorie, bandeau « vendue » | Fait |
 | Catalogue enrichi : recherche, tri (prix, nom), filtres par fourchette de prix et par état, pagination de 12 annonces | Fait |
 | Favoris : cœur cliquable sur chaque annonce et filtre « Mes favoris » (liste conservée par compte dans le navigateur) | Fait |
+| Reçu d'achat en PDF téléchargeable depuis « Mes achats » (généré par le service des annonces, réservé à l'acheteur) | Fait |
+| Remboursement par l'administrateur : onglet « Commandes » du back-office, remboursement par le service de paiement, objet remis en vente si la commande n'était pas expédiée | Fait |
 | Avis sur les vendeurs : note de 1 à 5 et commentaire après réception, une seule fois par commande, moyenne et derniers avis sur la page de l'annonce, avis reçu visible par le vendeur dans « Mes ventes » | Fait |
 | Pages d'un site complet : « Comment ça marche », FAQ, conditions d'utilisation, contact (adresses `#/faq`, `#/cgu`…), liens dans l'en-tête et le pied de page, bandeau en trois étapes sur l'accueil | Fait |
 | Chat | À faire |
@@ -68,4 +70,4 @@ Catalogue : la recherche et la catégorie sont traitées par l'API (`category`, 
 
 Dans le site : « Voir le détail » ouvre la page de l'annonce (adresse `#/annonce/<identifiant>`, copiable). Sur cette page, un visiteur voit « Se connecter pour acheter », le vendeur voit « C'est votre annonce », un autre utilisateur ouvre la fenêtre de paiement. Après l'achat, l'objet disparaît du catalogue, sa page affiche « Cette annonce a été vendue » et la commande apparaît dans « Mes commandes ».
 
-Suivi : dans « Mes commandes », chaque commande affiche son étape (payée, expédiée, reçue). Le vendeur voit « Marquer comme expédiée » sur l'onglet « Mes ventes » ; l'acheteur voit « J'ai reçu mon colis » sur l'onglet « Mes achats » une fois la commande expédiée. Chacun est prévenu par la cloche de notifications.
+Suivi : dans « Mes commandes », chaque commande affiche son étape (payée, expédiée, reçue). Le vendeur voit « Marquer comme expédiée » sur l'onglet « Mes ventes » ; l'acheteur voit « J'ai reçu mon colis » sur l'onglet « Mes achats » une fois la commande expédiée. Chacun est prévenu par la cloche de notifications. Sur « Mes achats », le bouton « Télécharger le reçu (PDF) » donne le reçu de l'achat. Un administrateur peut rembourser une commande depuis « Administration », onglet « Commandes ».

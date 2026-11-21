@@ -20,11 +20,14 @@ Routes du collection-service (port 8081), du notification-service (port 8083) et
 | `GET /api/orders/purchases` | jeton | Mes achats |
 | `GET /api/orders/sales` | jeton | Mes ventes, avec la commission et mon gain net |
 | `POST /api/orders/{id}/ship` | jeton | Le vendeur marque la commande expédiée (403 si ce n'est pas le vendeur, 409 si pas dans l'état « payée ») |
+| `GET /api/orders/{id}/receipt` | acheteur | Reçu d'achat en PDF (404 pour toute autre personne que l'acheteur) |
 | `POST /api/orders/{id}/deliver` | jeton | L'acheteur confirme la réception (403 si ce n'est pas l'acheteur, 409 si pas encore expédiée) |
 | `GET /api/admin/collectibles?status=` | administrateur | Annonces par statut (par défaut : en attente) |
 | `POST /api/admin/collectibles/{id}/approve` | administrateur | Approuver une annonce |
 | `POST /api/admin/collectibles/{id}/reject` | administrateur | Refuser une annonce, avec un motif obligatoire |
 | `DELETE /api/admin/collectibles/{id}` | administrateur | Supprimer une annonce contraire à la charte |
+| `GET /api/admin/orders` | administrateur | Toutes les commandes, les plus récentes d'abord |
+| `POST /api/admin/orders/{id}/refund` | administrateur | Rembourser une commande par payment-service (409 si déjà remboursée ou sans paiement, 503 si le service de paiement ne répond pas) ; une commande non expédiée remet l'objet en vente |
 | `POST /api/admin/categories` | administrateur | Créer une catégorie (nom unique, illustration) |
 | `DELETE /api/admin/categories/{id}` | administrateur | Supprimer une catégorie, refusé si des annonces l'utilisent |
 

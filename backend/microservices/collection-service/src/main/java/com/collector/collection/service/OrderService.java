@@ -200,6 +200,61 @@ public class OrderService {
                 .orElseThrow(this::notFound);
     }
 
+    /**
+     * Remboursement décidé par l'administration. Le paiement est rendu à l'acheteur par payment-service ;
+     * si la commande n'était pas encore expédiée, l'objet est remis en vente.
+     */
+    @Transactional
+    public OrderResponse refund(UUID orderId) {
+        PurchaseOrder order = orderRepository.findById(orderId).orElseThrow(this::notFound);
+
+        if (order.getStatus() == OrderStatus.REFUNDED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette commande est déjà remboursée.");
+        }
+
+        if (order.getPaymentId() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cette commande n'a pas de paiement à rembourser (commande antérieure au service de paiement).");
+        }
+
+        boolean notShippedYet = order.getStatus() == OrderStatus.PAID;
+
+        try {
+            paymentGateway.refund(order.getPaymentId());
+        } catch (PaymentUnavailableException exception) {
+            log.warn("Remboursement impossible pour la commande {} : {}", orderId, exception.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Le remboursement est momentanément indisponible. Réessayez dans un instant.");
+        }
+
+        order.markRefunded();
+        orderRepository.save(order);
+
+        if (notShippedYet) {
+            collectibleRepository.findById(order.getListingId()).ifPresent(listing -> {
+                listing.relist();
+                collectibleRepository.save(listing);
+            });
+        }
+
+        return OrderResponse.from(order);
+    }
+
+    /** Toutes les commandes du site, les plus récentes d'abord (back-office). */
+    public List<OrderResponse> allOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(OrderResponse::from)
+                .toList();
+    }
+
+    /** Commande dont l'utilisateur est l'acheteur : seul lui peut télécharger le reçu. */
+    public PurchaseOrder purchaseOf(UUID buyerId, UUID orderId) {
+        return orderRepository.findById(orderId)
+                .filter(order -> order.getBuyerId().equals(buyerId))
+                .orElseThrow(this::notFound);
+    }
+
     public List<OrderResponse> purchasesOf(UUID buyerId) {
         return orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId)
                 .stream()

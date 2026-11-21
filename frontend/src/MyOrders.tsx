@@ -6,6 +6,7 @@ import { fetchMyReviews, fetchSellerReviews, type Review } from "./reviewsApi";
 import { formatEuros } from "./money";
 import {
   deliverOrder,
+  downloadReceipt,
   fetchPurchases,
   fetchSales,
   orderStatusLabels,
@@ -125,6 +126,19 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     }
   }
 
+  async function receipt(order: Order) {
+    setBusyOrderId(order.id);
+    setActionError("");
+
+    try {
+      await downloadReceipt(order.id);
+    } catch (requestError: unknown) {
+      setActionError(requestError instanceof Error ? requestError.message : "Le reçu est momentanément indisponible.");
+    } finally {
+      setBusyOrderId(null);
+    }
+  }
+
   function renderAction(order: Order) {
     const busy = busyOrderId === order.id;
 
@@ -230,6 +244,11 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
         </dl>
 
         {renderAction(order)}
+        {tab === "purchases" && (
+          <button className="order-receipt" type="button" disabled={busyOrderId === order.id} onClick={() => void receipt(order)}>
+            Télécharger le reçu (PDF)
+          </button>
+        )}
         {renderReview(order)}
       </article>
     );

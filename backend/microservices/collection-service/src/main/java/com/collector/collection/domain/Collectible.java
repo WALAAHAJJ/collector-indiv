@@ -143,6 +143,13 @@ public class Collectible {
         this.moderationReason = reason;
     }
 
+    /** Une vente remboursée avant l'expédition : l'objet est de nouveau disponible. */
+    public void relist() {
+        if (this.status == ListingStatus.SOLD) {
+            this.status = ListingStatus.APPROVED;
+        }
+    }
+
     /** Appelée à l'achat, dans la même transaction que la création de la commande. */
     public void markSold() {
         this.status = ListingStatus.SOLD;

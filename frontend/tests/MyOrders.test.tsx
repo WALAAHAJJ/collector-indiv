@@ -276,4 +276,39 @@ describe("MyOrders - avis sur le vendeur", () => {
 
     expect(screen.queryByText("Notez le vendeur")).toBeNull();
   });
+
+  it("télécharge le reçu PDF d'un achat avec le jeton", async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetch((url) =>
+      url.endsWith("/receipt")
+        ? new Response("%PDF-1.4", { status: 200, headers: { "Content-Type": "application/pdf" } })
+        : url === "/api/orders/purchases"
+          ? jsonResponse([order])
+          : jsonResponse([]),
+    );
+    const createObjectURL = vi.fn(() => "blob:recu");
+    const revokeObjectURL = vi.fn();
+    Object.assign(URL, { createObjectURL, revokeObjectURL });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await user.click(await screen.findByRole("button", { name: "Télécharger le reçu (PDF)" }));
+
+    await vi.waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith("blob:recu"));
+    expect(click).toHaveBeenCalled();
+    const receiptCall = fetchMock.mock.calls.find(([url]) => String(url).endsWith("/receipt"));
+    expect(receiptCall?.[0]).toBe(`/api/orders/${order.id}/receipt`);
+    expect(receiptCall?.[1]?.headers).toMatchObject({ Authorization: "Bearer jeton" });
+  });
+
+  it("n'offre pas le reçu dans « Mes ventes »", async () => {
+    const user = userEvent.setup();
+    mockOrders([], [order]);
+    render(<MyOrders onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Mes ventes" }));
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    expect(screen.queryByRole("button", { name: "Télécharger le reçu (PDF)" })).toBeNull();
+  });
 });

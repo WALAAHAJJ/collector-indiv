@@ -11,4 +11,6 @@ public interface OrderRepository extends JpaRepository<PurchaseOrder, UUID> {
     List<PurchaseOrder> findByBuyerIdOrderByCreatedAtDesc(UUID buyerId);
 
     List<PurchaseOrder> findBySellerIdOrderByCreatedAtDesc(UUID sellerId);
+
+    List<PurchaseOrder> findAllByOrderByCreatedAtDesc();
 }

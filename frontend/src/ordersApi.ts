@@ -1,11 +1,12 @@
 import { getToken } from "./auth";
 
-export type OrderStatus = "PAID" | "SHIPPED" | "DELIVERED";
+export type OrderStatus = "PAID" | "SHIPPED" | "DELIVERED" | "REFUNDED";
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
   PAID: "Payée, à expédier",
   SHIPPED: "Expédiée",
   DELIVERED: "Reçue",
+  REFUNDED: "Remboursée",
 };
 
 export type Order = {
@@ -24,6 +25,8 @@ export type Order = {
   status: OrderStatus;
   shippedAt: string | null;
   deliveredAt: string | null;
+  refundedAt?: string | null;
+  paymentId?: string | null;
 };
 
 /** Coordonnées de carte saisies par l'acheteur. Elles ne sont envoyées qu'une fois, jamais gardées par le site. */
@@ -149,3 +152,72 @@ export const shipOrder = (orderId: string) => advanceOrder(orderId, "ship");
 
 /** L'acheteur confirme avoir reçu le colis. */
 export const deliverOrder = (orderId: string) => advanceOrder(orderId, "deliver");
+
+/** Télécharge le reçu PDF d'un achat : le jeton part dans l'en-tête, donc on passe par un fichier temporaire. */
+export async function downloadReceipt(orderId: string): Promise<void> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${ORDERS_URL}/${encodeURIComponent(orderId)}/receipt`, { headers: authHeaders() });
+  } catch {
+    throw new Error("Impossible de contacter le serveur.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      response.status === 401
+        ? "Session expirée : reconnectez-vous."
+        : "Le reçu est momentanément indisponible. Réessayez plus tard.",
+    );
+  }
+
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `recu-${orderId.slice(0, 8)}.pdf`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+export const ADMIN_ORDERS_URL = "/api/admin/orders";
+
+/** Toutes les commandes du site (administrateur). */
+export const fetchAdminOrders = () => fetchOrders(ADMIN_ORDERS_URL);
+
+/** Message affiché quand un remboursement échoue. */
+export function refundErrorMessage(status: number): string {
+  switch (status) {
+    case 401:
+      return "Session expirée : reconnectez-vous.";
+    case 403:
+      return "Accès réservé aux administrateurs.";
+    case 404:
+      return "Cette commande est introuvable.";
+    case 409:
+      return "Cette commande est déjà remboursée ou n’a pas de paiement à rembourser.";
+    default:
+      return "Le remboursement est momentanément indisponible. Réessayez plus tard.";
+  }
+}
+
+/** L'administrateur rembourse une commande. */
+export async function refundOrder(orderId: string): Promise<Order> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${ADMIN_ORDERS_URL}/${encodeURIComponent(orderId)}/refund`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+  } catch {
+    throw new Error("Impossible de contacter le serveur.");
+  }
+
+  if (!response.ok) {
+    throw new Error(refundErrorMessage(response.status));
+  }
+
+  return (await response.json()) as Order;
+}

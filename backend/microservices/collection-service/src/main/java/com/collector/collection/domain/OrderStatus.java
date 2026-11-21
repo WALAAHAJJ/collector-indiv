@@ -4,5 +4,7 @@ package com.collector.collection.domain;
 public enum OrderStatus {
     PAID,
     SHIPPED,
-    DELIVERED
+    DELIVERED,
+    /** Remboursée par l'administration : le paiement a été rendu à l'acheteur. */
+    REFUNDED
 }

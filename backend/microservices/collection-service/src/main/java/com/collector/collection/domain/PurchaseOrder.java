@@ -76,6 +76,8 @@ public class PurchaseOrder {
 
     private Instant deliveredAt;
 
+    private Instant refundedAt;
+
     protected PurchaseOrder() {
     }
 
@@ -126,6 +128,16 @@ public class PurchaseOrder {
 
         status = OrderStatus.DELIVERED;
         deliveredAt = now();
+    }
+
+    /** Remboursée par l'administration : possible tant que la commande n'est pas déjà remboursée. */
+    public void markRefunded() {
+        if (status == OrderStatus.REFUNDED) {
+            throw new IllegalStateException("Cette commande est déjà remboursée.");
+        }
+
+        status = OrderStatus.REFUNDED;
+        refundedAt = now();
     }
 
     // Microsecondes, comme createdAt : PostgreSQL ne garde pas les nanosecondes.
@@ -191,5 +203,9 @@ public class PurchaseOrder {
 
     public Instant getDeliveredAt() {
         return deliveredAt;
+    }
+
+    public Instant getRefundedAt() {
+        return refundedAt;
     }
 }

@@ -22,7 +22,9 @@ public record OrderResponse(
         Instant createdAt,
         OrderStatus status,
         Instant shippedAt,
-        Instant deliveredAt
+        Instant deliveredAt,
+        Instant refundedAt,
+        String paymentId
 ) {
 
     public static OrderResponse from(PurchaseOrder order) {
@@ -41,7 +43,9 @@ public record OrderResponse(
                 order.getCreatedAt(),
                 order.getStatus(),
                 order.getShippedAt(),
-                order.getDeliveredAt()
+                order.getDeliveredAt(),
+                order.getRefundedAt(),
+                order.getPaymentId()
         );
     }
 }

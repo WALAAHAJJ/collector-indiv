@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import { adminCollectibleUrl, adminListUrl, type AdminStatus } from "./api";
 import { getToken } from "./auth";
 import AdminCategories from "./AdminCategories";
+import AdminOrders from "./AdminOrders";
 import { visualForLabel, type Category } from "./categories";
 import { statusLabels, type ListingStatus } from "./listingStatus";
 import ListingPhoto from "./ListingPhoto";
@@ -54,7 +55,7 @@ export default function AdminPanel({
   onCategoriesChange,
   onClose,
 }: AdminPanelProps) {
-  const [section, setSection] = useState<"listings" | "categories">(
+  const [section, setSection] = useState<"listings" | "categories" | "orders">(
     "listings",
   );
   const [status, setStatus] = useState<AdminStatus>("PENDING_REVIEW");
@@ -365,16 +366,24 @@ export default function AdminPanel({
         >
           Catégories
         </button>
+        <button
+          type="button"
+          aria-pressed={section === "orders"}
+          className={section === "orders" ? "filter selected" : "filter"}
+          onClick={() => setSection("orders")}
+        >
+          Commandes
+        </button>
       </fieldset>
 
-      {section === "categories" ? (
+      {section === "categories" && (
         <AdminCategories
           categories={categories}
           onChange={onCategoriesChange}
         />
-      ) : (
-        renderListingsSection()
       )}
+      {section === "orders" && <AdminOrders />}
+      {section === "listings" && renderListingsSection()}
     </Modal>
   );
 }

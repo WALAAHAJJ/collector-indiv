@@ -61,12 +61,12 @@ public class RabbitOrderStatusEventPublisher implements OrderStatusEventPublishe
         }
     }
 
-    /** PAID n'a pas de clé ici : le paiement est annoncé par {@code order.paid}. */
+    /** PAID n'a pas de clé ici : le paiement est annoncé par {@code order.paid}. REFUNDED n'est pas annoncé. */
     static String routingKeyOf(OrderStatus status) {
         return switch (status) {
             case SHIPPED -> SHIPPED_KEY;
             case DELIVERED -> DELIVERED_KEY;
-            case PAID -> null;
+            case PAID, REFUNDED -> null;
         };
     }
 
