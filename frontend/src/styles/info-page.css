@@ -1,0 +1,89 @@
+/* Pages d'information : comment ça marche, FAQ, conditions, contact */
+
+.info-page {
+  width: 100%;
+  max-width: 820px;
+  margin-inline: auto;
+  padding: 32px clamp(20px, 4vw, 64px) 72px;
+}
+
+.info-header {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.info-header h1 {
+  margin: 0;
+  color: var(--green);
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.05;
+}
+
+.info-intro {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.info-section {
+  margin-bottom: 18px;
+  padding: 24px 28px 26px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.info-section h2 {
+  margin: 0 0 12px;
+  color: var(--green);
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+
+.info-section p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.info-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 24px;
+  line-height: 1.55;
+}
+
+.info-steps li::marker {
+  color: var(--tomato);
+  font-weight: 800;
+}
+
+.info-question {
+  margin-bottom: 12px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.info-question summary {
+  padding: 16px 20px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.info-question[open] summary {
+  border-bottom: 2px dashed var(--ink);
+  color: var(--tomato-ink);
+}
+
+.info-question p {
+  margin: 0;
+  padding: 14px 20px 0;
+  line-height: 1.6;
+}
+
+.info-question p:last-child {
+  padding-bottom: 18px;
+}

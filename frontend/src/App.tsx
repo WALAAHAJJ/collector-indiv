@@ -12,6 +12,7 @@ import "./styles/my-listings.css";
 import "./styles/admin.css";
 import "./styles/orders.css";
 import "./styles/footer.css";
+import "./styles/info-page.css";
 import ListingForm from "./ListingForm";
 import MyListings from "./MyListings";
 import MyOrders from "./MyOrders";
@@ -19,6 +20,7 @@ import { getToken, subscribe, userFromToken } from "./auth";
 import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
 import { catalogUrl } from "./api";
+import InfoPage from "./InfoPage";
 import ListingPage from "./ListingPage";
 import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
@@ -475,6 +477,8 @@ function App() {
         </section>
         </>
       )}
+
+      {route.name === "info" && <InfoPage slug={route.slug} />}
 
       {route.name === "listing" && (
         <ListingPage
