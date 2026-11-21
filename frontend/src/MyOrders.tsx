@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import ReviewForm from "./ReviewForm";
 import Stars from "./Stars";
-import { fetchMyReviews, type Review } from "./reviewsApi";
+import { fetchMyReviews, fetchSellerReviews, type Review } from "./reviewsApi";
 import { formatEuros } from "./money";
 import {
   deliverOrder,
@@ -40,23 +40,33 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
   const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
   // Avis déjà écrits, par numéro de commande.
   const [reviews, setReviews] = useState<Record<string, Review>>({});
-  const needsReviews = tab === "purchases" && orders.some((item) => item.status === "DELIVERED");
+  const delivered = orders.filter((item) => item.status === "DELIVERED");
+  const needsReviews = delivered.length > 0;
+  // Dans « Mes ventes », toutes les commandes ont le même vendeur : l'utilisateur connecté.
+  const sellerId = tab === "sales" ? delivered[0]?.sellerId : undefined;
 
   useEffect(() => {
     if (!needsReviews) return;
 
     let cancelled = false;
 
-    fetchMyReviews().then((mine) => {
+    const loading =
+      tab === "purchases"
+        ? fetchMyReviews()
+        : sellerId
+          ? fetchSellerReviews(sellerId).then((data) => data?.reviews ?? [])
+          : Promise.resolve([]);
+
+    loading.then((found) => {
       if (!cancelled) {
-        setReviews(Object.fromEntries(mine.map((item) => [item.orderId, item])));
+        setReviews(Object.fromEntries(found.map((item) => [item.orderId, item])));
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [needsReviews]);
+  }, [needsReviews, tab, sellerId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -139,11 +149,23 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
 
   /** Sous un achat reçu : l'avis déjà donné, ou le formulaire pour en donner un. */
   function renderReview(order: Order) {
-    if (tab !== "purchases" || order.status !== "DELIVERED") {
+    if (order.status !== "DELIVERED") {
       return null;
     }
 
     const written = reviews[order.id];
+
+    if (tab === "sales") {
+      return written ? (
+        <div className="my-review">
+          <span>Avis de l’acheteur</span>
+          <Stars value={written.rating} />
+          {written.comment && <p>{written.comment}</p>}
+        </div>
+      ) : (
+        <p className="my-review-pending">Pas encore d’avis de l’acheteur.</p>
+      );
+    }
 
     if (written) {
       return (

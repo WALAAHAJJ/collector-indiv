@@ -229,6 +229,42 @@ describe("MyOrders - avis sur le vendeur", () => {
     expect(screen.queryByText("Notez le vendeur")).toBeNull();
   });
 
+  function mockSales(reviews: unknown[]) {
+    return mockFetch((url) => {
+      if (url === `/api/sellers/${order.sellerId}/reviews`) {
+        return jsonResponse({
+          sellerId: order.sellerId,
+          average: 4,
+          count: reviews.length,
+          reviews,
+        });
+      }
+      return url === "/api/orders/sales" ? jsonResponse([deliveredOrder]) : jsonResponse([]);
+    });
+  }
+
+  it("montre au vendeur l'avis laissé sur sa vente", async () => {
+    mockSales([written]);
+    render(<MyOrders onClose={vi.fn()} />);
+    await screen.findByText("Vous n’avez encore rien acheté.");
+
+    await userEvent.click(screen.getByRole("button", { name: "Mes ventes" }));
+
+    expect(await screen.findByText("Avis de l’acheteur")).toBeInTheDocument();
+    expect(screen.getByText("Envoi soigné")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "4,0 sur 5" })).toBeInTheDocument();
+  });
+
+  it("indique au vendeur qu'aucun avis n'a encore été laissé", async () => {
+    mockSales([]);
+    render(<MyOrders onClose={vi.fn()} />);
+    await screen.findByText("Vous n’avez encore rien acheté.");
+
+    await userEvent.click(screen.getByRole("button", { name: "Mes ventes" }));
+
+    expect(await screen.findByText("Pas encore d’avis de l’acheteur.")).toBeInTheDocument();
+  });
+
   it("ne propose pas de noter sa propre vente", async () => {
     mockWithReviews([]);
     render(<MyOrders onClose={vi.fn()} />);
