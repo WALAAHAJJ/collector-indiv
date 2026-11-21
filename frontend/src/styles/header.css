@@ -117,20 +117,66 @@
   background: #2b6354;
 }
 
-/* Actions du vendeur, sous la bannière */
+/* Menu du compte : Mes annonces, Mes commandes, Administration */
 
-.seller-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 56px;
+.account-menu {
+  position: relative;
 }
 
-.seller-actions .my-listings-button,
-.seller-actions .sell-button {
-  min-height: 56px;
-  padding: 0 30px;
+.account-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.account-toggle::after {
+  content: "▾";
+  color: var(--tomato-ink);
+  font-size: 16px;
+}
+
+.account-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 200px;
+  flex-direction: column;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: 3px 4px 0 var(--ink);
+}
+
+.account-dropdown.open {
+  display: flex;
+}
+
+.account-dropdown button {
+  padding: 12px 18px;
+  border: 0;
+  border-bottom: 1px dashed var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-dropdown button:last-child {
+  border-bottom: 0;
+}
+
+.account-dropdown button:hover {
+  background: var(--paper-warm);
 }
 
 @media (max-width: 800px) {
@@ -157,12 +203,4 @@
     justify-content: flex-start;
   }
 
-  .seller-actions {
-    gap: 14px;
-    margin-bottom: 42px;
-  }
-
-  .seller-actions button {
-    flex: 1 1 150px;
-  }
 }

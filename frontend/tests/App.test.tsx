@@ -223,6 +223,22 @@ describe("App - compte", () => {
     expect(screen.getByRole("button", { name: "Mes annonces" })).toBeInTheDocument();
   });
 
+  it("range Mes annonces et Mes commandes dans le menu du compte, qui se ferme avec Échap", async () => {
+    const user = userEvent.setup();
+    setToken(fakeToken());
+    mockApi();
+    render(<App />);
+
+    const toggle = await screen.findByRole("button", { name: /Bonjour, walaa/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+    await user.keyboard("{Escape}");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
   it("affiche la cloche des notifications pour une personne connectée", async () => {
     setToken(fakeToken());
     mockApi({

@@ -7,15 +7,13 @@
 }
 
 .topbar,
-.hero,
-.seller-actions {
+.hero {
   padding-inline: clamp(20px, 4vw, 64px);
 }
 
 @media (max-width: 800px) {
   .topbar,
-  .hero,
-  .seller-actions {
+  .hero {
     padding-inline: 20px;
   }
 }

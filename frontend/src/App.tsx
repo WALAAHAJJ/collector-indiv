@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import "./styles/layout.css";
 import "./styles/tones.css";
 import "./styles/header.css";
@@ -64,6 +64,8 @@ function App() {
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showMyOrders, setShowMyOrders] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [purchaseTarget, setPurchaseTarget] = useState<Listing | null>(null);
   // Incrémenté après un achat pour recharger le catalogue : l'objet vendu doit en disparaître.
   const [catalogVersion, setCatalogVersion] = useState(0);
@@ -72,6 +74,30 @@ function App() {
   const sessionUser = userFromToken(useSyncExternalStore(subscribe, getToken));
   const favorites = useFavorites(sessionUser?.id ?? VISITOR_KEY);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+
+  // Le menu du compte se ferme avec Échap ou un clic en dehors.
+  useEffect(() => {
+    if (!accountMenuOpen) {
+      return;
+    }
+
+    const close = (event: Event) => {
+      if (event instanceof KeyboardEvent && event.key !== "Escape") {
+        return;
+      }
+      if (event instanceof MouseEvent && accountMenuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      setAccountMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [accountMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -336,9 +362,60 @@ function App() {
         <div className="account-actions">
           {sessionUser ? (
             <>
-              <span className="account-greeting">
-                Bonjour, {sessionUser.username}
-              </span>
+              <button
+                type="button"
+                className="sell-button header-sell"
+                onClick={() => setShowListingForm(true)}
+              >
+                ＋ Déposer une annonce
+              </button>
+
+              <div className="account-menu" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  className="account-toggle"
+                  aria-haspopup="true"
+                  aria-expanded={accountMenuOpen}
+                  onClick={() => setAccountMenuOpen((open) => !open)}
+                >
+                  <span className="account-greeting">Bonjour, {sessionUser.username}</span>
+                </button>
+
+                <div
+                  className={accountMenuOpen ? "account-dropdown open" : "account-dropdown"}
+                  aria-label="Mon compte"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      setShowMyListings(true);
+                    }}
+                  >
+                    Mes annonces
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      setShowMyOrders(true);
+                    }}
+                  >
+                    Mes commandes
+                  </button>
+                  {sessionUser.role === "ADMIN" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        setShowAdmin(true);
+                      }}
+                    >
+                      Administration
+                    </button>
+                  )}
+                </div>
+              </div>
 
               <NotificationBell />
 
@@ -401,44 +478,6 @@ function App() {
           <HeroArt />
         </section>
         </>
-      )}
-
-      {sessionUser && (
-        <section className="seller-actions" aria-label="Actions vendeur">
-          <button
-            type="button"
-            className="my-listings-button"
-            onClick={() => setShowMyListings(true)}
-          >
-            Mes annonces
-          </button>
-
-          <button
-            type="button"
-            className="my-listings-button"
-            onClick={() => setShowMyOrders(true)}
-          >
-            Mes commandes
-          </button>
-
-          <button
-            type="button"
-            className="sell-button"
-            onClick={() => setShowListingForm(true)}
-          >
-            ＋ Déposer une annonce
-          </button>
-
-          {sessionUser.role === "ADMIN" && (
-            <button
-              type="button"
-              className="my-listings-button"
-              onClick={() => setShowAdmin(true)}
-            >
-              Administration
-            </button>
-          )}
-        </section>
       )}
 
       {route.name === "home" && (
