@@ -1,18 +1,22 @@
 /* Pied de page : bandeau vert sur toute la largeur */
 
 footer {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-block: 44px;
+  gap: 18px 32px;
+  padding-block: 44px 28px;
   padding-inline: clamp(20px, 4vw, 64px);
   background: var(--green);
   color: var(--paper);
 }
 
-footer span:first-child {
+.footer-brand {
+  display: grid;
+  gap: 6px;
+}
+
+.footer-logo {
   font-family: var(--font-display);
   font-size: 34px;
   font-style: italic;
@@ -24,7 +28,7 @@ footer .brand-dot {
   color: var(--mustard);
 }
 
-footer span:last-child {
+.footer-tagline {
   color: var(--paper-warm);
   font-family: var(--font-hand);
   font-size: 30px;
@@ -32,10 +36,40 @@ footer span:last-child {
   line-height: 1;
 }
 
-@media (max-width: 560px) {
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 24px;
+}
+
+.footer-links a {
+  padding-bottom: 2px;
+  border-bottom: 2px dotted transparent;
+  color: var(--paper);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  border-bottom-color: var(--mustard);
+}
+
+.footer-note {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px dashed rgb(255 253 248 / 35%);
+  color: var(--paper-warm);
+}
+
+@media (max-width: 700px) {
   footer {
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 1fr;
     padding-inline: 20px;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
   }
 }

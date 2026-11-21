@@ -21,10 +21,15 @@ import NotificationBell from "./NotificationBell";
 import { login, logout, register } from "./identity";
 import { catalogUrl } from "./api";
 import InfoPage from "./InfoPage";
+import SiteFooter from "./SiteFooter";
 import ListingPage from "./ListingPage";
 import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
-import { listingHref, useRoute } from "./route";
+import { INFO_PAGE_CONTENT } from "./infoPages";
+import { infoHref, listingHref, useRoute, type InfoPageSlug } from "./route";
+
+/** Pages d'information proposées dans l'en-tête ; les autres restent accessibles depuis le pied de page. */
+const NAV_PAGES: InfoPageSlug[] = ["comment-ca-marche", "faq"];
 import PurchaseDialog from "./PurchaseDialog";
 import AdminPanel from "./AdminPanel";
 import HeroArt from "./HeroArt";
@@ -309,9 +314,23 @@ function App() {
         </a>
 
         <nav className="navigation" aria-label="Navigation principale">
-          <a className="active" href="#catalogue">
+          <a
+            className={route.name === "info" ? undefined : "active"}
+            aria-current={route.name === "info" ? undefined : "page"}
+            href="#catalogue"
+          >
             Catalogue
           </a>
+          {NAV_PAGES.map((slug) => (
+            <a
+              key={slug}
+              className={route.name === "info" && route.slug === slug ? "active" : undefined}
+              aria-current={route.name === "info" && route.slug === slug ? "page" : undefined}
+              href={infoHref(slug)}
+            >
+              {INFO_PAGE_CONTENT[slug].label}
+            </a>
+          ))}
         </nav>
 
         <div className="account-actions">
@@ -489,12 +508,7 @@ function App() {
         />
       )}
 
-      <footer>
-        <span>
-          collector<span className="brand-dot">.</span>
-        </span>
-        <span>Les belles collections se partagent.</span>
-      </footer>
+      <SiteFooter />
 
       {showListingForm && sessionUser && (
         <ListingForm

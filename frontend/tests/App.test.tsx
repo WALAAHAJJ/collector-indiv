@@ -663,3 +663,39 @@ describe("App - favoris", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("App - pages d'information", () => {
+  beforeEach(() => {
+    vi.stubGlobal("scrollTo", vi.fn());
+  });
+
+  it("propose les pages d'information dans l'en-tête et le pied de page", async () => {
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    const header = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    expect(header.getByRole("link", { name: "Comment ça marche" })).toHaveAttribute("href", "#/comment-ca-marche");
+    expect(header.getByRole("link", { name: "FAQ" })).toHaveAttribute("href", "#/faq");
+
+    const footer = within(screen.getByRole("navigation", { name: "Informations du site" }));
+    expect(footer.getByRole("link", { name: "Conditions d'utilisation" })).toHaveAttribute("href", "#/cgu");
+    expect(footer.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "#/contact");
+  });
+
+  it("ouvre une page d'information sans le catalogue, puis revient au catalogue", async () => {
+    const user = userEvent.setup();
+    window.location.hash = "#/faq";
+    mockApi();
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Questions fréquentes" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "À découvrir" })).toBeNull();
+    expect(screen.getByRole("link", { name: "FAQ", current: "page" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: /Retour au catalogue/ }));
+
+    expect(await screen.findByRole("heading", { name: "À découvrir" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Catalogue", current: "page" })).toBeInTheDocument();
+  });
+});
