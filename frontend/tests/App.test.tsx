@@ -65,7 +65,7 @@ describe("App - catalogue", () => {
     expect(
       await screen.findByRole("heading", { name: "Lot de timbres" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("18,50 €")).toBeInTheDocument();
+    expect(screen.getAllByText("18,50 €").length).toBeGreaterThan(0);
     expect(screen.getByText("Expédition : 2,50 €")).toBeInTheDocument();
     expect(
       within(screen.getByRole("article")).getByText("Bon état"),

@@ -186,6 +186,9 @@ function App() {
         (!onlyFavorites || favorites.isFavorite(item.id))
       );
     });
+  const featured = listings[0]
+    ? { ...listings[0], ...visualForLabel(listings[0].category, apiCategories) }
+    : undefined;
   const favoritesCount = listings.filter((item) =>
     favorites.isFavorite(item.id),
   ).length;
@@ -586,24 +589,60 @@ function App() {
       {route.name === "home" && (
         <>
       <section className="hero">
-          <div className="hero-copy">
-            <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
+        <div className="hero-copy">
+          <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
 
-            <h1>
-              Les objets <em className="marker">rares</em> trouvent leur place.
-            </h1>
+          <h1>
+            Les objets <em className="marker">rares</em> trouvent leur place.
+          </h1>
 
-            <p>
-              Découvrez des pièces uniques proposées par des collectionneurs
-              passionnés.
-            </p>
+          <p>
+            Découvrez des pièces uniques proposées par des collectionneurs
+            passionnés.
+          </p>
 
-            <a className="hero-link" href="#catalogue">
-              Explorer le catalogue <span>→</span>
-            </a>
-          </div>
+          <a className="hero-link" href="#catalogue">
+            Explorer le catalogue <span>→</span>
+          </a>
 
-        </section>
+          <dl className="hero-stats">
+            <div>
+              <dt>annonces en vente</dt>
+              <dd>{listings.length}</dd>
+            </div>
+            <div>
+              <dt>catégories</dt>
+              <dd>{apiCategories.length}</dd>
+            </div>
+            <div>
+              <dt>paiement</dt>
+              <dd>sécurisé</dd>
+            </div>
+          </dl>
+        </div>
+
+        {featured && (
+          <a
+            className="hero-featured"
+            href={listingHref(featured.id)}
+            aria-label={`À la une : ${featured.title}`}
+          >
+            <span className="eyebrow">À LA UNE</span>
+            <span className={`hero-featured-visual ${featured.tone}`}>
+              {featured.image ? (
+                <img src={featured.image} alt="" />
+              ) : (
+                <ObjectArt kind={featured.art} />
+              )}
+            </span>
+            <span className="hero-featured-title">{featured.title}</span>
+            <span className="hero-featured-bottom">
+              <span>{featured.condition}</span>
+              <strong>{formatEuros(featured.price)}</strong>
+            </span>
+          </a>
+        )}
+      </section>
         </>
       )}
 
