@@ -13,13 +13,19 @@ import com.collector.collection.payment.CommissionCalculator;
 import com.collector.collection.payment.CommissionCalculator.Breakdown;
 import com.collector.collection.payment.PaymentDeclinedException;
 import com.collector.collection.payment.PaymentGateway;
+import com.collector.collection.payment.PaymentReceipt;
+import com.collector.collection.payment.PaymentUnavailableException;
 import com.collector.collection.repository.CollectibleRepository;
 import com.collector.collection.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -28,6 +34,8 @@ import java.util.UUID;
 
 @Service
 public class OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     private final CollectibleRepository collectibleRepository;
     private final OrderRepository orderRepository;
@@ -76,17 +84,25 @@ public class OrderService {
         CardDetails card = new CardDetails(
                 request.cardNumber(), request.cardHolder(), request.expiry(), request.cvc());
 
+        PaymentReceipt receipt;
         try {
-            paymentGateway.charge(card, breakdown.buyerTotal());
+            receipt = paymentGateway.charge(card, breakdown.buyerTotal());
         } catch (PaymentDeclinedException exception) {
             // 402 Payment Required : le code HTTP prévu pour un paiement qui n'aboutit pas.
             throw new ResponseStatusException(HttpStatusCode.valueOf(402), exception.getMessage());
+        } catch (PaymentUnavailableException exception) {
+            log.warn("Service de paiement indisponible : {}", exception.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Le paiement est momentanément indisponible, aucun montant n'a été débité. Réessayez dans un instant.");
         }
+
+        // L'argent est parti : si la transaction n'aboutit pas, on rembourse.
+        refundUnlessCommitted(receipt.paymentId());
 
         listing.markSold();
         collectibleRepository.save(listing);
 
-        PurchaseOrder order = orderRepository.save(new PurchaseOrder(listing, buyerId, breakdown, card.last4()));
+        PurchaseOrder order = orderRepository.save(new PurchaseOrder(listing, buyerId, breakdown, card.last4(), receipt.paymentId()));
 
         // Transmis à SaleEventRelay, qui ne l'envoie à RabbitMQ qu'une fois la transaction validée.
         events.publishEvent(new SaleEvent(
@@ -100,6 +116,28 @@ public class OrderService {
         ));
 
         return OrderResponse.from(order);
+    }
+
+    /**
+     * Compensation : le paiement vit dans un autre service, il ne peut pas être annulé par la base de données.
+     * Une fois la transaction terminée (validée ou annulée), on rembourse si elle n'a pas été validée,
+     * y compris quand c'est le commit lui-même qui échoue.
+     */
+    private void refundUnlessCommitted(String paymentId) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_COMMITTED) {
+                    return;
+                }
+                try {
+                    paymentGateway.refund(paymentId);
+                } catch (RuntimeException exception) {
+                    // À rapprocher à la main : le paiement est resté débité sans commande.
+                    log.error("Achat annulé mais remboursement impossible pour le paiement {}", paymentId, exception);
+                }
+            }
+        });
     }
 
     /** Le vendeur marque la commande comme expédiée. */
