@@ -23,7 +23,7 @@ Les tests d'intégration utilisent une base H2 en mémoire, jamais les bases Pos
 
 ## 2. Place des tests dans la CI/CD
 
-Le workflow GitHub Actions se déclenche à chaque push, à chaque pull request (dont celles de Dependabot) et à la demande. Les quatre jobs tournent en parallèle ; chaque étape suivante ne s'exécute que si la précédente a réussi.
+Le workflow GitHub Actions se déclenche à chaque push, à chaque pull request (dont celles de Dependabot) et à la demande. Les quatre jobs de contrôle tournent en parallèle ; la construction des images Docker ne démarre que s'ils sont tous verts, et le CD ne publie ces images qu'ensuite, sur `main`.
 
 ```mermaid
 flowchart LR
@@ -36,12 +36,12 @@ flowchart LR
 
     subgraph cs["Job collection-service"]
         direction LR
-        c1["Tests Java et JaCoCo"] --> c2["Tests frontend et couverture"] --> c3["Analyse SonarCloud"] --> c4["Build de l'image Docker"]
+        c1["Tests Java et JaCoCo"] --> c2["Tests frontend et couverture"] --> c3["Analyse SonarCloud"]
     end
 
     subgraph ns["Job notification-service"]
         direction LR
-        n1["Tests Java et JaCoCo"] --> n2["Build de l'image Docker"]
+        n1["Tests Java et JaCoCo"]
     end
 
     subgraph sec["Job sécurité"]
@@ -49,11 +49,23 @@ flowchart LR
         s1["Scan Trivy : dépendances, secrets, configuration"]
     end
 
+    subgraph dk["Job Images Docker (3 images)"]
+        direction LR
+        d1["Build collection-service, notification-service, frontend"]
+    end
+
+    cd["Workflow CD : publication sur GHCR (main)"]
+
     push --> fe
     push --> cs
     push --> ns
     push --> sec
+    fe --> dk
+    cs --> dk
+    ns --> dk
+    sec --> dk
     c3 --> gate{{"Quality Gate"}}
+    dk --> cd
 ```
 
 | Moment | Tests exécutés | Effet d'un échec |
