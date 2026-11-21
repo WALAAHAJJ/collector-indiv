@@ -40,7 +40,7 @@ jobs:
           retention-days: 14
 
   collection-service:
-    name: Tests, SonarCloud et Docker
+    name: Tests et SonarCloud (collection-service)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -98,12 +98,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Build image Docker
-        working-directory: backend/microservices/collection-service
-        run: docker build -t collection-service:ci .
-
   notification-service:
-    name: Tests et Docker (notification-service)
+    name: Tests (notification-service)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -128,10 +124,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Build image Docker
-        working-directory: backend/microservices/notification-service
-        run: docker build -t notification-service:ci .
-
   security-scan:
     name: Scan de sécurité (Trivy)
     runs-on: ubuntu-latest
@@ -147,3 +139,26 @@ jobs:
             --ignore-unfixed \
             --exit-code 1 \
             /src
+
+  # Étape 2 : les images ne sont construites que si tous les tests et le scan sont verts.
+  docker:
+    name: Image Docker (${{ matrix.image }})
+    needs: [frontend, collection-service, notification-service, security-scan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: collection-service
+            context: backend/microservices/collection-service
+          - image: notification-service
+            context: backend/microservices/notification-service
+          - image: frontend
+            context: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build image Docker
+        working-directory: ${{ matrix.context }}
+        run: docker build -t ${{ matrix.image }}:ci .
