@@ -452,3 +452,94 @@
 .topbar .sell-button {
   padding: 0 16px;
 }
+
+/* En-tête sur une seule ligne : en réduisant la fenêtre, on masque d'abord le secondaire */
+
+@media (min-width: 701px) {
+  .topbar {
+    flex-wrap: nowrap;
+  }
+
+  .topbar .brand,
+  .topbar .account-actions,
+  .topbar .language-menu,
+  .topbar .categories-menu,
+  .topbar .navigation {
+    flex: none;
+  }
+
+  .topbar .header-search {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1500px) {
+  .topbar .info-link {
+    display: none;
+  }
+}
+
+@media (max-width: 1350px) {
+  .topbar .categories-menu {
+    display: none;
+  }
+}
+
+@media (max-width: 1150px) {
+  .topbar .language-menu,
+  .topbar .navigation a:not(.heart) {
+    display: none;
+  }
+
+  .topbar .brand-word {
+    font-size: 34px;
+  }
+
+  .topbar .brand-underline {
+    width: 140px;
+  }
+}
+
+@media (max-width: 950px) {
+  .topbar {
+    gap: 10px;
+  }
+
+  .topbar .account-greeting {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .topbar .account-toggle::before {
+    content: "👤";
+    font-size: 22px;
+  }
+
+  .topbar .login-button,
+  .topbar .sell-button {
+    padding: 0 12px;
+    font-size: 14px;
+  }
+}
+
+/* Le logo reste à gauche ; la recherche s'étire, les liens et le compte se calent à droite */
+
+.topbar {
+  justify-content: flex-start;
+}
+
+.topbar .header-search {
+  max-width: 460px;
+}
+
+.topbar .navigation {
+  margin-left: auto;
+}
+
+.topbar .account-actions {
+  margin-left: 0;
+}

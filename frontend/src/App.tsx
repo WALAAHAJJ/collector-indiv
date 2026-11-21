@@ -437,7 +437,7 @@ function App() {
 
         <nav className="navigation" aria-label="Informations">
           <a
-            className={route.name === "info" && route.slug === "comment-ca-marche" ? "active" : undefined}
+            className={route.name === "info" && route.slug === "comment-ca-marche" ? "info-link active" : "info-link"}
             aria-current={route.name === "info" && route.slug === "comment-ca-marche" ? "page" : undefined}
             href={infoHref("comment-ca-marche")}
           >
