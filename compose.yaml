@@ -83,7 +83,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://collection-db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
       # Annonces de démonstration : DEMO_DATA=true dans .env (désactivé par défaut)
       APP_DEMO_DATA_ENABLED: ${DEMO_DATA:-false}
@@ -127,7 +126,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/collector_notification
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/collector/protocol/openid-connect/certs
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -163,7 +161,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/collector_payment
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_OPEN_IN_VIEW: "false"
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/collector/protocol/openid-connect/certs
     ports:

@@ -31,7 +31,7 @@ Le détail de chaque fonctionnalité est dans [docs/fonctionnalites.md](docs/fon
 - **payment-service** : paiement par carte (contrôles, trace de chaque tentative, remboursement), appelé par les commandes avec le jeton de l'acheteur.
 - **Keycloak** : comptes, connexion, rôles, jetons. Chaque service vérifie la signature du jeton.
 
-Chaque service a sa propre base de données. Détails et schémas : [docs/architecture.md](docs/architecture.md).
+Chaque service a sa propre base de données, dont le schéma est versionné avec Flyway. Détails et schémas : [docs/architecture.md](docs/architecture.md).
 
 ## Lancer le projet
 

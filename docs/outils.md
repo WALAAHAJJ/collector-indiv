@@ -33,7 +33,8 @@ Ce document liste tous les outils, langages et services utilisés dans Collector
 | Outil | Version | À quoi il sert | Où |
 |---|---|---|---|
 | PostgreSQL | 17 | Base de données de chaque service (une base par service). | `compose.yaml` |
-| Spring Data JPA et Hibernate | via Spring Boot | Lit et écrit les entités sans écrire de SQL à la main. | `domain/` et `repository/` |
+| Spring Data JPA et Hibernate | via Spring Boot | Lit et écrit les entités sans écrire de SQL à la main. Hibernate ne crée plus les tables : il vérifie seulement qu'elles correspondent aux entités. | `domain/` et `repository/` |
+| Flyway | via Spring Boot | Migrations de base de données versionnées : chaque changement de schéma est un fichier SQL (`V1__…`, `V2__…`) joué une seule fois, dans l'ordre, au démarrage. Une base existante est reprise telle quelle (baseline). | `src/main/resources/db/migration/` |
 | H2 | via Spring Boot | Base en mémoire utilisée uniquement par les tests. | dépendance de test |
 | Bean Validation | via Spring Boot | Valide les formulaires côté serveur (prix positif, champs obligatoires). | DTO des services |
 | Spring Security | via Spring Boot | Protège les routes et ne laisse publics que le catalogue, les catégories et les photos approuvées. | `SecurityConfig` |
@@ -129,4 +130,3 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 |---|---|
 | Réception des événements par les services | Service de notifications (fait : file `notification.listing-events`, liée à l'échange par `listing.*`, `order.paid`, `order.shipped` et `order.delivered`) ; plus tard, détection de fraude et prix modifié. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |
-| Flyway | Migrations de base de données versionnées, à la place de la mise à jour automatique actuelle. |
