@@ -362,3 +362,93 @@
   height: 34px;
   width: auto;
 }
+
+/* Centrage et taille : l'en-tête et les onglets sont centrés, un peu plus grands */
+
+.topbar {
+  justify-content: center;
+  gap: 22px;
+}
+
+.topbar .account-actions {
+  margin-left: 0;
+}
+
+.topbar .brand-word {
+  font-size: 44px;
+}
+
+.topbar .brand-underline {
+  width: 184px;
+}
+
+.categories-toggle,
+.language-toggle,
+.topbar .navigation a {
+  font-size: 18px;
+}
+
+.topbar .login-button,
+.topbar .sell-button {
+  font-size: 16px;
+}
+
+.trust-band {
+  font-size: 16px;
+}
+
+.category-tabs {
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.category-tabs a {
+  min-width: 132px;
+  gap: 10px;
+  padding: 26px 22px 16px;
+  font-size: 19px;
+}
+
+.category-tabs .object-art,
+.category-tabs svg {
+  width: auto;
+  height: 46px;
+}
+
+.category-tabs svg {
+  width: 46px;
+}
+
+/* Tout sur une ligne à 1440 px : on resserre légèrement */
+
+.topbar {
+  gap: 16px;
+}
+
+.topbar .brand-word {
+  font-size: 40px;
+}
+
+.topbar .brand-underline {
+  width: 168px;
+}
+
+.topbar .header-search {
+  flex: 0 1 250px;
+  min-width: 180px;
+}
+
+.topbar .navigation {
+  gap: 16px;
+}
+
+.topbar .account-actions {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.topbar .login-button,
+.topbar .sell-button {
+  padding: 0 16px;
+}

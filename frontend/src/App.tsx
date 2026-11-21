@@ -30,7 +30,6 @@ import { infoHref, listingHref, useRoute } from "./route";
 
 import PurchaseDialog from "./PurchaseDialog";
 import AdminPanel from "./AdminPanel";
-import HeroArt from "./HeroArt";
 import ObjectArt from "./ObjectArt";
 import { visualForLabel } from "./categories";
 import {
@@ -49,7 +48,7 @@ const BARGAIN_FILTERS: CatalogFilters = { ...NO_FILTERS, maxPrice: "20", sort: "
 /** Petites icônes des deux premiers onglets (les autres utilisent les illustrations des catégories). */
 function TabGlyph({ kind }: Readonly<{ kind: "grid" | "tag" }>) {
   return (
-    <svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
+    <svg viewBox="0 0 34 34" width="46" height="46" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
       {kind === "grid" ? (
         <>
           <rect x="5" y="5" width="10" height="10" rx="2" />
@@ -614,7 +613,7 @@ function App() {
             href="#catalogue"
             onClick={() => showCatalogueView("all", item.name)}
           >
-            <ObjectArt kind={visualForLabel(item.name, apiCategories).art} size={34} />
+            <ObjectArt kind={visualForLabel(item.name, apiCategories).art} size={46} />
             <span>{item.name}</span>
           </a>
         ))}
@@ -646,7 +645,6 @@ function App() {
             </a>
           </div>
 
-          <HeroArt />
         </section>
         </>
       )}
