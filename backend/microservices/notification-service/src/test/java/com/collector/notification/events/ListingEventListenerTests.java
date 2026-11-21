@@ -156,6 +156,7 @@ class ListingEventListenerTests {
         assertEquals(NotificationType.ORDER_SOLD, notification.getType());
         assertTrue(notification.getMessage().contains("« Lot de timbres » est vendu"));
         assertTrue(notification.getMessage().contains("Vous gagnez 22,00 €"));
+        assertTrue(notification.getMessage().contains("expédiez la commande depuis Mes commandes > Mes ventes"));
     }
 
     @Test
@@ -220,6 +221,7 @@ class ListingEventListenerTests {
         assertEquals(listing, notification.getListingId());
         assertEquals(NotificationType.ORDER_SHIPPED, notification.getType());
         assertTrue(notification.getMessage().contains("« Montre » a été expédiée"));
+        assertTrue(notification.getMessage().contains("confirmez-le dans Mes commandes > Mes achats"));
     }
 
     @Test
@@ -230,6 +232,7 @@ class ListingEventListenerTests {
         assertEquals(owner, notification.getUserId());
         assertEquals(NotificationType.ORDER_DELIVERED, notification.getType());
         assertTrue(notification.getMessage().contains("confirmé la réception de « Montre »"));
+        assertTrue(notification.getMessage().contains("laisser un avis"));
     }
 
     @Test

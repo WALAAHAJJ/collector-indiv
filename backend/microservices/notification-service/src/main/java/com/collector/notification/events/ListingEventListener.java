@@ -94,8 +94,9 @@ public class ListingEventListener {
     static String orderStepText(NotificationType type, String listingName) {
         String text = switch (type) {
             case ORDER_SHIPPED -> "Votre commande « " + listingName
-                    + " » a été expédiée. Confirmez la réception dès que vous l'avez reçue.";
-            case ORDER_DELIVERED -> "Bonne nouvelle : l'acheteur a confirmé la réception de « " + listingName + " ».";
+                    + " » a été expédiée. Dès que vous l'avez reçue, confirmez-le dans Mes commandes > Mes achats.";
+            case ORDER_DELIVERED -> "L'acheteur a confirmé la réception de « " + listingName
+                    + " ». La vente est terminée : il peut maintenant vous laisser un avis.";
             default -> throw new IllegalArgumentException("pas une étape de commande : " + type);
         };
 
@@ -105,7 +106,8 @@ public class ListingEventListener {
     static String saleText(String listingName, BigDecimal sellerNet) {
         String amount = sellerNet.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
         String text = "Bonne nouvelle : « " + listingName + " » est vendu ! Vous gagnez " + amount
-                + " € (commission du site déduite, frais d'expédition inclus).";
+                + " € (commission du site déduite, frais d'expédition inclus). À vous d'agir : expédiez la commande"
+                + " depuis Mes commandes > Mes ventes.";
 
         return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);
     }
