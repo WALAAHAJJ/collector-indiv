@@ -320,7 +320,7 @@ export default function MyListings({
             {editingId === listing.id && (
               <form className="my-listing-edit-form" onSubmit={saveListing}>
                 <label>
-                  Titre
+                  <span>Titre</span>
                   <input
                     required
                     maxLength={120}
@@ -332,7 +332,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  Description
+                  <span>Description</span>
                   <textarea
                     required
                     maxLength={1000}
@@ -347,7 +347,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  Catégorie
+                  <span>Catégorie</span>
                   <select
                     value={editForm.category}
                     onChange={(event) =>
@@ -366,7 +366,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  État
+                  <span>État</span>
                   <select
                     value={editForm.condition}
                     onChange={(event) =>
@@ -384,7 +384,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  Prix (€)
+                  <span>Prix (€)</span>
                   <input
                     required
                     type="number"
@@ -398,7 +398,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  Frais d’expédition (€)
+                  <span>Frais d’expédition (€)</span>
                   <input
                     required
                     type="number"

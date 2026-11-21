@@ -25,7 +25,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
   return (
     <div className="catalogue-controls">
       <label>
-        Prix min (€)
+        <span>Prix min (€)</span>
         <input
           type="number"
           inputMode="decimal"
@@ -36,7 +36,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
       </label>
 
       <label>
-        Prix max (€)
+        <span>Prix max (€)</span>
         <input
           type="number"
           inputMode="decimal"
@@ -47,7 +47,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
       </label>
 
       <label>
-        État
+        <span>État</span>
         <select
           value={filters.condition}
           onChange={(event) => update({ condition: event.target.value })}
@@ -62,7 +62,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
       </label>
 
       <label>
-        Trier par
+        <span>Trier par</span>
         <select
           value={filters.sort}
           onChange={(event) => {

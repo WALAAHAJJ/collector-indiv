@@ -148,7 +148,7 @@ export default function ListingForm({
 
       <form className="listing-form" onSubmit={handleSubmit}>
         <label>
-          Titre de l’annonce
+          <span>Titre de l’annonce</span>
           <input
             required
             maxLength={120}
@@ -158,7 +158,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          Description
+          <span>Description</span>
           <textarea
             required
             rows={4}
@@ -169,7 +169,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          Catégorie
+          <span>Catégorie</span>
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
@@ -183,7 +183,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          État
+          <span>État</span>
           <select
             value={condition}
             onChange={(event) => setCondition(event.target.value)}
@@ -196,7 +196,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          Prix de l’objet en euros
+          <span>Prix de l’objet en euros</span>
           <input
             required
             type="number"
@@ -208,7 +208,7 @@ export default function ListingForm({
         </label>
 
         <label>
-          Frais d’expédition en euros
+          <span>Frais d’expédition en euros</span>
           <input
             required
             type="number"

@@ -53,7 +53,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
       </fieldset>
 
       <label>
-        Commentaire (facultatif)
+        <span>Commentaire (facultatif)</span>
         <textarea
           value={comment}
           maxLength={MAX_COMMENT_LENGTH}
