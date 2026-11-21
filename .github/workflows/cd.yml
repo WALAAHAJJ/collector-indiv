@@ -28,6 +28,8 @@ jobs:
             context: backend/microservices/collection-service
           - image: notification-service
             context: backend/microservices/notification-service
+          - image: payment-service
+            context: backend/microservices/payment-service
           - image: frontend
             context: frontend
     steps:
