@@ -7,7 +7,7 @@ Collector met en relation des particuliers qui veulent vendre ou trouver des tim
 | Pour les acheteurs | Pour les vendeurs | Pour l'équipe Collector |
 |---|---|---|
 | Un catalogue à parcourir par catégorie, avec recherche, tri, filtres de prix et d'état, favoris | Un dépôt d'annonce en quelques clics, avec photo, et un suivi de chaque vente | Une modération automatique des annonces et un espace d'administration |
-| Un paiement par carte (simulé pour l'instant : aucun argent ne bouge) et le suivi de la commande, de l'achat à la réception | Une commission claire de 5 %, avec le gain net affiché pour chaque vente | Les catégories et les annonces gérées depuis le site |
+| Un paiement par carte (carte de test : aucun argent ne bouge), traité par son propre service et le suivi de la commande, de l'achat à la réception | Une commission claire de 5 %, avec le gain net affiché pour chaque vente | Les catégories et les annonces gérées depuis le site |
 | Les avis des autres acheteurs sur chaque vendeur | Des notifications à chaque vente, expédition et réception | Une plateforme sécurisée et testée en continu |
 
 Le détail de chaque fonctionnalité est dans [docs/fonctionnalites.md](docs/fonctionnalites.md) et la liste des routes dans [docs/api.md](docs/api.md).
@@ -19,13 +19,16 @@ Le détail de chaque fonctionnalité est dans [docs/fonctionnalites.md](docs/fon
                      │                                      │ jeton signé
                      ▼                                      ▼
               collection-service (8081) ──▶ RabbitMQ ──▶ notification-service (8083)
-                     │                                      │
-                PostgreSQL (5433)                      PostgreSQL (5435)
+                │         │                                 │
+                │         └── HTTP ──▶ payment-service (8084)
+                │                            │
+           PostgreSQL (5433)       PostgreSQL (5436)    PostgreSQL (5435)
 ```
 
 - **frontend** : React, TypeScript, Vite.
 - **collection-service** : annonces, modération, commandes. Spring Boot 4, Java 21.
 - **notification-service** : notifications de chaque utilisateur, alimentées par les événements RabbitMQ.
+- **payment-service** : paiement par carte (contrôles, trace de chaque tentative, remboursement), appelé par les commandes avec le jeton de l'acheteur.
 - **Keycloak** : comptes, connexion, rôles, jetons. Chaque service vérifie la signature du jeton.
 
 Chaque service a sa propre base de données. Détails et schémas : [docs/architecture.md](docs/architecture.md).
@@ -52,6 +55,7 @@ npm run dev                     # http://localhost:5173
 ```bash
 cd backend/microservices/collection-service && ./mvnw -B verify
 cd backend/microservices/notification-service && ./mvnw -B verify
+cd backend/microservices/payment-service && ./mvnw -B verify
 cd frontend && npm run test:coverage && npm run lint && npm run build
 ```
 
@@ -72,6 +76,7 @@ Démarche complète (risques, détection, incidents) : [docs/securite.md](docs/s
 frontend/                                  site React
 backend/microservices/collection-service  annonces, modération, commandes
 backend/microservices/notification-service notifications
+backend/microservices/payment-service      paiements et remboursements
 keycloak/                                  configuration du realm (SSO)
 demos/messaging/                           comparaison RabbitMQ et Kafka
 docs/                                      documentation détaillée

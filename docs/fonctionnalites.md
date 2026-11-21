@@ -26,7 +26,7 @@ Ce document détaille ce que fait le site, fonctionnalité par fonctionnalité. 
 | Notifications : service et sa base dans Docker Compose, job de CI, suivi par Dependabot | Fait |
 | Notifications : cloche dans le site (compteur de non lues actualisé toutes les 30 s, liste, marquage comme lue) | Fait |
 | Photos des annonces : envoi, remplacement et retrait par le vendeur, affichage dans le catalogue, « Mes annonces » et l'administration | Fait |
-| Paiement simulé : achat d'une annonce par carte factice, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
+| Paiement par carte de test traité par un service dédié (payment-service) : achat d'une annonce, commission de 5 %, annonce marquée vendue, commandes enregistrées (API et tests) | Fait |
 | Paiement : bouton « Acheter », fenêtre de paiement avec le détail du prix, « Mes commandes » (achats, ventes avec commission et gain net) | Fait |
 | Paiement : notification au vendeur à chaque vente (événement RabbitMQ `order.paid`, « Vous gagnez 22,00 € ») | Fait |
 | Suivi de commande : expédiée par le vendeur, reçue par l'acheteur, avec notification de l'autre partie (`order.shipped`, `order.delivered`) | Fait |
@@ -54,11 +54,11 @@ Les motifs de refus sont affichés au vendeur. La détection du téléphone n'ut
 
 ## Paiement, catalogue et suivi de commande
 
-Aucun argent ne bouge : la passerelle de paiement est une simulation, mais elle applique les vrais contrôles d'une carte.
+Aucun argent ne bouge : le service de paiement utilise des cartes de test, mais il applique les vrais contrôles d'une carte et garde la trace de chaque tentative, refusée comprise.
 
 - **Commission** : 5 % du prix de l'objet (réglable par `app.payment.commission-rate`), arrondie au centime. Le port revient au vendeur. Pour un objet à 20,00 € avec 3,00 € de port : l'acheteur paie 23,00 €, le site garde 1,00 €, le vendeur reçoit 22,00 €.
 - **Cartes de test** : `4242 4242 4242 4242` est acceptée ; `4000 0000 0000 0002` est toujours refusée ; un numéro dont la clé de Luhn est fausse ou une date dépassée est refusé.
-- **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien. Deux acheteurs simultanés : le second reçoit une erreur 409.
+- **Achat atomique** : l'annonce est verrouillée, payée, marquée vendue et la commande enregistrée dans une seule transaction. Un paiement refusé ne change rien ; si l'achat échoue après le débit, le paiement est remboursé automatiquement ; si le service de paiement est arrêté, l'acheteur reçoit une erreur claire et rien n'est débité. Deux acheteurs simultanés : le second reçoit une erreur 409.
 - **Données de carte** : jamais enregistrées ni journalisées ; la commande garde seulement les 4 derniers chiffres.
 - **Notification de vente** : une fois l'achat validé, le service des annonces publie `order.paid` sur RabbitMQ ; le vendeur reçoit dans sa cloche « « … » est vendu ! Vous gagnez 22,00 € … expédiez la commande depuis Mes commandes > Mes ventes », et l'acheteur « Votre paiement pour « … » est confirmé ». L'envoi attend la fin de la transaction : un achat annulé ne prévient personne.
 - **Notifications de suivi** : quand le vendeur expédie, l'acheteur reçoit « Votre commande « … » a été expédiée… confirmez-le dans Mes commandes > Mes achats » (`order.shipped`) ; quand l'acheteur confirme la réception, le vendeur est prévenu et sait que l'acheteur peut le noter (`order.delivered`). Même principe : envoi après validation de la transaction, et un RabbitMQ arrêté ne bloque pas la commande.

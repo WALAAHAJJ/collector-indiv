@@ -137,25 +137,33 @@ Le message est un texte (le nom de l'annonce) ; le vendeur, l'identifiant de l'a
 
 L'événement de vente n'est envoyé qu'après validation (« commit ») de la transaction d'achat. Sans cela, un échec d'enregistrement après l'envoi préviendrait le vendeur d'une vente qui n'a pas eu lieu.
 
-### Achat d'une annonce (paiement simulé)
+### Achat d'une annonce (paiement par le service de paiement)
 
 ```mermaid
 sequenceDiagram
     participant U as Acheteur
     participant A as Service des annonces
-    participant P as Passerelle de paiement (simulée)
+    participant P as Service de paiement
     participant B as Base des annonces
     U->>A: POST /api/orders (annonce, carte) avec le jeton
     A->>B: Lit l'annonce en la verrouillant
     A->>A: Contrôles : approuvée, pas déjà vendue, pas la sienne
     A->>A: Calcule commission, total, gain du vendeur
-    A->>P: Prélever le total sur la carte
+    A->>P: Prélever le total (jeton de l'acheteur transmis)
     alt carte refusée
-        P-->>A: Refus
+        P-->>A: 402
         A-->>U: 402, rien n'est modifié
+    else service de paiement arrêté
+        A-->>U: 503, rien n'est débité
     else carte acceptée
-        A->>B: Annonce vendue + commande (4 derniers chiffres seulement)
-        A-->>U: 201, détail de la commande
+        P-->>A: Paiement accepté (identifiant)
+        A->>B: Annonce vendue + commande (4 derniers chiffres, identifiant du paiement)
+        alt l'enregistrement échoue
+            A->>P: Rembourser (compensation)
+            A-->>U: Erreur
+        else enregistrement validé
+            A-->>U: 201, détail de la commande
+        end
     end
 ```
 
@@ -165,13 +173,14 @@ Le verrou sur l'annonce fait attendre un second acheteur arrivé au même instan
 
 | Décision | Raison | Limite ou conséquence |
 |---|---|---|
-| Deux services séparés, une base chacun | Les comptes et les annonces évoluent à des rythmes différents ; une panne ou une faille de l'un n'ouvre pas la base de l'autre | Pas de jointure entre les bases : les annonces ne connaissent un vendeur que par son identifiant |
+| Trois services séparés, une base chacun | Les comptes et les annonces évoluent à des rythmes différents ; une panne ou une faille de l'un n'ouvre pas la base de l'autre | Pas de jointure entre les bases : les annonces ne connaissent un vendeur que par son identifiant |
 | Jeton JWT signé par Keycloak avec une clé privée (RS256) ; les services ne connaissent que les clés publiques | Aucun secret à partager entre services ; un service compromis ne peut pas fabriquer de jetons | Chaque service télécharge les clés publiques de Keycloak ; si Keycloak est arrêté, personne ne peut se connecter (les jetons déjà émis restent valables 5 minutes) |
 | Le propriétaire d'une annonce vient du jeton | Impossible d'écrire au nom d'un autre en modifiant le formulaire | — |
 | Modération exécutée dans le service des annonces, au moment du dépôt | Simple et immédiate, sans composant supplémentaire | Ajouter la détection de fraude ou les notifications obligerait à modifier ce service ; la messagerie entre services (à venir) lèvera cette limite |
 | Rôle `ADMIN` porté par le jeton (`realm_access.roles`) | Le service des annonces décide des droits sans rappeler Keycloak | Un changement de rôle ne prend effet qu'à l'expiration du jeton, soit 5 minutes au plus |
 | Les changements de statut sont publiés sur RabbitMQ, « au mieux » | Les notifications et la détection de fraude s'ajoutent sans modifier la modération ; une panne de RabbitMQ ne bloque jamais un dépôt d'annonce | Un événement peut être perdu si RabbitMQ est arrêté au mauvais moment ; en production, on utiliserait un journal d'envoi en base (patron « outbox ») |
-| Paiement derrière une interface `PaymentGateway`, simulé pour l'instant | Aucun vrai argent à manipuler dans un projet scolaire ; un vrai prestataire (Stripe, par exemple) remplacerait la simulation sans toucher au reste | La simulation ne couvre ni le remboursement, ni la contestation, ni le versement au vendeur |
+| Paiement dans un service à part (`payment-service`), derrière l'interface `PaymentGateway` | Le paiement a sa propre base et ses propres règles ; un vrai prestataire (Stripe, par exemple) remplacerait l'intérieur du service sans toucher au reste | Cartes de test seulement ; pas de contestation ni de versement au vendeur ; le numéro de carte traverse le réseau interne sans TLS |
+| Remboursement automatique plutôt que transaction répartie | Le débit se passe dans un autre service : la base ne peut pas l'annuler ; on rembourse si la transaction des commandes échoue | Si le remboursement échoue aussi, le paiement reste débité sans commande : une erreur est journalisée pour rapprochement manuel (en production : file de reprises) |
 | Achat dans le service des annonces, avec un verrou sur l'annonce | Marquer vendue et enregistrer la commande doivent réussir ou échouer ensemble ; une seule base, donc une seule transaction | Si les commandes devenaient un service séparé, il faudrait une transaction répartie (patron « saga ») |
 | Passerelle assurée par Vite en développement | Une seule adresse pour le navigateur, pas de réglage de partage entre origines | À remplacer par une vraie passerelle en production |
 

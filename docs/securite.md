@@ -9,6 +9,7 @@ Collector manipule des comptes, des échanges entre particuliers et, à terme, d
 | Composant | Technologie | Rôle | Données sensibles |
 |---|---|---|---|
 | Keycloak | image `quay.io/keycloak/keycloak:26.8.1`, port 8180 | Comptes, connexion, rôles, jetons | e-mails, mots de passe hachés |
+| payment-service | Java 21, Spring Boot 4.1.2, port 8084 | Paiements et remboursements | montants, 4 derniers chiffres de carte |
 | notification-service | Java 21, Spring Boot 4.1.2, port 8083 | Notifications des utilisateurs | notifications personnelles |
 | collection-service | Java 21, Spring Boot 4.1.2, port 8081 | Annonces, modération, back-office | annonces, identifiants de vendeurs |
 | frontend | React 19, Vite 8, port 5173 | Site | aucune (jeton gardé en mémoire, jamais dans le stockage du navigateur) |
@@ -27,7 +28,7 @@ Chaque nouveau composant (broker de messages, orchestrateur, base de supervision
 |---|---|---|
 | Mots de passe | Saisis sur la page de Keycloak, jamais vus par le site ni par les services ; hachés par Keycloak | Keycloak |
 | Authentification | SSO par Keycloak (choix justifié dans `docs/comparaisons.md`) : code d'autorisation avec PKCE (S256), pas de flux par mot de passe côté site ; jeton JWT signé RS256, valable 5 minutes, renouvelé par le site ; protection contre les essais répétés (blocage après 5 échecs) ; mot de passe d'au moins 8 caractères, différent du nom et de l'e-mail, 3 derniers refusés ; renouvellement à usage unique (rotation) ; journal des connexions activé | Keycloak, site |
-| Vérification des jetons | Signature (clés publiques de Keycloak), émetteur, expiration ; aucun secret partagé entre les services | collection-service, notification-service |
+| Vérification des jetons | Signature (clés publiques de Keycloak), émetteur, expiration ; aucun secret partagé entre les services | collection-service, notification-service, payment-service |
 | Autorisation | Seuls le catalogue, la fiche d'une annonce approuvée ou vendue et la réputation d'un vendeur (moyenne et avis) sont publics (une annonce en attente ou refusée répond 404, comme une annonce inconnue) ; le propriétaire d'une annonce vient du jeton, jamais du formulaire ; un avis n'est possible que pour l'acheteur d'une commande reçue, une seule fois (contrainte d'unicité en base) ; routes `/api/admin` réservées au rôle `ADMIN` | collection-service |
 | Compte administrateur | Créé dans Keycloak au premier démarrage depuis des variables d'environnement, sans mot de passe par défaut ; l'inscription publique ne donne jamais le rôle `ADMIN` | Keycloak |
 | Erreurs | Codes HTTP exacts (401, 403, 404, 409), sans détail interne | les deux services |
@@ -78,7 +79,7 @@ Gravité = impact si le risque se réalise. Probabilité estimée pour un site d
 | Secret publié dans le dépôt | haute | faible | `.env` ignoré, analyse de secrets par Trivy | rotation régulière des secrets |
 | Conteneur compromis | haute | faible | utilisateur sans privilèges | analyse des images construites |
 | Notification de vente trompeuse | faible | faible | événement envoyé seulement après validation de l'achat, message incomplet ou au montant invalide abandonné, aucune donnée de carte dans l'événement | — |
-| Fuite de données de carte | haute | faible | rien n'est stocké ni journalisé, effacé de l'écran après paiement, passerelle simulée | avec un vrai prestataire : formulaire hébergé par lui, pour que la carte ne passe jamais par nos serveurs |
+| Fuite de données de carte | haute | faible | numéro complet jamais stocké ni journalisé (4 derniers chiffres seulement, `toString` masqué), effacé de l'écran après paiement, carte de test uniquement | le numéro de carte transite en clair entre collection-service et payment-service, à l'intérieur du réseau Docker ; avec un vrai prestataire : formulaire hébergé par lui, pour que la carte ne passe jamais par nos serveurs, et compte de service (client credentials) à la place du jeton de l'acheteur |
 | Double achat ou achat de sa propre annonce | moyenne | moyenne | verrou sur l'annonce, contrôle du vendeur, tests 403 et 409 | — |
 | Fraude (prix aberrant, vendeur suspect) | moyenne | moyenne | prix > 5 000 € en validation manuelle | composant antifraude dédié alimenté par les changements de prix |
 | Déni de service | moyenne | moyenne | — | limitation de débit |

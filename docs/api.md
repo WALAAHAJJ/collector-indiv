@@ -1,6 +1,6 @@
 # API
 
-Routes du collection-service (port 8081) et du notification-service (port 8083). « jeton » désigne le jeton de connexion émis par Keycloak : l'utilisateur est toujours celui du jeton, jamais celui de la requête.
+Routes du collection-service (port 8081), du notification-service (port 8083) et du payment-service (port 8084). « jeton » désigne le jeton de connexion émis par Keycloak : l'utilisateur est toujours celui du jeton, jamais celui de la requête.
 
 | Route | Accès | Rôle |
 |---|---|---|
@@ -16,7 +16,7 @@ Routes du collection-service (port 8081) et du notification-service (port 8083).
 | `PUT` / `DELETE /api/collectibles/{id}` | jeton | Modifier ou supprimer sa propre annonce |
 | `POST` / `DELETE /api/collectibles/{id}/photo` | jeton | Ajouter, remplacer ou retirer la photo de sa propre annonce (JPEG, PNG ou WebP, 1 Mo au maximum) |
 | `GET /api/collectibles/{id}/photo` | public si l'annonce est approuvée, sinon propriétaire ou administrateur | Lire la photo d'une annonce |
-| `POST /api/orders` | jeton | Acheter une annonce approuvée avec une carte simulée (402 si la carte est refusée, 409 si déjà vendue, 403 pour sa propre annonce) |
+| `POST /api/orders` | jeton | Acheter une annonce approuvée avec une carte de test (402 si la carte est refusée, 409 si déjà vendue, 403 pour sa propre annonce, 503 si le service de paiement ne répond pas : rien n'est débité) |
 | `GET /api/orders/purchases` | jeton | Mes achats |
 | `GET /api/orders/sales` | jeton | Mes ventes, avec la commission et mon gain net |
 | `POST /api/orders/{id}/ship` | jeton | Le vendeur marque la commande expédiée (403 si ce n'est pas le vendeur, 409 si pas dans l'état « payée ») |
@@ -27,6 +27,18 @@ Routes du collection-service (port 8081) et du notification-service (port 8083).
 | `DELETE /api/admin/collectibles/{id}` | administrateur | Supprimer une annonce contraire à la charte |
 | `POST /api/admin/categories` | administrateur | Créer une catégorie (nom unique, illustration) |
 | `DELETE /api/admin/categories/{id}` | administrateur | Supprimer une catégorie, refusé si des annonces l'utilisent |
+
+## Paiements (payment-service)
+
+Appelées par le collection-service, qui transmet le jeton de l'acheteur : le payeur est toujours le sujet du jeton.
+
+| Route | Accès | Rôle |
+|---|---|---|
+| `POST /api/payments` | jeton | Prélever un montant (carte, titulaire, expiration, cryptogramme). 201 si accepté, 402 si refusé (la tentative est conservée), 400 si la requête est invalide |
+| `GET /api/payments/{id}` | jeton | Lire un paiement (404 s'il n'est pas à soi) ; seuls les 4 derniers chiffres de la carte existent |
+| `POST /api/payments/{id}/refund` | jeton | Rembourser un paiement accepté, une seule fois (409 sinon, 404 s'il n'est pas à soi) |
+
+Cartes de test : `4242 4242 4242 4242` est acceptée, `4000 0000 0000 0002` est toujours refusée, une date passée est refusée.
 
 ## Notifications (notification-service)
 
