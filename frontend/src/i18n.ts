@@ -28,6 +28,9 @@ const TEXTS = {
     login: "Se connecter",
     register: "Créer un compte",
     language: "Langue",
+    trustPayment: "Paiement sécurisé",
+    trustModeration: "Annonces relues par un administrateur",
+    trustReviews: "Vendeurs notés par les acheteurs",
   },
   en: {
     categories: "Categories",
@@ -48,6 +51,9 @@ const TEXTS = {
     login: "Log in",
     register: "Create an account",
     language: "Language",
+    trustPayment: "Secure payment",
+    trustModeration: "Every listing reviewed by an admin",
+    trustReviews: "Sellers rated by buyers",
   },
 } as const;
 

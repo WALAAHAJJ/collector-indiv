@@ -25,6 +25,7 @@ import SiteFooter from "./SiteFooter";
 import ListingPage from "./ListingPage";
 import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
+import { LANGUAGES, setLanguage, useLanguage } from "./i18n";
 import { infoHref, listingHref, useRoute } from "./route";
 
 import PurchaseDialog from "./PurchaseDialog";
@@ -44,6 +45,27 @@ import {
 
 /** « Bonnes affaires » : les annonces à 20 € ou moins, les moins chères d'abord. */
 const BARGAIN_FILTERS: CatalogFilters = { ...NO_FILTERS, maxPrice: "20", sort: "price-asc" };
+
+/** Petites icônes des deux premiers onglets (les autres utilisent les illustrations des catégories). */
+function TabGlyph({ kind }: Readonly<{ kind: "grid" | "tag" }>) {
+  return (
+    <svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
+      {kind === "grid" ? (
+        <>
+          <rect x="5" y="5" width="10" height="10" rx="2" />
+          <rect x="19" y="5" width="10" height="10" rx="2" />
+          <rect x="5" y="19" width="10" height="10" rx="2" />
+          <rect x="19" y="19" width="10" height="10" rx="2" />
+        </>
+      ) : (
+        <>
+          <path d="M5 17 17 5h12v12L17 29 5 17Z" />
+          <circle cx="23" cy="11" r="1.8" />
+        </>
+      )}
+    </svg>
+  );
+}
 import { CatalogueControls } from "./CatalogueControls";
 import { Pagination } from "./Pagination";
 import { VISITOR_KEY, useFavorites } from "./favorites";
@@ -61,12 +83,17 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const route = useRoute();
+  const { language, t } = useLanguage();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [categoriesMenuOpen, setCategoriesMenuOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const categoriesMenuRef = useRef<HTMLDivElement>(null);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
   const [showListingForm, setShowListingForm] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showMyOrders, setShowMyOrders] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [purchaseTarget, setPurchaseTarget] = useState<Listing | null>(null);
   // Incrémenté après un achat pour recharger le catalogue : l'objet vendu doit en disparaître.
   const [catalogVersion, setCatalogVersion] = useState(0);
@@ -76,9 +103,10 @@ function App() {
   const favorites = useFavorites(sessionUser?.id ?? VISITOR_KEY);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
-  // Le menu du compte se ferme avec Échap ou un clic en dehors.
+  // Les menus déroulants (compte, catégories, langue) se ferment avec Échap ou un clic en dehors.
+  const anyMenuOpen = accountMenuOpen || categoriesMenuOpen || languageMenuOpen;
   useEffect(() => {
-    if (!accountMenuOpen) {
+    if (!anyMenuOpen) {
       return;
     }
 
@@ -86,10 +114,19 @@ function App() {
       if (event instanceof KeyboardEvent && event.key !== "Escape") {
         return;
       }
-      if (event instanceof MouseEvent && accountMenuRef.current?.contains(event.target as Node)) {
-        return;
+      if (event instanceof MouseEvent) {
+        const target = event.target as Node;
+        if (
+          accountMenuRef.current?.contains(target) ||
+          categoriesMenuRef.current?.contains(target) ||
+          languageMenuRef.current?.contains(target)
+        ) {
+          return;
+        }
       }
       setAccountMenuOpen(false);
+      setCategoriesMenuOpen(false);
+      setLanguageMenuOpen(false);
     };
 
     document.addEventListener("mousedown", close);
@@ -98,7 +135,7 @@ function App() {
       document.removeEventListener("mousedown", close);
       document.removeEventListener("keydown", close);
     };
-  }, [accountMenuOpen]);
+  }, [anyMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -201,12 +238,21 @@ function App() {
     setCategory(value);
   }
 
-  /** Entrées de l'en-tête : une même page, trois façons de regarder le catalogue. */
-  function showCatalogueView(view: "all" | "bargains" | "favorites") {
-    handleCategoryChange("Tout");
+  /** Entrées de l'en-tête : une même page, plusieurs façons de regarder le catalogue. */
+  function showCatalogueView(view: "all" | "bargains" | "favorites", nextCategory = "Tout") {
+    handleCategoryChange(nextCategory);
     setFilters(view === "bargains" ? BARGAIN_FILTERS : NO_FILTERS);
     setOnlyFavorites(view === "favorites");
     setPage(1);
+    setCategoriesMenuOpen(false);
+  }
+
+  /** La recherche de l'en-tête fonctionne depuis n'importe quelle page. */
+  function handleHeaderSearch(value: string) {
+    if (route.name !== "home") {
+      window.location.hash = "#catalogue";
+    }
+    handleSearchChange(value);
   }
 
   function handleLogout() {
@@ -332,6 +378,8 @@ function App() {
   const favoritesActive = onCatalogue && onlyFavorites;
   const catalogueActive =
     onCatalogue && !bargainsActive && !favoritesActive && category === "Tout" && !hasActiveFilters(filters);
+  const categoryActive = (name: string) =>
+    onCatalogue && !bargainsActive && !favoritesActive && category === name;
 
   return (
     <main className="app">
@@ -355,32 +403,93 @@ function App() {
           </svg>
         </a>
 
-        <nav className="navigation" aria-label="Navigation principale">
-          <a
-            className={catalogueActive ? "active" : undefined}
-            aria-current={catalogueActive ? "page" : undefined}
-            href="#catalogue"
-            onClick={() => showCatalogueView("all")}
+        <div className="categories-menu" ref={categoriesMenuRef}>
+          <button
+            type="button"
+            className="categories-toggle"
+            aria-haspopup="true"
+            aria-expanded={categoriesMenuOpen}
+            onClick={() => setCategoriesMenuOpen((open) => !open)}
           >
-            Catalogue
+            {t("categories")}
+          </button>
+
+          <div
+            className={categoriesMenuOpen ? "account-dropdown open" : "account-dropdown"}
+            aria-label={t("allCategories")}
+          >
+            {apiCategories.map((item) => (
+              <a key={item.name} href="#catalogue" onClick={() => showCatalogueView("all", item.name)}>
+                {item.name}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <label className="search header-search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            value={search}
+            onChange={(event) => handleHeaderSearch(event.target.value)}
+            placeholder={t("search")}
+            aria-label={t("searchLabel")}
+          />
+        </label>
+
+        <nav className="navigation" aria-label="Informations">
+          <a
+            className={route.name === "info" && route.slug === "comment-ca-marche" ? "active" : undefined}
+            aria-current={route.name === "info" && route.slug === "comment-ca-marche" ? "page" : undefined}
+            href={infoHref("comment-ca-marche")}
+          >
+            {t("howItWorks")}
           </a>
           <a
-            className={bargainsActive ? "active" : undefined}
-            aria-current={bargainsActive ? "page" : undefined}
-            href="#catalogue"
-            onClick={() => showCatalogueView("bargains")}
+            className={route.name === "info" && route.slug === "faq" ? "active" : undefined}
+            aria-current={route.name === "info" && route.slug === "faq" ? "page" : undefined}
+            href={infoHref("faq")}
           >
-            Bonnes affaires
+            {t("help")}
           </a>
           <a
-            className={favoritesActive ? "active" : undefined}
+            className={favoritesActive ? "heart active" : "heart"}
             aria-current={favoritesActive ? "page" : undefined}
+            aria-label={`${t("favorites")} (${favoritesCount})`}
             href="#catalogue"
             onClick={() => showCatalogueView("favorites")}
           >
-            Mes favoris
+            ♡
           </a>
         </nav>
+
+        <div className="language-menu" ref={languageMenuRef}>
+          <button
+            type="button"
+            className="language-toggle"
+            aria-haspopup="true"
+            aria-expanded={languageMenuOpen}
+            aria-label={t("language")}
+            onClick={() => setLanguageMenuOpen((open) => !open)}
+          >
+            <span aria-hidden="true">🌐</span> {language.toUpperCase()}
+          </button>
+
+          <div className={languageMenuOpen ? "account-dropdown open" : "account-dropdown"} aria-label={t("language")}>
+            {LANGUAGES.map((item) => (
+              <button
+                key={item.code}
+                type="button"
+                aria-pressed={language === item.code}
+                onClick={() => {
+                  setLanguage(item.code);
+                  setLanguageMenuOpen(false);
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="account-actions">
           {sessionUser ? (
@@ -390,7 +499,7 @@ function App() {
                 className="sell-button header-sell"
                 onClick={() => setShowListingForm(true)}
               >
-                ＋ Déposer une annonce
+                {t("sell")}
               </button>
 
               <div className="account-menu" ref={accountMenuRef}>
@@ -401,7 +510,7 @@ function App() {
                   aria-expanded={accountMenuOpen}
                   onClick={() => setAccountMenuOpen((open) => !open)}
                 >
-                  <span className="account-greeting">Bonjour, {sessionUser.username}</span>
+                  <span className="account-greeting">{t("hello")}, {sessionUser.username}</span>
                 </button>
 
                 <div
@@ -415,7 +524,7 @@ function App() {
                       setShowMyListings(true);
                     }}
                   >
-                    Mes annonces
+                    {t("myListings")}
                   </button>
                   <button
                     type="button"
@@ -424,7 +533,7 @@ function App() {
                       setShowMyOrders(true);
                     }}
                   >
-                    Mes commandes
+                    {t("myOrders")}
                   </button>
                   {sessionUser.role === "ADMIN" && (
                     <button
@@ -434,7 +543,7 @@ function App() {
                         setShowAdmin(true);
                       }}
                     >
-                      Administration
+                      {t("admin")}
                     </button>
                   )}
                 </div>
@@ -447,7 +556,7 @@ function App() {
                 className="login-button"
                 onClick={handleLogout}
               >
-                Se déconnecter
+                {t("logout")}
               </button>
             </>
           ) : (
@@ -457,7 +566,7 @@ function App() {
                 className="login-button"
                 onClick={() => void login()}
               >
-                Se connecter
+                {t("login")}
               </button>
 
               <button
@@ -465,12 +574,51 @@ function App() {
                 className="sell-button"
                 onClick={() => void register()}
               >
-                Créer un compte
+                {t("register")}
               </button>
             </>
           )}
         </div>
       </header>
+
+      <div className="trust-band">
+        <span>🔒 {t("trustPayment")}</span>
+        <span>✔ {t("trustModeration")}</span>
+        <span>★ {t("trustReviews")}</span>
+      </div>
+
+      <nav className="category-tabs" aria-label="Navigation principale">
+        <a
+          className={catalogueActive ? "active" : undefined}
+          aria-current={catalogueActive ? "page" : undefined}
+          href="#catalogue"
+          onClick={() => showCatalogueView("all")}
+        >
+          <TabGlyph kind="grid" />
+          <span>{t("catalogue")}</span>
+        </a>
+        <a
+          className={bargainsActive ? "active" : undefined}
+          aria-current={bargainsActive ? "page" : undefined}
+          href="#catalogue"
+          onClick={() => showCatalogueView("bargains")}
+        >
+          <TabGlyph kind="tag" />
+          <span>{t("bargains")}</span>
+        </a>
+        {apiCategories.map((item) => (
+          <a
+            key={item.name}
+            className={categoryActive(item.name) ? "active" : undefined}
+            aria-current={categoryActive(item.name) ? "page" : undefined}
+            href="#catalogue"
+            onClick={() => showCatalogueView("all", item.name)}
+          >
+            <ObjectArt kind={visualForLabel(item.name, apiCategories).art} size={34} />
+            <span>{item.name}</span>
+          </a>
+        ))}
+      </nav>
 
       {registrationMessage && (
         <output className="registration-message">
@@ -511,16 +659,6 @@ function App() {
               <span className="eyebrow">LE CATALOGUE</span>
               <h2>À découvrir</h2>
             </div>
-
-            <label className="search">
-              <span aria-hidden="true">⌕</span>
-              <input
-                value={search}
-                onChange={(event) => handleSearchChange(event.target.value)}
-                placeholder="Rechercher un objet"
-                aria-label="Rechercher un objet"
-              />
-            </label>
           </div>
 
           <fieldset className="filters" aria-label="Filtrer par catégorie">

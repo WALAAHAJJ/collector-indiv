@@ -685,21 +685,20 @@ describe("App - pages d'information", () => {
     vi.stubGlobal("scrollTo", vi.fn());
   });
 
-  it("propose le catalogue dans l'en-tête et les pages d'information dans le pied de page", async () => {
+  it("propose le catalogue dans les onglets, l'aide dans l'en-tête et les pages d'information dans le pied de page", async () => {
     mockApi();
     render(<App />);
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
-    const header = within(screen.getByRole("navigation", { name: "Navigation principale" }));
-    expect(header.getByRole("link", { name: "Catalogue" })).toHaveAttribute("href", "#catalogue");
-    expect(header.getByRole("link", { name: "Bonnes affaires" })).toBeInTheDocument();
-    expect(header.getByRole("link", { name: "Mes favoris" })).toBeInTheDocument();
-    expect(header.queryByRole("link", { name: "FAQ" })).toBeNull();
-    expect(header.queryByRole("link", { name: "Comment ça marche" })).toBeNull();
+    const tabs = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    expect(tabs.getByRole("link", { name: "Catalogue" })).toHaveAttribute("href", "#catalogue");
+    expect(tabs.getByRole("link", { name: "Bonnes affaires" })).toBeInTheDocument();
+
+    const header = within(screen.getByRole("navigation", { name: "Informations" }));
+    expect(header.getByRole("link", { name: "Comment ça marche ?" })).toHaveAttribute("href", "#/comment-ca-marche");
+    expect(header.getByRole("link", { name: "Aide" })).toHaveAttribute("href", "#/faq");
 
     const footer = within(screen.getByRole("navigation", { name: "Informations du site" }));
-    expect(footer.getByRole("link", { name: "FAQ" })).toHaveAttribute("href", "#/faq");
-    expect(footer.getByRole("link", { name: "Comment ça marche" })).toHaveAttribute("href", "#/comment-ca-marche");
     expect(footer.getByRole("link", { name: "Conditions d'utilisation" })).toHaveAttribute("href", "#/cgu");
     expect(footer.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "#/contact");
   });
@@ -712,6 +711,7 @@ describe("App - pages d'information", () => {
 
     expect(await screen.findByRole("heading", { level: 1, name: "Questions fréquentes" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "À découvrir" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Aide", current: "page" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Catalogue", current: "page" })).toBeNull();
 
     await user.click(screen.getByRole("link", { name: /Retour au catalogue/ }));
@@ -721,27 +721,61 @@ describe("App - pages d'information", () => {
   });
 });
 
-describe("App - entrées du catalogue dans l'en-tête", () => {
+describe("App - onglets du catalogue", () => {
   it("applique Bonnes affaires, puis Mes favoris, puis revient au catalogue complet", async () => {
     const user = userEvent.setup();
     mockApi();
     render(<App />);
     await screen.findByRole("heading", { name: "Lot de timbres" });
 
-    const header = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    const tabs = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    const heart = () => screen.getByRole("link", { name: /Mes favoris/ });
 
-    await user.click(header.getByRole("link", { name: "Bonnes affaires" }));
-    expect(header.getByRole("link", { name: "Bonnes affaires" })).toHaveAttribute("aria-current", "page");
+    await user.click(tabs.getByRole("link", { name: "Bonnes affaires" }));
+    expect(tabs.getByRole("link", { name: "Bonnes affaires" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Prix max (€)")).toHaveValue(20);
     expect(screen.getByLabelText("Trier par")).toHaveValue("price-asc");
 
-    await user.click(header.getByRole("link", { name: "Mes favoris" }));
-    expect(header.getByRole("link", { name: "Mes favoris" })).toHaveAttribute("aria-current", "page");
+    await user.click(heart());
+    expect(heart()).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Prix max (€)")).toHaveValue(null);
 
-    await user.click(header.getByRole("link", { name: "Catalogue" }));
-    expect(header.getByRole("link", { name: "Catalogue" })).toHaveAttribute("aria-current", "page");
+    await user.click(tabs.getByRole("link", { name: "Catalogue" }));
+    expect(tabs.getByRole("link", { name: "Catalogue" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Trier par")).toHaveValue("default");
+  });
+
+  it("filtre par catégorie depuis un onglet", async () => {
+    const user = userEvent.setup();
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    const tabs = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    await user.click(tabs.getByRole("link", { name: "Timbres" }));
+
+    expect(tabs.getByRole("link", { name: "Timbres" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Timbres" })).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("App - langue", () => {
+  it("passe l'en-tête en anglais puis revient en français", async () => {
+    const user = userEvent.setup();
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    await user.click(screen.getByRole("button", { name: "Langue" }));
+    await user.click(screen.getByRole("button", { name: "English" }));
+
+    expect(screen.getByRole("link", { name: "Help" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Bargains" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Language" }));
+    await user.click(screen.getByRole("button", { name: "Français" }));
+
+    expect(screen.getByRole("link", { name: "Aide" })).toBeInTheDocument();
   });
 });
 

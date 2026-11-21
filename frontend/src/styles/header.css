@@ -180,7 +180,7 @@
 }
 
 @media (max-width: 800px) {
-  .navigation {
+  .navigation a:not(.heart) {
     display: none;
   }
 }
@@ -203,4 +203,162 @@
     justify-content: flex-start;
   }
 
+}
+
+/* En-tête sur une ligne, à la manière des grandes places de marché */
+
+.topbar {
+  gap: 16px;
+  padding-block: 22px 16px;
+}
+
+.topbar .header-search {
+  flex: 1 1 260px;
+  min-width: 200px;
+  max-width: 330px;
+  min-height: 52px;
+  border: 0;
+  border-radius: 4px;
+  background: #e2d6bd;
+  font-size: 20px;
+}
+
+.topbar .header-search:focus-within {
+  outline: 3px solid var(--tomato-ink);
+  outline-offset: 2px;
+}
+
+.topbar .navigation {
+  gap: 20px;
+}
+
+.topbar .account-actions {
+  gap: 10px;
+  margin-left: auto;
+}
+
+.topbar .login-button,
+.topbar .sell-button {
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+
+.categories-menu,
+.language-menu {
+  position: relative;
+}
+
+.categories-toggle,
+.language-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.categories-toggle::after {
+  content: "▾";
+  color: var(--tomato-ink);
+  font-size: 15px;
+}
+
+.categories-menu .account-dropdown {
+  right: auto;
+  left: 0;
+}
+
+.account-dropdown a {
+  padding: 12px 18px;
+  border-bottom: 1px dashed var(--ink);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-dropdown a:last-child {
+  border-bottom: 0;
+}
+
+.account-dropdown a:hover {
+  background: var(--paper-warm);
+}
+
+.account-dropdown button[aria-pressed="true"] {
+  color: var(--tomato-ink);
+}
+
+.navigation .heart {
+  border-bottom: 0;
+  color: var(--tomato-ink);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.navigation .heart.active {
+  color: var(--tomato);
+}
+
+/* Bande de réassurance, sous l'en-tête */
+
+.trust-band {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 36px;
+  padding: 12px 20px;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Onglets : une illustration au-dessus du nom, trait épais sous l'onglet actif */
+
+.category-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-inline: clamp(20px, 4vw, 64px);
+  margin-bottom: 36px;
+  scrollbar-width: thin;
+}
+
+.category-tabs a {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 110px;
+  padding: 22px 20px 14px;
+  border-bottom: 4px solid transparent;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.category-tabs a:hover {
+  border-bottom-color: var(--paper-warm);
+}
+
+.category-tabs a.active {
+  border-bottom-color: var(--tomato);
+  color: var(--tomato-ink);
+}
+
+.category-tabs .object-art {
+  height: 34px;
+  width: auto;
 }
