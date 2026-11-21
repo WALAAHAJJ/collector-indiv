@@ -41,6 +41,7 @@ jobs:
 
   collection-service:
     name: Tests et SonarCloud (collection-service)
+    needs: frontend
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -100,6 +101,7 @@ jobs:
 
   notification-service:
     name: Tests (notification-service)
+    needs: collection-service
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -126,6 +128,7 @@ jobs:
 
   security-scan:
     name: Scan de sécurité (Trivy)
+    needs: notification-service
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -140,10 +143,10 @@ jobs:
             --exit-code 1 \
             /src
 
-  # Étape 2 : les images ne sont construites que si tous les tests et le scan sont verts.
+  # Dernière étape : les images ne sont construites que si tout ce qui précède est vert.
   docker:
     name: Image Docker (${{ matrix.image }})
-    needs: [frontend, collection-service, notification-service, security-scan]
+    needs: security-scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
