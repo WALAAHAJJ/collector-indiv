@@ -50,14 +50,14 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
 
     let cancelled = false;
 
-    const loading =
+    const request =
       tab === "purchases"
         ? fetchMyReviews()
         : sellerId
           ? fetchSellerReviews(sellerId).then((data) => data?.reviews ?? [])
           : Promise.resolve([]);
 
-    loading.then((found) => {
+    void request.then((found) => {
       if (!cancelled) {
         setReviews(Object.fromEntries(found.map((item) => [item.orderId, item])));
       }

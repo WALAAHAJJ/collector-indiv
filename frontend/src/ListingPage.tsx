@@ -77,7 +77,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
 
     let cancelled = false;
 
-    fetchSellerReviews(ownerId).then((data) => {
+    void fetchSellerReviews(ownerId).then((data) => {
       if (!cancelled) setSellerReviews(data);
     });
 
