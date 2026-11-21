@@ -96,7 +96,7 @@ Limites assumées : Keycloak est un composant lourd (environ 1 Go de mémoire) e
 
 ### Choix : un service de paiement à part, avec des cartes de test
 
-Un vrai prestataire (Stripe, PayPal) demande un compte, des clés secrètes et manipule de l'argent réel : hors de propos pour un projet scolaire. Le service des commandes dépend uniquement de l'interface `PaymentGateway`, dont l'implémentation appelle en HTTP un service dédié (`payment-service`, sa propre base) : le paiement est ainsi isolé du reste, comme chez un vrai prestataire. Ce service applique pourtant les contrôles réels d'une carte (clé de Luhn, expiration) et offre un numéro de test qui échoue toujours, comme les prestataires. Passer à un vrai prestataire reviendrait à changer l'intérieur de payment-service, sans toucher au reste.
+Un vrai prestataire (Stripe, PayPal) demande un compte, des clés secrètes et manipule de l'argent réel : hors de propos à ce stade. Le service des commandes dépend uniquement de l'interface `PaymentGateway`, dont l'implémentation appelle en HTTP un service dédié (`payment-service`, sa propre base) : le paiement est ainsi isolé du reste, comme chez un vrai prestataire. Ce service applique pourtant les contrôles réels d'une carte (clé de Luhn, expiration) et offre un numéro de test qui échoue toujours, comme les prestataires. Passer à un vrai prestataire reviendrait à changer l'intérieur de payment-service, sans toucher au reste.
 
 ### Deux choix techniques à justifier
 

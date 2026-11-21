@@ -93,7 +93,3 @@ compose.yaml                               bases de données et services
 - [Stratégie de tests](docs/tests.md) : types de tests, place dans la CI/CD.
 - [Comparaison des technologies](docs/comparaisons.md) : RabbitMQ contre Kafka.
 - [Politique de sécurité](docs/securite.md) et [signalement d'une vulnérabilité](SECURITY.md).
-
----
-
-Projet réalisé dans le cadre de la formation CESI.

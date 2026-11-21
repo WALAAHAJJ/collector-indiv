@@ -114,7 +114,7 @@ const cgu: InfoPageContent = {
   eyebrow: "LES RÈGLES DU JEU",
   title: "Conditions générales d'utilisation",
   intro:
-    "Collector est un projet pédagogique réalisé dans le cadre de la formation CESI. Ces conditions décrivent le fonctionnement du site tel qu'il est conçu ; elles ont une valeur de démonstration.",
+    "Ces conditions décrivent le fonctionnement de Collector : qui peut acheter et vendre, comment se déroule une commande, et les règles à respecter.",
   layout: "sections",
   sections: [
     {

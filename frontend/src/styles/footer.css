@@ -56,12 +56,6 @@ footer .brand-dot {
   border-bottom-color: var(--mustard);
 }
 
-.footer-note {
-  grid-column: 1 / -1;
-  padding-top: 16px;
-  border-top: 1px dashed rgb(255 253 248 / 35%);
-  color: var(--paper-warm);
-}
 
 @media (max-width: 700px) {
   footer {

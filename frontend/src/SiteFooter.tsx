@@ -19,8 +19,6 @@ export default function SiteFooter() {
           </a>
         ))}
       </nav>
-
-      <small className="footer-note">Projet pédagogique CESI : le paiement est simulé.</small>
     </footer>
   );
 }
