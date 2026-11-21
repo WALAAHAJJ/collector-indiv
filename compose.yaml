@@ -132,7 +132,41 @@ services:
     ports:
       - "8083:8080"
 
+  payment-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: collector_payment
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5436:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Paiement par carte (simulé) et remboursement : appelé par le service des annonces au moment de l'achat.
+  payment-service:
+    build:
+      context: ./backend/microservices/payment-service
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/collector_payment
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_OPEN_IN_VIEW: "false"
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/collector/protocol/openid-connect/certs
+    ports:
+      - "8084:8080"
+
 volumes:
   collection-db-data:
   keycloak-db-data:
   notification-db-data:
+  payment-db-data:
