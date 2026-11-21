@@ -64,6 +64,7 @@ class SaleEventTests {
         assertEquals(1, sales.size());
         SaleEvent sale = sales.get(0);
         assertEquals(seller, sale.sellerId());
+        assertEquals(buyer, sale.buyerId());
         assertEquals("Pièce ancienne", sale.listingName());
         assertEquals(new BigDecimal("22.00"), sale.sellerNet());
         assertNotNull(sale.orderId());

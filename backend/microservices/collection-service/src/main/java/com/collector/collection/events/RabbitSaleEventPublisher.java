@@ -63,6 +63,7 @@ public class RabbitSaleEventPublisher implements SaleEventPublisher {
         properties.setHeader("orderId", event.orderId().toString());
         properties.setHeader("listingId", event.listingId().toString());
         properties.setHeader("sellerId", event.sellerId().toString());
+        properties.setHeader("buyerId", event.buyerId().toString());
         // en texte : un BigDecimal ne voyage pas de façon fiable dans un en-tête AMQP
         properties.setHeader("sellerNet", event.sellerNet().toPlainString());
 

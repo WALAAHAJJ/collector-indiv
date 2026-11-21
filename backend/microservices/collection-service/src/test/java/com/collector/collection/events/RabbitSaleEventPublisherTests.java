@@ -22,9 +22,10 @@ class RabbitSaleEventPublisherTests {
     private final UUID orderId = UUID.randomUUID();
     private final UUID listingId = UUID.randomUUID();
     private final UUID sellerId = UUID.randomUUID();
+    private final UUID buyerId = UUID.randomUUID();
 
     private SaleEvent event() {
-        return new SaleEvent(orderId, listingId, sellerId, "Lot de timbres", new BigDecimal("22.00"), Instant.now());
+        return new SaleEvent(orderId, listingId, sellerId, buyerId, "Lot de timbres", new BigDecimal("22.00"), Instant.now());
     }
 
     /** Un RabbitTemplate qui note ce qu'on lui demande d'envoyer, sans réseau. */
@@ -68,6 +69,7 @@ class RabbitSaleEventPublisherTests {
         assertEquals(orderId.toString(), message.getMessageProperties().getHeader("orderId"));
         assertEquals(listingId.toString(), message.getMessageProperties().getHeader("listingId"));
         assertEquals(sellerId.toString(), message.getMessageProperties().getHeader("sellerId"));
+        assertEquals(buyerId.toString(), message.getMessageProperties().getHeader("buyerId"));
         assertEquals("22.00", message.getMessageProperties().getHeader("sellerNet"));
         assertNotNull(message.getMessageProperties().getMessageId());
     }
@@ -77,7 +79,7 @@ class RabbitSaleEventPublisherTests {
         RecordingTemplate template = new RecordingTemplate();
 
         new RabbitSaleEventPublisher(template, true).publish(new SaleEvent(
-                orderId, listingId, sellerId, "Pièce « rare » – œuvre", BigDecimal.TEN, Instant.now()));
+                orderId, listingId, sellerId, buyerId, "Pièce « rare » – œuvre", BigDecimal.TEN, Instant.now()));
 
         assertEquals("Pièce « rare » – œuvre",
                 new String(template.messages.get(0).getBody(), StandardCharsets.UTF_8));

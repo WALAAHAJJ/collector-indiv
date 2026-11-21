@@ -9,6 +9,7 @@ public record SaleEvent(
         UUID orderId,
         UUID listingId,
         UUID sellerId,
+        UUID buyerId,
         String listingName,
         BigDecimal sellerNet,
         Instant occurredAt

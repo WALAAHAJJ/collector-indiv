@@ -93,6 +93,7 @@ public class OrderService {
                 order.getId(),
                 order.getListingId(),
                 order.getSellerId(),
+                order.getBuyerId(),
                 order.getListingName(),
                 order.getSellerNet(),
                 Instant.now()
