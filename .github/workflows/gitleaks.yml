@@ -1,0 +1,25 @@
+name: Secrets
+
+# Recherche de mots de passe, jetons et clés oubliés dans tout l'historique Git.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Scan des secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks sur l'historique complet
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.2 \
+            detect --source /repo --redact --verbose --exit-code 1

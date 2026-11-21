@@ -1,0 +1,7 @@
+# Faux positifs analysés un à un (empreintes Gitleaks).
+
+# compose.yaml : URL JDBC de la base de Keycloak (jdbc:postgresql://keycloak-db:5432/keycloak), aucun mot de passe.
+e09098e8586fe8426ad10d348b348db62d1b91d7:compose.yaml:generic-api-key:54
+
+# .env.example : valeur d'exemple réservée au développement local (le fichier le précise), ancien service retiré.
+473ca23319468c878c117cbf00f3e5d55910fd3d:.env.example:generic-api-key:12
