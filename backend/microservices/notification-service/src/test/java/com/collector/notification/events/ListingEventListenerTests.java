@@ -160,6 +160,29 @@ class ListingEventListenerTests {
     }
 
     @Test
+    void aSaleAlsoNotifiesTheBuyerThatThePaymentIsConfirmed() {
+        UUID buyerId = UUID.randomUUID();
+        Message message = sale("Lot de timbres", "22.00");
+        message.getMessageProperties().setHeader("buyerId", buyerId.toString());
+
+        listener.onListingEvent(message);
+
+        Notification paid = repository.findAll().stream()
+                .filter(n -> n.getType() == NotificationType.ORDER_PAID).findFirst().orElseThrow();
+        assertEquals(buyerId, paid.getUserId());
+        assertEquals(listing, paid.getListingId());
+        assertTrue(paid.getMessage().contains("paiement pour « Lot de timbres » est confirmé"));
+        assertEquals(2, repository.count());
+    }
+
+    @Test
+    void aSaleWithoutBuyerOnlyNotifiesTheSeller() {
+        listener.onListingEvent(sale("Lot de timbres", "22.00"));
+
+        assertEquals(NotificationType.ORDER_SOLD, onlyNotification().getType());
+    }
+
+    @Test
     void theGainIsAlwaysShownWithTwoDecimals() {
         listener.onListingEvent(sale("Montre", "7.5"));
 
@@ -253,7 +276,7 @@ class ListingEventListenerTests {
     @Test
     void orderStepTextRefusesOtherTypes() {
         assertThrows(IllegalArgumentException.class,
-                () -> ListingEventListener.orderStepText(NotificationType.ORDER_SOLD, "Montre"));
+                () -> ListingEventListener.orderStepText(NotificationType.ORDER_PAID, "Montre"));
     }
 
     @Test

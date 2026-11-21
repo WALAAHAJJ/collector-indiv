@@ -80,6 +80,13 @@ public class ListingEventListener {
         String listingName = new String(message.getBody(), StandardCharsets.UTF_8);
 
         service.create(sellerId, NotificationType.ORDER_SOLD, saleText(listingName, sellerNet), listingId);
+
+        // l'acheteur n'est pas dans les anciens messages : sans lui, seul le vendeur est prévenu
+        String buyer = optionalHeader(message, "buyerId");
+        if (buyer != null && !buyer.isBlank()) {
+            service.create(uuidHeader(message, "buyerId"), NotificationType.ORDER_PAID,
+                    paidText(listingName), listingId);
+        }
     }
 
     /** Corps : nom de l'annonce ; en-têtes : listingId et l'identifiant du destinataire (acheteur ou vendeur). */
@@ -99,6 +106,13 @@ public class ListingEventListener {
                     + " ». La vente est terminée : il peut maintenant vous laisser un avis.";
             default -> throw new IllegalArgumentException("pas une étape de commande : " + type);
         };
+
+        return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);
+    }
+
+    static String paidText(String listingName) {
+        String text = "Votre paiement pour « " + listingName + " » est confirmé. Le vendeur va préparer l'envoi : "
+                + "vous serez prévenu dès l'expédition, puis vous pourrez confirmer la réception.";
 
         return text.length() <= MAX_MESSAGE_LENGTH ? text : text.substring(0, MAX_MESSAGE_LENGTH);
     }
@@ -130,7 +144,7 @@ public class ListingEventListener {
                     : "Votre annonce « " + listingName + " » a été refusée : " + reason;
             case LISTING_PENDING_REVIEW ->
                     "Votre annonce « " + listingName + " » est en attente de validation par un administrateur.";
-            case ORDER_SOLD -> throw new IllegalArgumentException("une vente se rédige avec saleText");
+            case ORDER_SOLD, ORDER_PAID -> throw new IllegalArgumentException("une vente se rédige avec saleText");
             case ORDER_SHIPPED, ORDER_DELIVERED ->
                     throw new IllegalArgumentException("une étape de commande se rédige avec orderStepText");
         };
