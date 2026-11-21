@@ -1,6 +1,7 @@
 name: CD
 
 # Publie les images Docker sur GitHub Container Registry une fois la CI verte sur main.
+# Chaque image est livrée avec sa liste de composants (SBOM), sa provenance de build et une signature Cosign.
 on:
   workflow_run:
     workflows: [CI]
@@ -11,6 +12,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   publish:
@@ -50,11 +52,23 @@ jobs:
             type=raw,value=latest
             type=sha,prefix=,format=short
 
-      - uses: docker/build-push-action@v6
+      - uses: sigstore/cosign-installer@v3
+
+      - id: build
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           push: true
+          sbom: true
+          provenance: mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      # Signature sans clé à conserver : l'identité du workflow GitHub fait foi (Sigstore).
+      - name: Signer l'image avec Cosign
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE,,}@${DIGEST}"
