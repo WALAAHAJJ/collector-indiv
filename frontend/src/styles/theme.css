@@ -555,3 +555,69 @@ footer {
 .kraft {
   background: #d8d0a8;
 }
+
+/* Compte : « Mes annonces », « Mes commandes » toujours visibles dans l'en-tête */
+
+.account-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-toggle {
+  cursor: default;
+  pointer-events: none;
+}
+
+.account-toggle::after {
+  content: none;
+}
+
+.account-dropdown,
+.account-dropdown.open {
+  position: static;
+  display: flex;
+  flex-direction: row;
+  min-width: 0;
+  gap: 6px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.account-dropdown button {
+  padding: 8px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.account-dropdown button:last-child {
+  border-bottom: 1.5px solid var(--ink);
+}
+
+@media (max-width: 950px) {
+  .account-dropdown,
+  .account-dropdown.open {
+    display: none;
+  }
+
+  .account-toggle {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .account-toggle::after {
+    content: "▾";
+  }
+
+  .account-dropdown.open {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    flex-direction: column;
+    display: flex;
+    background: var(--paper);
+    box-shadow: 0 16px 32px -12px rgb(42 37 24 / 30%);
+  }
+}
