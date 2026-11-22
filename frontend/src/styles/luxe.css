@@ -387,6 +387,15 @@ h3,
 /* Pied de page centré */
 
 footer {
+  grid-template-columns: auto 1fr auto;
+  text-align: left;
+}
+
+.footer-brand {
+  display: contents;
+}
+
+.footer-tagline {
   text-align: center;
 }
 
@@ -467,4 +476,15 @@ footer {
 .account-dropdown button:hover {
   background: var(--paper-warm);
   color: var(--ink);
+}
+
+@media (max-width: 800px) {
+  footer {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+  }
 }
