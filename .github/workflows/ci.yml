@@ -168,7 +168,21 @@ jobs:
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
             --exit-code 1 \
+            --skip-dirs /src/k8s \
             /src
+
+  # Les manifestes Kubernetes doivent être valides (schéma de l'API Kubernetes).
+  kubernetes:
+    name: Manifestes Kubernetes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Kubeconform
+        run: |
+          docker run --rm -v "$PWD/k8s:/k8s:ro" ghcr.io/yannh/kubeconform:v0.7.0 \
+            -strict -summary -ignore-filename-pattern 'kustomization.yaml' /k8s
 
   # Dernière étape : les images ne sont construites que si tout ce qui précède est vert.
   docker:

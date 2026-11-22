@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: collector
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - port: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.8.1
+          args: ["start-dev", "--import-realm"]
+          ports:
+            - containerPort: 8080
+          env:
+            - {name: KC_DB, value: postgres}
+            - {name: KC_DB_URL_HOST, value: keycloak-db}
+            - {name: KC_DB_URL_DATABASE, value: keycloak}
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: POSTGRES_USER}
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: POSTGRES_PASSWORD}
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: KEYCLOAK_ADMIN_USER}
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: KEYCLOAK_ADMIN_PASSWORD}
+            # Adresse publique (celle des jetons) : on y accède par « kubectl port-forward ... 8180:8080 ».
+            - {name: KC_HOSTNAME, value: "http://localhost:8180"}
+            - {name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC, value: "true"}
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: ADMIN_USERNAME}
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: ADMIN_EMAIL}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: collector-secrets, key: ADMIN_PASSWORD}
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 200m, memory: 512Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+      volumes:
+        - name: realm
+          configMap:
+            name: keycloak-realm

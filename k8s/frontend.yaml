@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: collector
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 5173
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/walaahajj/collector-indiv/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5173
+          env:
+            # Le serveur Vite relaie /api vers les services du cluster.
+            - {name: VITE_COLLECTION_SERVICE_URL, value: "http://collection-service:8080"}
+            - {name: VITE_NOTIFICATION_SERVICE_URL, value: "http://notification-service:8080"}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5173
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 512Mi}

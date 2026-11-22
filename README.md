@@ -50,6 +50,11 @@ npm run dev                     # http://localhost:5173
 - **Carte de test** : `4242 4242 4242 4242` est acceptée, `4000 0000 0000 0002` est refusée.
 - **Interfaces** : Keycloak sur `http://localhost:8180`, RabbitMQ sur `http://localhost:15672`.
 
+### Sur Kubernetes
+
+Les mêmes services sont décrits pour Kubernetes dans [`k8s/`](k8s/README.md) (déploiements, bases avec volumes,
+sondes de santé, mise à l'échelle).
+
 ## Tests et qualité
 
 ```bash
