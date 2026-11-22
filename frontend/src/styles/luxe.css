@@ -436,3 +436,35 @@ footer {
 .kraft {
   background: #ece3d8;
 }
+
+/* Menu du compte : « Bonjour, … ▾ » ouvre la liste (Mes annonces, Mes commandes) */
+
+.account-toggle {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--kraft-deep);
+}
+
+.account-toggle::after {
+  color: var(--tomato);
+}
+
+.account-dropdown {
+  min-width: 220px;
+  border: 1px solid var(--kraft-deep);
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: 0 16px 32px -16px rgb(74 22 38 / 35%);
+}
+
+.account-dropdown button {
+  border-bottom: 1px solid var(--kraft-deep);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.account-dropdown button:hover {
+  background: var(--paper-warm);
+  color: var(--ink);
+}
