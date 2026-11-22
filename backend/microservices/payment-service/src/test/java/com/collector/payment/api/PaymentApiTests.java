@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -148,6 +149,17 @@ class PaymentApiTests {
         mockMvc.perform(get("/api/payments/" + id).with(as(bob))).andExpect(status().isNotFound());
         mockMvc.perform(post("/api/payments/" + id + "/refund").with(as(bob))).andExpect(status().isNotFound());
         assertEquals(PaymentStatus.SUCCEEDED, repository.findById(id).orElseThrow().getStatus());
+    }
+
+    @Test
+    void anAdministratorCanRefundSomeoneElsesPayment() throws Exception {
+        UUID id = acceptedPaymentOf(alice);
+
+        mockMvc.perform(post("/api/payments/" + id + "/refund")
+                        .with(jwt().jwt(token -> token.subject(bob.toString()))
+                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REFUNDED"));
     }
 
     @Test

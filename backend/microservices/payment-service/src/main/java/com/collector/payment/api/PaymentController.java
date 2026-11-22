@@ -8,6 +8,7 @@ import com.collector.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,8 +52,11 @@ public class PaymentController {
     }
 
     @PostMapping("/{id}/refund")
-    public PaymentResponse refund(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
-        return PaymentResponse.from(service.refund(id, currentUserId(jwt)));
+    public PaymentResponse refund(@AuthenticationPrincipal Jwt jwt, Authentication authentication, @PathVariable UUID id) {
+        boolean admin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        return PaymentResponse.from(service.refund(id, currentUserId(jwt), admin));
     }
 
     private UUID currentUserId(Jwt jwt) {

@@ -53,10 +53,16 @@ public class PaymentService {
         return ownedBy(paymentId, userId);
     }
 
-    /** Rembourse un paiement accepté : 404 s'il n'est pas à l'utilisateur, 409 s'il n'est pas remboursable. */
+    /**
+     * Rembourse un paiement accepté : 404 s'il n'est pas à l'utilisateur (sauf pour un administrateur, qui peut
+     * rembourser n'importe quel paiement), 409 s'il n'est pas remboursable.
+     */
     @Transactional
-    public Payment refund(UUID paymentId, UUID userId) {
-        Payment payment = ownedBy(paymentId, userId);
+    public Payment refund(UUID paymentId, UUID userId, boolean admin) {
+        Payment payment = admin
+                ? repository.findById(paymentId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paiement introuvable."))
+                : ownedBy(paymentId, userId);
 
         try {
             payment.refund(Instant.now(clock));
