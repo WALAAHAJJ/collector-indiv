@@ -12,9 +12,12 @@ export type InfoPageSlug = (typeof INFO_PAGES)[number];
 export type Route =
   | { name: "home" }
   | { name: "listing"; id: string }
+  | { name: "seller"; id: string }
   | { name: "info"; slug: InfoPageSlug };
 
-const LISTING_HASH = /^#\/annonce\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const UUID = "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})";
+const LISTING_HASH = new RegExp(`^#/annonce/${UUID}$`, "i");
+const SELLER_HASH = new RegExp(`^#/vendeur/${UUID}$`, "i");
 
 function isInfoPage(value: string): value is InfoPageSlug {
   return (INFO_PAGES as readonly string[]).includes(value);
@@ -25,6 +28,10 @@ export function parseRoute(hash: string): Route {
 
   if (match) return { name: "listing", id: match[1] };
 
+  const seller = SELLER_HASH.exec(hash);
+
+  if (seller) return { name: "seller", id: seller[1] };
+
   const slug = hash.startsWith("#/") ? hash.slice(2) : "";
 
   return isInfoPage(slug) ? { name: "info", slug } : { name: "home" };
@@ -32,6 +39,10 @@ export function parseRoute(hash: string): Route {
 
 export function infoHref(slug: InfoPageSlug): string {
   return `#/${slug}`;
+}
+
+export function sellerHref(id: string): string {
+  return `#/vendeur/${id}`;
 }
 
 export function listingHref(id: string): string {

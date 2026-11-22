@@ -3,7 +3,7 @@ import "./styles/listing-page.css";
 import { catalogUrl, publicListingUrl } from "./api";
 import { visualForLabel, type Category } from "./categories";
 import { sellerLabel, toCatalogListing, type ApiListing, type Listing } from "./listing";
-import { listingHref } from "./route";
+import { listingHref, sellerHref } from "./route";
 import { formatEuros } from "./money";
 import ObjectArt from "./ObjectArt";
 import Stars from "./Stars";
@@ -172,7 +172,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
           <h1 id="listing-page-title">{listing.title}</h1>
 
           <p className="listing-page-seller">
-            Proposé par {sellerLabel(listing.ownerId)}
+            Proposé par <a href={sellerHref(listing.ownerId)}>{sellerLabel(listing.ownerId)}</a>
             {sellerReviews && sellerReviews.average !== null && (
               <span className="seller-rating">
                 {" · "}

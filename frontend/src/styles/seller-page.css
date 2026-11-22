@@ -1,0 +1,53 @@
+/* Profil public d'un vendeur */
+
+.seller-header {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--kraft-deep);
+}
+
+.seller-header h1 {
+  margin: 0;
+  font-size: clamp(34px, 4vw, 52px);
+}
+
+.seller-rating,
+.seller-stats {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.seller-page h2 {
+  margin: 0 0 18px;
+}
+
+.seller-listings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+  margin: 0 0 40px;
+  padding: 0;
+  list-style: none;
+}
+
+.seller-listings a {
+  display: grid;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.seller-listings .similar-visual {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.seller-listings .similar-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.2;
+}

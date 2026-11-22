@@ -48,7 +48,11 @@ describe("ListingPage", () => {
     expect(screen.getByText("Bon état")).toBeInTheDocument();
     expect(screen.getByText("Frais d’expédition : 2,50 €")).toBeInTheDocument();
     expect(screen.getByText("21,00 €")).toBeInTheDocument();
-    expect(screen.getByText(/Proposé par Collectionneur n° 1111/)).toBeInTheDocument();
+    expect(screen.getByText(/Proposé par/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Collectionneur n° 1111" })).toHaveAttribute(
+      "href",
+      "#/vendeur/11111111-1111-4111-8111-111111111111",
+    );
     expect(screen.getByRole("button", { name: "Acheter" })).toBeInTheDocument();
   });
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import IdleWarning from "./IdleWarning";
+import SellerPage from "./SellerPage";
 import { useIdleLogout } from "./useIdleLogout";
 import "./styles/layout.css";
 import "./styles/tones.css";
@@ -709,6 +710,8 @@ function App() {
       )}
 
       {route.name === "info" && <InfoPage slug={route.slug} />}
+
+      {route.name === "seller" && <SellerPage key={route.id} id={route.id} categories={apiCategories} />}
 
       {route.name === "listing" && (
         <ListingPage

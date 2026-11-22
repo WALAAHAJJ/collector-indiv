@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { INFO_PAGES, infoHref, listingHref, parseRoute, useRoute } from "../src/route";
+import { INFO_PAGES, infoHref, listingHref, parseRoute, sellerHref, useRoute } from "../src/route";
 
 const id = "22222222-2222-4222-8222-222222222222";
 
@@ -11,6 +11,12 @@ afterEach(() => {
 describe("parseRoute", () => {
   it("reconnaît la page d'une annonce", () => {
     expect(parseRoute(`#/annonce/${id}`)).toEqual({ name: "listing", id });
+  });
+
+  it("reconnaît la page d'un vendeur", () => {
+    expect(parseRoute(`#/vendeur/${id}`)).toEqual({ name: "seller", id });
+    expect(sellerHref(id)).toBe(`#/vendeur/${id}`);
+    expect(parseRoute("#/vendeur/pas-un-uuid")).toEqual({ name: "home" });
   });
 
   it("accepte un identifiant en majuscules", () => {
