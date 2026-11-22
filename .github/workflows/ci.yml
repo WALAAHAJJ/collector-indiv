@@ -187,7 +187,7 @@ jobs:
   # Dernière étape : les images ne sont construites que si tout ce qui précède est vert.
   docker:
     name: Image Docker (${{ matrix.image }})
-    needs: security-scan
+    needs: [security-scan, kubernetes]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
