@@ -488,3 +488,16 @@ footer {
     justify-content: center;
   }
 }
+
+/* « Déposer une annonce » : au centre de la page, sous les onglets */
+
+.sell-row {
+  display: flex;
+  justify-content: center;
+  margin: -8px 0 28px;
+}
+
+.sell-row .sell-button {
+  min-height: 48px;
+  padding-inline: 28px;
+}

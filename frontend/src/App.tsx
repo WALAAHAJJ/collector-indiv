@@ -454,14 +454,6 @@ function App() {
         <div className="account-actions">
           {sessionUser ? (
             <>
-              <button
-                type="button"
-                className="sell-button header-sell"
-                onClick={() => setShowListingForm(true)}
-              >
-                {t("sell")}
-              </button>
-
               <div className="account-menu" ref={accountMenuRef}>
                 <button
                   type="button"
@@ -579,6 +571,14 @@ function App() {
           </a>
         ))}
       </nav>
+
+      {sessionUser && (
+        <div className="sell-row">
+          <button type="button" className="sell-button" onClick={() => setShowListingForm(true)}>
+            {t("sell")}
+          </button>
+        </div>
+      )}
 
       {registrationMessage && (
         <output className="registration-message">
