@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import IdleWarning from "./IdleWarning";
+import { useIdleLogout } from "./useIdleLogout";
 import "./styles/layout.css";
 import "./styles/tones.css";
 import "./styles/header.css";
@@ -257,6 +259,8 @@ function App() {
     setShowAdmin(false);
     void logout();
   }
+
+  const idle = useIdleLogout(Boolean(sessionUser), handleLogout);
 
   /** Bouton d'achat du détail : connexion pour un visiteur, rien à acheter pour le vendeur lui-même. */
   function renderBuyAction(listing: Listing) {
@@ -578,6 +582,10 @@ function App() {
             {t("sell")}
           </button>
         </div>
+      )}
+
+      {idle.warning && (
+        <IdleWarning secondsLeft={idle.secondsLeft} onStay={idle.stay} onLogout={handleLogout} />
       )}
 
       {registrationMessage && (

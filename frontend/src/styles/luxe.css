@@ -501,3 +501,19 @@ footer {
   min-height: 48px;
   padding-inline: 28px;
 }
+
+/* Avertissement avant la déconnexion pour inactivité */
+
+.idle-warning {
+  max-width: 440px;
+  padding: 32px;
+  text-align: center;
+}
+
+.idle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
