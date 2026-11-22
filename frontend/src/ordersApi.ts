@@ -167,7 +167,7 @@ export async function downloadReceipt(orderId: string): Promise<void> {
     throw new Error(
       response.status === 401
         ? "Session expirée : reconnectez-vous."
-        : "Le reçu est momentanément indisponible. Réessayez plus tard.",
+        : `Le reçu est momentanément indisponible (erreur ${response.status}). Réessayez plus tard.`,
     );
   }
 

@@ -1,21 +1,21 @@
 :root {
-  /* Palette « Galerie » : crème, blanc, jaune, texte brun foncé */
-  --kraft: #fff8e1;
-  --kraft-deep: #efe3b8;
-  --paper: #ffffff;
-  --paper-warm: #fff1bf;
-  --ink: #2a2518;
-  --ink-soft: #4a4332;
-  --green: #2a2518;
-  --tomato: #ffd60a;
-  --tomato-ink: #8a6a00;
-  --mustard: #ffd60a;
-  --pink: #f2a79b;
-  --sage: #9ad7c0;
+  /* Palette « Luxe » : ivoire, bordeaux profond, filets champagne */
+  --kraft: #fbf6ef;
+  --kraft-deep: #d9c7b8;
+  --paper: #fffdf9;
+  --paper-warm: #f1e4d6;
+  --ink: #4a1626;
+  --ink-soft: #6b4a52;
+  --green: #4a1626;
+  --tomato: #8c2f48;
+  --tomato-ink: #8c2f48;
+  --mustard: #b08a5b;
+  --pink: #ecdfe0;
+  --sage: #e4e6dc;
 
-  --font-display: "Space Grotesk Variable", system-ui, sans-serif;
-  --font-hand: "Space Grotesk Variable", system-ui, sans-serif;
-  --font-body: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-hand: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Jost Variable", system-ui, sans-serif;
 
   --shadow-card: 0 10px 24px -14px rgb(42 37 24 / 35%);
 
