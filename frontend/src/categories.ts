@@ -1,6 +1,6 @@
 import type { ArtKind } from "./ObjectArt";
 
-export type CategoryArtName = "STAMPS" | "COINS" | "POSTCARDS" | "OTHER";
+export type CategoryArtName = "STAMPS" | "COINS" | "POSTCARDS" | "FIGURINES" | "BOOKS" | "VINYLS" | "OTHER";
 
 export type Category = {
   id: string;
@@ -17,6 +17,9 @@ export const ART_OPTIONS: { value: CategoryArtName; label: string }[] = [
   { value: "STAMPS", label: "Timbre" },
   { value: "COINS", label: "Pièce" },
   { value: "POSTCARDS", label: "Cartes postales" },
+  { value: "FIGURINES", label: "Figurine" },
+  { value: "BOOKS", label: "Livre ancien" },
+  { value: "VINYLS", label: "Vinyle" },
   { value: "OTHER", label: "Autre objet" },
 ];
 
@@ -24,6 +27,9 @@ const artVisuals: Record<CategoryArtName, CategoryVisual> = {
   STAMPS: { art: "stamps", tone: "sage" },
   COINS: { art: "coins", tone: "rose" },
   POSTCARDS: { art: "postcards", tone: "gold" },
+  FIGURINES: { art: "figurines", tone: "sage" },
+  BOOKS: { art: "books", tone: "kraft" },
+  VINYLS: { art: "vinyls", tone: "rose" },
   OTHER: { art: "other", tone: "kraft" },
 };
 

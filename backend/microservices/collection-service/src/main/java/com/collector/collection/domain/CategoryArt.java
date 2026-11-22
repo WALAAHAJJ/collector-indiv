@@ -5,5 +5,8 @@ public enum CategoryArt {
     STAMPS,
     COINS,
     POSTCARDS,
+    FIGURINES,
+    BOOKS,
+    VINYLS,
     OTHER
 }

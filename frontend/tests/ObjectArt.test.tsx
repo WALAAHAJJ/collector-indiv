@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import ObjectArt, { type ArtKind } from "../src/ObjectArt";
 
-const kinds: ArtKind[] = ["stamps", "coins", "postcards", "other"];
+const kinds: ArtKind[] = ["stamps", "coins", "postcards", "figurines", "books", "vinyls", "other"];
 
 describe("ObjectArt", () => {
   it.each(kinds)("dessine l’illustration %s", (kind) => {

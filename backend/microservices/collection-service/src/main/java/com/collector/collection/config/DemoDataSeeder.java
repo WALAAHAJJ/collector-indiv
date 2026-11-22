@@ -55,7 +55,7 @@ public class DemoDataSeeder implements ApplicationRunner {
 
         for (String name : DemoCatalog.EXTRA_CATEGORIES) {
             if (!categories.existsByNameIgnoreCase(name)) {
-                categories.save(new Category(name, CategoryArt.OTHER));
+                categories.save(new Category(name, artOf(name)));
             }
         }
 
@@ -75,5 +75,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
 
         LOGGER.info("{} annonces de démonstration créées.", DemoCatalog.ITEMS.size());
+    }
+
+    /** Illustration propre à chaque catégorie de démonstration. */
+    private static CategoryArt artOf(String name) {
+        return switch (name) {
+            case "Vinyles" -> CategoryArt.VINYLS;
+            case "Figurines" -> CategoryArt.FIGURINES;
+            case "Livres anciens" -> CategoryArt.BOOKS;
+            default -> CategoryArt.OTHER;
+        };
     }
 }

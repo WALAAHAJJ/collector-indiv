@@ -1,5 +1,6 @@
 package com.collector.collection.config;
 
+import com.collector.collection.domain.CategoryArt;
 import com.collector.collection.domain.Collectible;
 import com.collector.collection.domain.ListingStatus;
 import com.collector.collection.repository.CategoryRepository;
@@ -63,6 +64,21 @@ class DemoDataSeederTests {
         }
         assertTrue(names.containsAll(List.of("Cartes postales", "Pièces", "Timbres", "Autres objets")));
         assertTrue(names.containsAll(DemoCatalog.EXTRA_CATEGORIES));
+    }
+
+    @Test
+    void demoCategoriesHaveTheirOwnIllustration() {
+        assertEquals(CategoryArt.VINYLS, artOf("Vinyles"));
+        assertEquals(CategoryArt.FIGURINES, artOf("Figurines"));
+        assertEquals(CategoryArt.BOOKS, artOf("Livres anciens"));
+    }
+
+    private CategoryArt artOf(String name) {
+        return categories.findAllByOrderByNameAsc().stream()
+                .filter(category -> category.getName().equals(name))
+                .findFirst()
+                .orElseThrow()
+                .getArt();
     }
 
     @Test

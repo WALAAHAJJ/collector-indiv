@@ -44,11 +44,20 @@ describe("listes par défaut", () => {
     expect(fallbackCategories).toHaveLength(4);
   });
 
-  it("propose les quatre illustrations", () => {
+  it("associe un dessin propre aux figurines, livres et vinyles", () => {
+    expect(visualForArt("FIGURINES").art).toBe("figurines");
+    expect(visualForArt("BOOKS").art).toBe("books");
+    expect(visualForArt("VINYLS").art).toBe("vinyls");
+  });
+
+  it("propose les sept illustrations", () => {
     expect(ART_OPTIONS.map((option) => option.value)).toEqual([
       "STAMPS",
       "COINS",
       "POSTCARDS",
+      "FIGURINES",
+      "BOOKS",
+      "VINYLS",
       "OTHER",
     ]);
   });
