@@ -1,5 +1,6 @@
 import Keycloak from "keycloak-js";
 import { clearToken, setToken } from "./auth";
+import { forgetSession, keepSession, loadSession } from "./sessionKeep";
 
 /**
  * Connexion par Keycloak : flux « code d'autorisation » avec PKCE (S256).
@@ -21,6 +22,9 @@ let refreshTimer: number | undefined;
 function publishToken(): void {
   if (keycloak.token) {
     setToken(keycloak.token);
+    if (keycloak.refreshToken) {
+      keepSession({ token: keycloak.token, refreshToken: keycloak.refreshToken, idToken: keycloak.idToken });
+    }
   }
 }
 
@@ -34,6 +38,7 @@ function keepTokenFresh(): void {
       .catch(() => {
         // Session Keycloak terminée : on repasse en visiteur.
         clearToken();
+        forgetSession();
         window.clearInterval(refreshTimer);
       });
   }, REFRESH_CHECK_MS);
@@ -45,7 +50,9 @@ function keepTokenFresh(): void {
  */
 export async function initIdentity(): Promise<void> {
   try {
+    const kept = loadSession();
     const authenticated = await keycloak.init({
+      ...(kept ? { token: kept.token, refreshToken: kept.refreshToken, idToken: kept.idToken } : {}),
       onLoad: "check-sso",
       pkceMethod: "S256",
       checkLoginIframe: false,
@@ -60,6 +67,7 @@ export async function initIdentity(): Promise<void> {
     }
   } catch {
     clearToken();
+    forgetSession();
   }
 }
 
@@ -73,6 +81,7 @@ export function register(): Promise<void> {
 
 export function logout(): Promise<void> {
   clearToken();
+  forgetSession();
   window.clearInterval(refreshTimer);
 
   return keycloak.logout({ redirectUri: window.location.origin });

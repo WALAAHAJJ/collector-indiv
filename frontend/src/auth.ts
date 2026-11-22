@@ -1,9 +1,8 @@
 /**
  * Jeton d'accès de la personne connectée, délivré par Keycloak.
  *
- * Il est gardé en mémoire uniquement, jamais dans sessionStorage ni localStorage : un script injecté
- * (faille XSS) ne peut pas le lire dans le stockage du navigateur. Après un rechargement de la page,
- * Keycloak le redonne silencieusement tant que la session SSO est ouverte (voir identity.ts).
+ * Il est gardé en mémoire. Pour qu'un rechargement de page ne déconnecte pas, identity.ts en
+ * garde une copie 5 minutes au plus dans sessionStorage (voir sessionKeep.ts).
  */
 export type SessionUser = {
   id: string;
