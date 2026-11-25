@@ -28,7 +28,13 @@ describe("toCatalogListing", () => {
       image: `/api/collectibles/${listingId}/photo`,
       shippingCost: 2.5,
       sold: false,
+      createdAt: 0,
     });
+  });
+
+  it("convertit la date de création en millisecondes", () => {
+    expect(toCatalogListing({ ...api, createdAt: "2026-11-01T10:00:00Z" }).createdAt).toBe(Date.parse("2026-11-01T10:00:00Z"));
+    expect(toCatalogListing({ ...api, createdAt: "pas une date" }).createdAt).toBe(0);
   });
 
   it("garde l'état tel quel s'il est inconnu", () => {

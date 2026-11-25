@@ -60,6 +60,18 @@ class CatalogTests {
                 .andExpect(jsonPath("$[0].name").value("Timbre rare"));
     }
 
+    @Test
+    void catalogShowsCreationDateOfListings() throws Exception {
+        String category = "cat" + UUID.randomUUID().toString().substring(0, 8);
+        categoryRepository.save(new Category(category, CategoryArt.OTHER));
+
+        create(category, "Timbre récent", "Série complète").andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/collectibles/catalog").param("category", category))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].createdAt").isNotEmpty());
+    }
+
     private ResultActions create(String category, String name, String description) throws Exception {
         return mockMvc.perform(post("/api/collectibles")
                 .with(jwt().jwt(token -> token.subject(UUID.randomUUID().toString())))

@@ -746,6 +746,20 @@ describe("App - onglets du catalogue", () => {
     expect(screen.getByLabelText("Trier par")).toHaveValue("default");
   });
 
+  it("l'onglet Nouveautés trie les annonces par date, les plus récentes d'abord", async () => {
+    const user = userEvent.setup();
+    mockApi();
+    render(<App />);
+    await screen.findByRole("heading", { name: "Lot de timbres" });
+
+    const tabs = within(screen.getByRole("navigation", { name: "Navigation principale" }));
+    await user.click(tabs.getByRole("link", { name: "Nouveautés" }));
+
+    expect(tabs.getByRole("link", { name: "Nouveautés" })).toHaveAttribute("aria-current", "page");
+    expect(tabs.getByRole("link", { name: "Catalogue" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByLabelText("Trier par")).toHaveValue("newest");
+  });
+
   it("filtre par catégorie depuis un onglet", async () => {
     const user = userEvent.setup();
     mockApi();

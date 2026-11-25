@@ -45,11 +45,14 @@ import {
   sortListings,
 } from "./catalogue";
 
+/** « Nouveautés » : les annonces les plus récentes d'abord. */
+const NEWEST_FILTERS: CatalogFilters = { ...NO_FILTERS, sort: "newest" };
+
 /** « Bonnes affaires » : les annonces à 20 € ou moins, les moins chères d'abord. */
 const BARGAIN_FILTERS: CatalogFilters = { ...NO_FILTERS, maxPrice: "20", sort: "price-asc" };
 
 /** Petites icônes des deux premiers onglets (les autres utilisent les illustrations des catégories). */
-function TabGlyph({ kind }: Readonly<{ kind: "grid" | "tag" }>) {
+function TabGlyph({ kind }: Readonly<{ kind: "grid" | "tag" | "new" }>) {
   return (
     <svg viewBox="0 0 34 34" width="46" height="46" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
       {kind === "grid" ? (
@@ -59,6 +62,8 @@ function TabGlyph({ kind }: Readonly<{ kind: "grid" | "tag" }>) {
           <rect x="5" y="19" width="10" height="10" rx="2" />
           <rect x="19" y="19" width="10" height="10" rx="2" />
         </>
+      ) : kind === "new" ? (
+        <path d="m17 4 3.6 8.4 9 .8-6.8 5.9 2 8.9L17 23.4 9.2 28l2-8.9L4.4 13.2l9-.8L17 4Z" />
       ) : (
         <>
           <path d="M5 17 17 5h12v12L17 29 5 17Z" />
@@ -239,9 +244,9 @@ function App() {
   }
 
   /** Entrées de l'en-tête : une même page, plusieurs façons de regarder le catalogue. */
-  function showCatalogueView(view: "all" | "bargains" | "favorites", nextCategory = "Tout") {
+  function showCatalogueView(view: "all" | "newest" | "bargains" | "favorites", nextCategory = "Tout") {
     handleCategoryChange(nextCategory);
-    setFilters(view === "bargains" ? BARGAIN_FILTERS : NO_FILTERS);
+    setFilters(view === "bargains" ? BARGAIN_FILTERS : view === "newest" ? NEWEST_FILTERS : NO_FILTERS);
     setOnlyFavorites(view === "favorites");
     setPage(1);
   }
@@ -376,11 +381,13 @@ function App() {
   const onCatalogue = route.name !== "info";
   const bargainsActive =
     onCatalogue && !onlyFavorites && filters.maxPrice === BARGAIN_FILTERS.maxPrice && filters.sort === BARGAIN_FILTERS.sort;
+  const newestActive =
+    onCatalogue && !onlyFavorites && !bargainsActive && filters.sort === NEWEST_FILTERS.sort && category === "Tout";
   const favoritesActive = onCatalogue && onlyFavorites;
   const catalogueActive =
-    onCatalogue && !bargainsActive && !favoritesActive && category === "Tout" && !hasActiveFilters(filters);
+    onCatalogue && !bargainsActive && !newestActive && !favoritesActive && category === "Tout" && !hasActiveFilters(filters);
   const categoryActive = (name: string) =>
-    onCatalogue && !bargainsActive && !favoritesActive && category === name;
+    onCatalogue && !bargainsActive && !newestActive && !favoritesActive && category === name;
 
   return (
     <main className="app">
@@ -553,6 +560,15 @@ function App() {
         >
           <TabGlyph kind="grid" />
           <span>{t("catalogue")}</span>
+        </a>
+        <a
+          className={newestActive ? "active" : undefined}
+          aria-current={newestActive ? "page" : undefined}
+          href="#catalogue"
+          onClick={() => showCatalogueView("newest")}
+        >
+          <TabGlyph kind="new" />
+          <span>{t("newest")}</span>
         </a>
         <a
           className={bargainsActive ? "active" : undefined}

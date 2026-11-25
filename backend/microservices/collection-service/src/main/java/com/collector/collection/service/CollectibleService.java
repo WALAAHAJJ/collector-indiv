@@ -299,7 +299,8 @@ public class CollectibleService {
                 collectible.getCondition(),
                 collectible.getStatus(),
                 collectible.getModerationReason(),
-                collectible.hasPhoto()
+                collectible.hasPhoto(),
+                collectible.getCreatedAt()
         );
     }
 }

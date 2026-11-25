@@ -5,6 +5,7 @@ export const PAGE_SIZE = 12;
 
 export const SORT_OPTIONS = [
   { value: "default", label: "Pertinence" },
+  { value: "newest", label: "Plus récents" },
   { value: "price-asc", label: "Prix croissant" },
   { value: "price-desc", label: "Prix décroissant" },
   { value: "title", label: "Nom (A → Z)" },
@@ -74,6 +75,8 @@ export function sortListings<T extends CatalogListing>(
       return copy.sort((a, b) => a.price - b.price);
     case "price-desc":
       return copy.sort((a, b) => b.price - a.price);
+    case "newest":
+      return copy.sort((a, b) => b.createdAt - a.createdAt);
     case "title":
       return copy.sort((a, b) => a.title.localeCompare(b.title, "fr"));
     default:

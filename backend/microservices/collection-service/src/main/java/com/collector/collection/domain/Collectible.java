@@ -13,6 +13,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
@@ -60,6 +62,10 @@ public class Collectible {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean hasPhoto;
+
+    // Microsecondes : PostgreSQL ne garde pas les nanosecondes.
+    @Column(nullable = false)
+    private Instant createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
     protected Collectible() {
     }
@@ -154,6 +160,10 @@ public class Collectible {
     public void markSold() {
         this.status = ListingStatus.SOLD;
         this.moderationReason = null;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     public boolean hasPhoto() {

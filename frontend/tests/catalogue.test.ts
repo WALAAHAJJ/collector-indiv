@@ -12,7 +12,7 @@ import {
 } from "../src/catalogue";
 import type { CatalogListing } from "../src/listing";
 
-function listing(title: string, price: number, condition = "Bon état"): CatalogListing {
+function listing(title: string, price: number, condition = "Bon état", createdAt = 0): CatalogListing {
   return {
     id: title,
     ownerId: "o",
@@ -24,6 +24,7 @@ function listing(title: string, price: number, condition = "Bon état"): Catalog
     image: "",
     shippingCost: 3,
     sold: false,
+    createdAt,
   };
 }
 
@@ -75,6 +76,12 @@ describe("applyFilters", () => {
 });
 
 describe("sortListings", () => {
+  it("met les annonces les plus récentes en premier avec « newest »", () => {
+    const dated = [listing("Ancien", 1, "Neuf", 1000), listing("Récent", 2, "Neuf", 3000), listing("Milieu", 3, "Neuf", 2000)];
+
+    expect(sortListings(dated, "newest").map((i) => i.title)).toEqual(["Récent", "Milieu", "Ancien"]);
+  });
+
   it("trie par prix croissant et décroissant", () => {
     expect(sortListings(sample, "price-asc").map((i) => i.price)).toEqual([5, 10, 20, 30]);
     expect(sortListings(sample, "price-desc").map((i) => i.price)).toEqual([30, 20, 10, 5]);

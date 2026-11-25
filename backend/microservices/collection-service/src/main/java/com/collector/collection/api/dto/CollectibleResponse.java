@@ -4,6 +4,7 @@ import com.collector.collection.domain.ItemCondition;
 import com.collector.collection.domain.ListingStatus;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record CollectibleResponse(
@@ -17,6 +18,7 @@ public record CollectibleResponse(
         ItemCondition condition,
         ListingStatus status,
         String moderationReason,
-        boolean hasPhoto
+        boolean hasPhoto,
+        Instant createdAt
 ) {
 }

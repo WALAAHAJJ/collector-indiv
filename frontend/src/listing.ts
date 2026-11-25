@@ -13,6 +13,8 @@ export type ApiListing = {
   shippingCost: number;
   hasPhoto?: boolean;
   status?: string;
+  /** Date de création (ISO), absente sur d'anciennes réponses. */
+  createdAt?: string;
 };
 
 /** Annonce prête à afficher (état en français, adresse de la photo). */
@@ -27,6 +29,8 @@ export type CatalogListing = {
   image: string;
   shippingCost: number;
   sold: boolean;
+  /** Date de création en millisecondes (0 si inconnue). */
+  createdAt: number;
 };
 
 export type Listing = CatalogListing & CategoryVisual;
@@ -50,6 +54,7 @@ export function toCatalogListing(item: ApiListing): CatalogListing {
     image: item.hasPhoto ? photoUrl(item.id) : "",
     shippingCost: item.shippingCost,
     sold: item.status === "SOLD",
+    createdAt: item.createdAt ? Date.parse(item.createdAt) || 0 : 0,
   };
 }
 
