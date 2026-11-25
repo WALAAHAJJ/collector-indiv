@@ -50,7 +50,7 @@ jobs:
 
       # le nom de l'image est passé en minuscules, comme l'exige le registre
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/${{ matrix.image }}
           tags: |
