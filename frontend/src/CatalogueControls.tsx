@@ -1,3 +1,5 @@
+import { useLanguage } from "./i18n";
+import { conditionText } from "./listing";
 import {
   CONDITION_OPTIONS,
   NO_FILTERS,
@@ -18,6 +20,8 @@ type Props = {
 
 /** Barre de tri et de filtres du catalogue : fourchette de prix, état, ordre d'affichage. */
 export function CatalogueControls({ filters, onChange, count, favorites }: Props) {
+  const { t } = useLanguage();
+
   function update(patch: Partial<CatalogFilters>) {
     onChange({ ...filters, ...patch });
   }
@@ -25,7 +29,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
   return (
     <div className="catalogue-controls">
       <label>
-        <span>Prix min (€)</span>
+        <span>{t("minPrice")}</span>
         <input
           type="number"
           inputMode="decimal"
@@ -36,7 +40,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
       </label>
 
       <label>
-        <span>Prix max (€)</span>
+        <span>{t("maxPrice")}</span>
         <input
           type="number"
           inputMode="decimal"
@@ -47,22 +51,22 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
       </label>
 
       <label>
-        <span>État</span>
+        <span>{t("condition")}</span>
         <select
           value={filters.condition}
           onChange={(event) => update({ condition: event.target.value })}
         >
-          <option value="">Tous les états</option>
+          <option value="">{t("allConditions")}</option>
           {CONDITION_OPTIONS.map((condition) => (
             <option key={condition} value={condition}>
-              {condition}
+              {conditionText(condition, t)}
             </option>
           ))}
         </select>
       </label>
 
       <label>
-        <span>Trier par</span>
+        <span>{t("sortBy")}</span>
         <select
           value={filters.sort}
           onChange={(event) => {
@@ -73,7 +77,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {t(option.key)}
             </option>
           ))}
         </select>
@@ -86,12 +90,12 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
           aria-pressed={favorites.active}
           onClick={favorites.onToggle}
         >
-          {favorites.active ? "♥" : "♡"} Mes favoris ({favorites.count})
+          {favorites.active ? "♥" : "♡"} {t("myFavorites", { count: favorites.count })}
         </button>
       )}
 
       <p className="catalogue-count" aria-live="polite">
-        {count} annonce{count > 1 ? "s" : ""}
+        {t(count > 1 ? "countMany" : "countOne", { count })}
       </p>
 
       {hasActiveFilters(filters) && (
@@ -100,7 +104,7 @@ export function CatalogueControls({ filters, onChange, count, favorites }: Props
           className="reset-filters"
           onClick={() => onChange(NO_FILTERS)}
         >
-          Réinitialiser
+          {t("resetFilters")}
         </button>
       )}
     </div>

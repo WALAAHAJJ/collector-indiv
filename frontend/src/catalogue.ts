@@ -4,11 +4,11 @@ import type { CatalogListing } from "./listing";
 export const PAGE_SIZE = 12;
 
 export const SORT_OPTIONS = [
-  { value: "default", label: "Pertinence" },
-  { value: "newest", label: "Plus récents" },
-  { value: "price-asc", label: "Prix croissant" },
-  { value: "price-desc", label: "Prix décroissant" },
-  { value: "title", label: "Nom (A → Z)" },
+  { value: "default", label: "Pertinence", key: "sortDefault" },
+  { value: "newest", label: "Plus récents", key: "sortNewest" },
+  { value: "price-asc", label: "Prix croissant", key: "sortPriceAsc" },
+  { value: "price-desc", label: "Prix décroissant", key: "sortPriceDesc" },
+  { value: "title", label: "Nom (A → Z)", key: "sortTitle" },
 ] as const;
 
 export type SortKey = (typeof SORT_OPTIONS)[number]["value"];

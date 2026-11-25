@@ -1,5 +1,6 @@
 import { photoUrl } from "./api";
 import type { CategoryVisual } from "./categories";
+import type { TextKey } from "./i18n";
 
 /** Annonce telle que l'API la renvoie. */
 export type ApiListing = {
@@ -56,6 +57,20 @@ export function toCatalogListing(item: ApiListing): CatalogListing {
     sold: item.status === "SOLD",
     createdAt: item.createdAt ? Date.parse(item.createdAt) || 0 : 0,
   };
+}
+
+const conditionKeys = {
+  "Neuf": "conditionNew",
+  "Très bon état": "conditionVeryGood",
+  "Bon état": "conditionGood",
+  "État d’usage": "conditionUsed",
+} as const;
+
+/** État affiché dans la langue choisie ; la valeur interne reste en français (filtres, tests). */
+export function conditionText(condition: string, t: (key: TextKey) => string): string {
+  const key = (conditionKeys as Record<string, TextKey>)[condition];
+
+  return key ? t(key) : condition;
 }
 
 /** Nom affiché pour un vendeur : l'API ne donne que son identifiant, on n'expose pas de compte réel. */

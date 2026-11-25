@@ -29,6 +29,7 @@ import ListingPage from "./ListingPage";
 import { toCatalogListing, type ApiListing, type CatalogListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
 import { LANGUAGES, setLanguage, useLanguage } from "./i18n";
+import { conditionText } from "./listing";
 import { infoHref, listingHref, useRoute } from "./route";
 
 import PurchaseDialog from "./PurchaseDialog";
@@ -147,7 +148,7 @@ function App() {
     fetch(url)
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("Impossible de charger les annonces.");
+          throw new Error("catalogue");
         }
 
         return (await response.json()) as ApiListing[];
@@ -162,7 +163,7 @@ function App() {
       })
       .catch(() => {
         if (!cancelled) {
-          setError("Le catalogue est momentanément indisponible.");
+          setError("unavailable");
         }
       })
       .finally(() => {
@@ -299,18 +300,17 @@ function App() {
 
   function renderCatalogue() {
     if (loading) {
-      return <p className="empty-state">Chargement du catalogue…</p>;
+      return <p className="empty-state">{t("loadingCatalogue")}</p>;
     }
 
     if (error) {
-      return <p className="empty-state">{error}</p>;
+      return <p className="empty-state">{t("catalogueUnavailable")}</p>;
     }
 
     if (filteredListings.length === 0 && onlyFavorites && favoritesCount === 0) {
       return (
         <p className="empty-state">
-          Vous n’avez pas encore de favori : cliquez sur ♡ sur une annonce pour
-          la retrouver ici.
+          {t("noFavorites")}
         </p>
       );
     }
@@ -318,9 +318,7 @@ function App() {
     if (filteredListings.length === 0) {
       return (
         <p className="empty-state">
-          {listings.length === 0
-            ? "Aucune annonce approuvée pour le moment."
-            : "Aucun objet ne correspond à cette recherche."}
+          {listings.length === 0 ? t("noListings") : t("noMatch")}
         </p>
       );
     }
@@ -346,8 +344,8 @@ function App() {
               aria-pressed={favorites.isFavorite(item.id)}
               aria-label={
                 favorites.isFavorite(item.id)
-                  ? `Retirer ${item.title} des favoris`
-                  : `Ajouter ${item.title} aux favoris`
+                  ? t("removeFavorite", { title: item.title })
+                  : t("addFavorite", { title: item.title })
               }
               onClick={() => favorites.toggle(item.id)}
             >
@@ -360,16 +358,16 @@ function App() {
             <h3>{item.title}</h3>
 
             <div className="item-bottom">
-              <span className="condition">{item.condition}</span>
+              <span className="condition">{conditionText(item.condition, t)}</span>
               <strong>{formatEuros(item.price)}</strong>
             </div>
 
             <p className="shipping-cost">
-              Expédition : {formatEuros(item.shippingCost)}
+              {t("shipping", { amount: formatEuros(item.shippingCost) })}
             </p>
 
             <a className="details-button" href={listingHref(item.id)}>
-              Voir le détail <span>→</span>
+              {t("seeDetail")} <span>→</span>
             </a>
           </div>
         </article>
@@ -479,7 +477,7 @@ function App() {
 
                 <div
                   className={accountMenuOpen ? "account-dropdown open" : "account-dropdown"}
-                  aria-label="Mon compte"
+                  aria-label={t("myAccount")}
                 >
                   <button
                     type="button"
@@ -615,33 +613,32 @@ function App() {
         <>
       <section className="hero">
         <div className="hero-copy">
-          <span className="eyebrow">LA COLLECTION A UNE HISTOIRE</span>
+          <span className="eyebrow">{t("heroEyebrow")}</span>
 
           <h1>
-            Les objets <em className="marker">rares</em> trouvent leur place.
+            {t("heroTitleBefore")}<em className="marker">{t("heroTitleEm")}</em>{t("heroTitleAfter")}
           </h1>
 
           <p>
-            Découvrez des pièces uniques proposées par des collectionneurs
-            passionnés.
+            {t("heroText")}
           </p>
 
           <a className="hero-link" href="#catalogue">
-            Explorer le catalogue <span>→</span>
+            {t("heroExplore")} <span>→</span>
           </a>
 
           <dl className="hero-stats">
             <div>
-              <dt>annonces en vente</dt>
+              <dt>{t("statListings")}</dt>
               <dd>{listings.length}</dd>
             </div>
             <div>
-              <dt>catégories</dt>
+              <dt>{t("statCategories")}</dt>
               <dd>{apiCategories.length}</dd>
             </div>
             <div>
-              <dt>paiement</dt>
-              <dd>sécurisé</dd>
+              <dt>{t("statPayment")}</dt>
+              <dd>{t("statSecure")}</dd>
             </div>
           </dl>
         </div>
@@ -650,9 +647,9 @@ function App() {
           <a
             className="hero-featured"
             href={listingHref(featured.id)}
-            aria-label={`À la une : ${featured.title}`}
+            aria-label={t("featuredLabel", { title: featured.title })}
           >
-            <span className="eyebrow">À LA UNE</span>
+            <span className="eyebrow">{t("featuredEyebrow")}</span>
             <span className={`hero-featured-visual ${featured.tone}`}>
               {featured.image ? (
                 <img src={featured.image} alt="" />
@@ -662,7 +659,7 @@ function App() {
             </span>
             <span className="hero-featured-title">{featured.title}</span>
             <span className="hero-featured-bottom">
-              <span>{featured.condition}</span>
+              <span>{conditionText(featured.condition, t)}</span>
               <strong>{formatEuros(featured.price)}</strong>
             </span>
           </a>
@@ -676,8 +673,8 @@ function App() {
       <section className="catalogue" id="catalogue">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">LE CATALOGUE</span>
-              <h2>À découvrir</h2>
+              <span className="eyebrow">{t("catalogueEyebrow")}</span>
+              <h2>{t("catalogueTitle")}</h2>
             </div>
           </div>
 
@@ -702,24 +699,24 @@ function App() {
         </section>
 
         <section className="home-steps" aria-labelledby="home-steps-title">
-          <span className="eyebrow">EN TROIS GESTES</span>
-          <h2 id="home-steps-title">Comment ça marche</h2>
+          <span className="eyebrow">{t("stepsEyebrow")}</span>
+          <h2 id="home-steps-title">{t("stepsTitle")}</h2>
           <ol>
             <li>
-              <strong>Trouvez</strong>
-              <span>Parcourez le catalogue, filtrez, gardez vos coups de cœur en favoris.</span>
+              <strong>{t("stepFindTitle")}</strong>
+              <span>{t("stepFindText")}</span>
             </li>
             <li>
-              <strong>Achetez</strong>
-              <span>Payez en un clic ; le vendeur est prévenu et prépare l'envoi.</span>
+              <strong>{t("stepBuyTitle")}</strong>
+              <span>{t("stepBuyText")}</span>
             </li>
             <li>
-              <strong>Recevez et notez</strong>
-              <span>Confirmez la réception, puis laissez un avis au vendeur.</span>
+              <strong>{t("stepReceiveTitle")}</strong>
+              <span>{t("stepReceiveText")}</span>
             </li>
           </ol>
           <a className="details-button" href={infoHref("comment-ca-marche")}>
-            Lire le mode d'emploi <span>→</span>
+            {t("readGuide")} <span>→</span>
           </a>
         </section>
         </>
@@ -748,8 +745,7 @@ function App() {
           onSubmitted={(message) => {
             setShowListingForm(false);
             setRegistrationMessage(
-              message ??
-                "Annonce enregistrée. Elle apparaît dans le catalogue une fois approuvée.",
+              message ?? t("listingSaved"),
             );
           }}
         />
@@ -783,7 +779,7 @@ function App() {
             setPurchaseTarget(null);
             setCatalogVersion((version) => version + 1);
             setRegistrationMessage(
-              `Achat confirmé : « ${order.listingName} », ${formatEuros(order.buyerTotal)} payés.`,
+              t("purchaseConfirmed", { name: order.listingName, amount: formatEuros(order.buyerTotal) }),
             );
           }}
         />

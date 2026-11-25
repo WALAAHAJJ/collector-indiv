@@ -1,3 +1,5 @@
+import { useLanguage } from "./i18n";
+
 type Props = {
   page: number;
   pages: number;
@@ -6,22 +8,24 @@ type Props = {
 
 /** Navigation entre les pages du catalogue ; rien n'est affiché quand il n'y a qu'une page. */
 export function Pagination({ page, pages, onChange }: Props) {
+  const { t } = useLanguage();
+
   if (pages <= 1) {
     return null;
   }
 
   return (
-    <nav className="pagination" aria-label="Pagination du catalogue">
+    <nav className="pagination" aria-label={t("paginationLabel")}>
       <button
         type="button"
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
       >
-        ← Précédent
+        {t("previous")}
       </button>
 
       <span aria-live="polite">
-        Page {page} sur {pages}
+        {t("pageOf", { page, pages })}
       </span>
 
       <button
@@ -29,7 +33,7 @@ export function Pagination({ page, pages, onChange }: Props) {
         onClick={() => onChange(page + 1)}
         disabled={page >= pages}
       >
-        Suivant →
+        {t("next")}
       </button>
     </nav>
   );
