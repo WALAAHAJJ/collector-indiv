@@ -43,6 +43,29 @@ describe("initIdentity", () => {
     expect(getToken()).toBe("jeton-keycloak");
   });
 
+  it("renouvelle le jeton avant de le publier, car un jeton gardé peut être expiré", async () => {
+    keycloak.init.mockResolvedValue(true);
+    keycloak.token = "jeton-expire";
+    keycloak.updateToken.mockImplementation(async () => {
+      keycloak.token = "jeton-frais";
+    });
+
+    await initIdentity();
+
+    expect(keycloak.updateToken).toHaveBeenCalled();
+    expect(getToken()).toBe("jeton-frais");
+  });
+
+  it("reste visiteur si le jeton gardé ne peut plus être renouvelé", async () => {
+    keycloak.init.mockResolvedValue(true);
+    keycloak.token = "jeton-expire";
+    keycloak.updateToken.mockRejectedValue(new Error("session terminée"));
+
+    await initIdentity();
+
+    expect(getToken()).toBeNull();
+  });
+
   it("vérifie la session en silence, avec PKCE, sans quitter la page", async () => {
     keycloak.init.mockResolvedValue(false);
 
@@ -91,7 +114,7 @@ describe("initIdentity", () => {
   it("repasse en visiteur quand la session Keycloak est terminée", async () => {
     keycloak.init.mockResolvedValue(true);
     keycloak.token = "premier";
-    keycloak.updateToken.mockRejectedValue(new Error("session terminée"));
+    keycloak.updateToken.mockResolvedValueOnce(true).mockRejectedValue(new Error("session terminée"));
 
     await initIdentity();
     expect(getToken()).toBe("premier");

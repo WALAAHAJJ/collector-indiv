@@ -62,6 +62,8 @@ export async function initIdentity(): Promise<void> {
     });
 
     if (authenticated) {
+      // Le jeton gardé après un rechargement peut être expiré : on le renouvelle avant de s'en servir.
+      await keycloak.updateToken(MIN_VALIDITY_SECONDS);
       publishToken();
       keepTokenFresh();
     }
