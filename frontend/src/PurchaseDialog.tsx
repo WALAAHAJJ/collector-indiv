@@ -1,5 +1,6 @@
 import { useState, type SyntheticEvent } from "react";
 import { formatExpiry } from "./cardFormat";
+import { useLanguage } from "./i18n";
 import Modal from "./Modal";
 import { formatEuros } from "./money";
 import {
@@ -28,6 +29,7 @@ export default function PurchaseDialog({
   onClose,
   onPurchased,
 }: PurchaseDialogProps) {
+  const { t } = useLanguage();
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -40,19 +42,19 @@ export default function PurchaseDialog({
 
   function validate(): string {
     if (!CARD_NUMBER_PATTERN.test(cardNumber.trim())) {
-      return "Numéro de carte invalide : 13 à 19 chiffres.";
+      return t("errCardNumber");
     }
 
     if (!cardHolder.trim()) {
-      return "Indiquez le nom inscrit sur la carte.";
+      return t("errCardHolder");
     }
 
     if (!EXPIRY_PATTERN.test(expiry)) {
-      return "Date d’expiration invalide : format MM/AA.";
+      return t("errExpiry");
     }
 
     if (!CVC_PATTERN.test(cvc)) {
-      return "Code de sécurité invalide : 3 ou 4 chiffres.";
+      return t("errSecurityCode");
     }
 
     return "";
@@ -87,7 +89,7 @@ export default function PurchaseDialog({
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Impossible de contacter le serveur.",
+          : t("errServer"),
       );
     } finally {
       setLoading(false);
@@ -102,20 +104,19 @@ export default function PurchaseDialog({
         backdropClassName="auth-backdrop"
         dialogClassName="auth-card purchase-card"
       >
-        <span className="eyebrow">MERCI</span>
-        <h2 id="purchase-title">Paiement accepté</h2>
+        <span className="eyebrow">{t("purchaseThanks")}</span>
+        <h2 id="purchase-title">{t("paymentAccepted")}</h2>
         <p>
-          Votre commande « {receipt.listingName} » est enregistrée. Retrouvez-la
-          dans « Mes commandes ».
+          {t("orderRecorded", { name: receipt.listingName })}
         </p>
 
         <dl className="purchase-summary">
           <div>
-            <dt>Montant payé</dt>
+            <dt>{t("amountPaid")}</dt>
             <dd>{formatEuros(receipt.buyerTotal)}</dd>
           </div>
           <div>
-            <dt>Carte</dt>
+            <dt>{t("card")}</dt>
             <dd>•••• {receipt.cardLast4}</dd>
           </div>
         </dl>
@@ -125,7 +126,7 @@ export default function PurchaseDialog({
           type="button"
           onClick={() => onPurchased(receipt)}
         >
-          Fermer
+          {t("close")}
         </button>
       </Modal>
     );
@@ -142,38 +143,36 @@ export default function PurchaseDialog({
         className="auth-close"
         type="button"
         onClick={onClose}
-        aria-label="Fermer"
+        aria-label={t("close")}
       >
         ×
       </button>
 
-      <span className="eyebrow">PAIEMENT SIMULÉ</span>
-      <h2 id="purchase-title">Acheter</h2>
+      <span className="eyebrow">{t("simulatedPayment")}</span>
+      <h2 id="purchase-title">{t("buy")}</h2>
       <p>{listing.title}</p>
 
       <dl className="purchase-summary">
         <div>
-          <dt>Objet</dt>
+          <dt>{t("item")}</dt>
           <dd>{formatEuros(listing.price)}</dd>
         </div>
         <div>
-          <dt>Expédition</dt>
+          <dt>{t("shippingShort")}</dt>
           <dd>{formatEuros(listing.shippingCost)}</dd>
         </div>
         <div className="purchase-total">
-          <dt>Total à payer</dt>
+          <dt>{t("totalToPay")}</dt>
           <dd>{formatEuros(total)}</dd>
         </div>
       </dl>
       <p className="purchase-note">
-        Le site prélève 5 % de commission sur le vendeur, pas sur vous. Aucun
-        argent réel n’est débité : utilisez la carte de test 4242 4242 4242
-        4242.
+        {t("commissionNote")}
       </p>
 
       <form className="listing-form" onSubmit={handleSubmit} noValidate>
         <label>
-          <span>Numéro de carte</span>
+          <span>{t("cardNumber")}</span>
           <input
             inputMode="numeric"
             autoComplete="cc-number"
@@ -185,7 +184,7 @@ export default function PurchaseDialog({
         </label>
 
         <label>
-          <span>Nom sur la carte</span>
+          <span>{t("cardHolder")}</span>
           <input
             autoComplete="cc-name"
             maxLength={60}
@@ -196,7 +195,7 @@ export default function PurchaseDialog({
 
         <div className="purchase-row">
           <label>
-            <span>Expiration</span>
+            <span>{t("expiry")}</span>
             <input
               inputMode="numeric"
               autoComplete="cc-exp"
@@ -208,7 +207,7 @@ export default function PurchaseDialog({
           </label>
 
           <label>
-            <span>Code de sécurité</span>
+            <span>{t("securityCode")}</span>
             <input
               inputMode="numeric"
               autoComplete="cc-csc"
@@ -227,7 +226,7 @@ export default function PurchaseDialog({
         )}
 
         <button className="auth-submit" type="submit" disabled={loading}>
-          {loading ? "Paiement…" : `Payer ${formatEuros(total)}`}
+          {loading ? t("paying") : t("pay", { amount: formatEuros(total) })}
         </button>
       </form>
     </Modal>

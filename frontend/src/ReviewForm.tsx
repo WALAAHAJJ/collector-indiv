@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useLanguage } from "./i18n";
 import { MAX_COMMENT_LENGTH, postReview, type Review } from "./reviewsApi";
 
 type ReviewFormProps = Readonly<{
@@ -8,6 +9,7 @@ type ReviewFormProps = Readonly<{
 
 /** Formulaire d'avis sur une commande reçue : une note de 1 à 5 et un commentaire facultatif. */
 export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
+  const { t } = useLanguage();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
@@ -17,7 +19,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
     event.preventDefault();
 
     if (rating === 0) {
-      setError("Choisissez une note de 1 à 5.");
+      setError(t("errChooseRating"));
       return;
     }
 
@@ -27,7 +29,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
     try {
       onSaved(await postReview(orderId, rating, comment));
     } catch (requestError: unknown) {
-      setError(requestError instanceof Error ? requestError.message : "Avis momentanément indisponible.");
+      setError(requestError instanceof Error ? requestError.message : t("errReviewUnavailable"));
       setBusy(false);
     }
   }
@@ -35,7 +37,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
   return (
     <form className="review-form" onSubmit={(event) => void submit(event)}>
       <fieldset>
-        <legend>Notez le vendeur</legend>
+        <legend>{t("rateSeller")}</legend>
         <div className="star-picker">
           {[1, 2, 3, 4, 5].map((value) => (
             <button
@@ -43,7 +45,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
               key={value}
               className={value <= rating ? "star-button on" : "star-button"}
               aria-pressed={value === rating}
-              aria-label={`${value} étoile${value > 1 ? "s" : ""}`}
+              aria-label={t(value > 1 ? "starMany" : "starOne", { count: value })}
               onClick={() => setRating(value)}
             >
               {value <= rating ? "★" : "☆"}
@@ -53,7 +55,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
       </fieldset>
 
       <label>
-        <span>Commentaire (facultatif)</span>
+        <span>{t("commentOptional")}</span>
         <textarea
           value={comment}
           maxLength={MAX_COMMENT_LENGTH}
@@ -65,7 +67,7 @@ export default function ReviewForm({ orderId, onSaved }: ReviewFormProps) {
       {error && <p role="alert">{error}</p>}
 
       <button className="auth-submit order-action" type="submit" disabled={busy}>
-        Publier mon avis
+        {t("publishReview")}
       </button>
     </form>
   );

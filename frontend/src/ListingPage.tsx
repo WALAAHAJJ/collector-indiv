@@ -2,11 +2,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import "./styles/listing-page.css";
 import { catalogUrl, publicListingUrl } from "./api";
 import { visualForLabel, type Category } from "./categories";
-import { sellerLabel, toCatalogListing, type ApiListing, type Listing } from "./listing";
+import { conditionText, sellerLabel, toCatalogListing, type ApiListing, type Listing } from "./listing";
 import { listingHref, sellerHref } from "./route";
 import { formatEuros } from "./money";
 import ObjectArt from "./ObjectArt";
 import Stars from "./Stars";
+import { localeOf, useLanguage } from "./i18n";
 import { fetchSellerReviews, formatRating, type SellerReviews } from "./reviewsApi";
 
 type ListingPageProps = Readonly<{
@@ -27,6 +28,7 @@ const MAX_SIMILAR = 4;
 const MAX_REVIEWS_SHOWN = 5;
 
 export default function ListingPage({ id, categories, refreshKey, renderBuyAction }: ListingPageProps) {
+  const { language, t } = useLanguage();
   const [state, setState] = useState<State>({ status: "loading" });
   const [similar, setSimilar] = useState<Listing[]>([]);
   const [copied, setCopied] = useState(false);
@@ -126,7 +128,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
 
   const backLink = (
     <a className="back-link" href="#catalogue">
-      ← Retour au catalogue
+      {t("backToCatalogue")}
     </a>
   );
 
@@ -134,7 +136,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
     return (
       <section className="listing-page">
         {backLink}
-        <p className="empty-state">Chargement de l’annonce…</p>
+        <p className="empty-state">{t("loadingListing")}</p>
       </section>
     );
   }
@@ -144,9 +146,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
       <section className="listing-page">
         {backLink}
         <p className="empty-state" role="alert">
-          {state.status === "missing"
-            ? "Cette annonce n’existe pas ou n’est plus disponible."
-            : "L’annonce est momentanément indisponible. Réessayez plus tard."}
+          {state.status === "missing" ? t("listingMissing") : t("listingUnavailable")}
         </p>
       </section>
     );
@@ -172,56 +172,56 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
           <h1 id="listing-page-title">{listing.title}</h1>
 
           <p className="listing-page-seller">
-            Proposé par <a href={sellerHref(listing.ownerId)}>{sellerLabel(listing.ownerId)}</a>
+            {t("offeredBy")} <a href={sellerHref(listing.ownerId)}>{sellerLabel(listing.ownerId)}</a>
             {sellerReviews && sellerReviews.average !== null && (
               <span className="seller-rating">
                 {" · "}
                 <Stars value={sellerReviews.average} /> {formatRating(sellerReviews.average)} (
-                {sellerReviews.count} avis)
+                {t("reviewsCount", { count: sellerReviews.count })})
               </span>
             )}
           </p>
 
           <div className="modal-price">
-            <span>{listing.condition}</span>
+            <span>{conditionText(listing.condition, t)}</span>
             <strong>{formatEuros(listing.price)}</strong>
           </div>
 
-          <p className="shipping-cost">Frais d’expédition : {formatEuros(listing.shippingCost)}</p>
+          <p className="shipping-cost">{t("shippingCost", { amount: formatEuros(listing.shippingCost) })}</p>
           <p className="listing-page-total">
-            Total estimé : <strong>{formatEuros(listing.price + listing.shippingCost)}</strong>
+            {t("estimatedTotal")} <strong>{formatEuros(listing.price + listing.shippingCost)}</strong>
           </p>
 
           {listing.sold ? (
             <p className="sold-banner" role="status">
-              Cette annonce a été vendue.
+              {t("soldBanner")}
             </p>
           ) : (
             renderBuyAction(listing)
           )}
 
           <button type="button" className="my-listings-button copy-link" onClick={() => void copyLink()}>
-            Copier le lien de l’annonce
+            {t("copyLink")}
           </button>
-          {copied && <output className="purchase-note">Lien copié.</output>}
+          {copied && <output className="purchase-note">{t("linkCopied")}</output>}
         </div>
       </div>
 
       <div className="listing-page-description">
-        <h2>Description</h2>
-        <p>{listing.description || "Aucune description renseignée."}</p>
+        <h2>{t("descriptionTitle")}</h2>
+        <p>{listing.description || t("noDescription")}</p>
       </div>
 
       {sellerReviews && sellerReviews.reviews.length > 0 && (
         <div className="seller-reviews">
-          <h2>Avis sur ce vendeur</h2>
+          <h2>{t("sellerReviewsTitle")}</h2>
           <ul>
             {sellerReviews.reviews.slice(0, MAX_REVIEWS_SHOWN).map((item) => (
               <li key={item.id}>
                 <Stars value={item.rating} />
                 {item.comment && <p>{item.comment}</p>}
                 <span className="review-meta">
-                  {sellerLabel(item.buyerId)} · {new Date(item.createdAt).toLocaleDateString("fr-FR")}
+                  {sellerLabel(item.buyerId)} · {new Date(item.createdAt).toLocaleDateString(localeOf(language))}
                 </span>
               </li>
             ))}
@@ -231,7 +231,7 @@ export default function ListingPage({ id, categories, refreshKey, renderBuyActio
 
       {similar.length > 0 && (
         <div className="similar-listings">
-          <h2>Dans la même catégorie</h2>
+          <h2>{t("similarTitle")}</h2>
           <ul>
             {similar.map((item) => (
               <li key={item.id}>

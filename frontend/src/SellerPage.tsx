@@ -3,6 +3,7 @@ import "./styles/listing-page.css";
 import "./styles/seller-page.css";
 import { catalogUrl } from "./api";
 import { visualForLabel, type Category } from "./categories";
+import { localeOf, useLanguage } from "./i18n";
 import { sellerLabel, toCatalogListing, type ApiListing, type Listing } from "./listing";
 import { formatEuros } from "./money";
 import ObjectArt from "./ObjectArt";
@@ -19,6 +20,7 @@ type Listings = { status: "loading" } | { status: "error" } | { status: "ready";
 
 /** Profil public d'un vendeur : sa note, ses annonces en vente et les avis des acheteurs. */
 export default function SellerPage({ id, categories }: SellerPageProps) {
+  const { language, t } = useLanguage();
   const [listings, setListings] = useState<Listings>({ status: "loading" });
   const [reviews, setReviews] = useState<SellerReviews | null>(null);
 
@@ -63,41 +65,41 @@ export default function SellerPage({ id, categories }: SellerPageProps) {
   return (
     <section className="listing-page seller-page" aria-labelledby="seller-title">
       <a className="back-link" href="#catalogue">
-        ← Retour au catalogue
+        {t("backToCatalogue")}
       </a>
 
       <header className="seller-header">
-        <span className="eyebrow">Vendeur</span>
+        <span className="eyebrow">{t("sellerEyebrow")}</span>
         <h1 id="seller-title">{sellerLabel(id)}</h1>
 
         {reviews && reviews.average !== null ? (
           <p className="seller-rating">
-            <Stars value={reviews.average} /> {formatRating(reviews.average)} ({reviews.count} avis)
+            <Stars value={reviews.average} /> {formatRating(reviews.average)} ({t("reviewsCount", { count: reviews.count })})
           </p>
         ) : (
-          <p className="seller-rating">Pas encore d’avis.</p>
+          <p className="seller-rating">{t("noReviewsYet")}</p>
         )}
 
         {listings.status === "ready" && (
           <p className="seller-stats">
-            {onSale.length} annonce{onSale.length > 1 ? "s" : ""} en vente · {soldCount} vendue
-            {soldCount > 1 ? "s" : ""}
+            {t(onSale.length > 1 ? "onSaleMany" : "onSaleOne", { count: onSale.length })} ·{" "}
+            {t(soldCount > 1 ? "soldMany" : "soldOne", { count: soldCount })}
           </p>
         )}
       </header>
 
-      <h2>Annonces en vente</h2>
+      <h2>{t("forSaleTitle")}</h2>
 
-      {listings.status === "loading" && <p className="empty-state">Chargement des annonces…</p>}
+      {listings.status === "loading" && <p className="empty-state">{t("loadingListings")}</p>}
 
       {listings.status === "error" && (
         <p className="empty-state" role="alert">
-          Les annonces sont momentanément indisponibles. Réessayez plus tard.
+          {t("sellerListingsUnavailable")}
         </p>
       )}
 
       {listings.status === "ready" && onSale.length === 0 && (
-        <p className="empty-state">Ce vendeur n’a aucune annonce en vente pour le moment.</p>
+        <p className="empty-state">{t("sellerNoListings")}</p>
       )}
 
       {onSale.length > 0 && (
@@ -123,14 +125,14 @@ export default function SellerPage({ id, categories }: SellerPageProps) {
 
       {reviews && reviews.reviews.length > 0 && (
         <div className="seller-reviews">
-          <h2>Avis des acheteurs</h2>
+          <h2>{t("buyerReviewsTitle")}</h2>
           <ul>
             {reviews.reviews.map((item) => (
               <li key={item.id}>
                 <Stars value={item.rating} />
                 {item.comment && <p>{item.comment}</p>}
                 <span className="review-meta">
-                  {sellerLabel(item.buyerId)} · {new Date(item.createdAt).toLocaleDateString("fr-FR")}
+                  {sellerLabel(item.buyerId)} · {new Date(item.createdAt).toLocaleDateString(localeOf(language))}
                 </span>
               </li>
             ))}
