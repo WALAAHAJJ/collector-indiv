@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "reac
 import { getToken } from "./auth";
 import { collectibleUrl, myCollectiblesUrl } from "./api";
 import { visualForLabel, type Category } from "./categories";
-import { statusLabels, type ListingStatus } from "./listingStatus";
+import { tr, useLanguage } from "./i18n";
+import { statusKeys, type ListingStatus } from "./listingStatus";
 import ListingPhoto from "./ListingPhoto";
 import ObjectArt from "./ObjectArt";
 import { removePhoto, uploadPhoto } from "./photoApi";
@@ -60,6 +61,7 @@ export default function MyListings({
   categories,
   onClose,
 }: Readonly<MyListingsProps>) {
+  const { t } = useLanguage();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -77,7 +79,7 @@ export default function MyListings({
     });
 
     if (!response.ok) {
-      throw new Error("Impossible de charger vos annonces.");
+      throw new Error(tr("errLoadListings"));
     }
 
     return (await response.json()) as Listing[];
@@ -90,7 +92,7 @@ export default function MyListings({
         setError(
           requestError instanceof Error
             ? requestError.message
-            : "Une erreur est survenue.",
+            : tr("errGeneric"),
         );
       })
       .finally(() => setLoading(false));
@@ -143,20 +145,20 @@ export default function MyListings({
   }
 
   async function deletePhotoOf(listing: Listing) {
-    if (!window.confirm("Retirer la photo de cette annonce ?")) return;
+    if (!window.confirm(t("confirmRemovePhoto"))) return;
 
     try {
       await removePhoto(listing.id);
       setListings(await fetchMyListings());
       setPhotoVersion((current) => current + 1);
-      setMessage("Photo retirée.");
+      setMessage(t("photoRemoved"));
       setError("");
     } catch (requestError: unknown) {
       setMessage("");
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "La suppression de la photo a échoué.",
+          : t("errPhotoDelete"),
       );
     }
   }
@@ -180,7 +182,7 @@ export default function MyListings({
       });
 
       if (!response.ok) {
-        throw new Error("La modification a échoué. Vérifie les champs.");
+        throw new Error(t("errEditFailed"));
       }
 
       let photoFailure = "";
@@ -193,7 +195,7 @@ export default function MyListings({
           photoFailure =
             photoRequestError instanceof Error
               ? photoRequestError.message
-              : "L’envoi de la photo a échoué.";
+              : t("errPhotoSend");
         }
       }
 
@@ -202,22 +204,22 @@ export default function MyListings({
 
       if (photoFailure) {
         setMessage("");
-        setError(`Annonce modifiée, mais la photo n’a pas été envoyée. ${photoFailure}`);
+        setError(t("editedButPhoto", { reason: photoFailure }));
       } else {
-        setMessage("Annonce modifiée et contrôlée à nouveau.");
+        setMessage(t("listingEdited"));
         setError("");
       }
     } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "La modification a échoué.",
+          : t("errEditShort"),
       );
     }
   }
 
   async function deleteListing(listing: Listing) {
-    if (!window.confirm(`Supprimer l’annonce « ${listing.name} » ?`)) return;
+    if (!window.confirm(t("confirmDelete", { name: listing.name }))) return;
 
     try {
       const response = await fetch(collectibleUrl(listing.id), {
@@ -226,19 +228,19 @@ export default function MyListings({
       });
 
       if (!response.ok) {
-        throw new Error("La suppression a échoué.");
+        throw new Error(t("errDelete"));
       }
 
       setListings((current) =>
         current.filter((item) => item.id !== listing.id),
       );
-      setMessage("Annonce supprimée.");
+      setMessage(t("listingDeleted"));
       setError("");
     } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "La suppression a échoué.",
+          : t("errDelete"),
       );
     }
   }
@@ -254,12 +256,12 @@ export default function MyListings({
 
   function renderListings() {
     if (loading) {
-      return <p className="empty-state">Chargement de vos annonces…</p>;
+      return <p className="empty-state">{t("loadingMyListings")}</p>;
     }
 
     if (listings.length === 0) {
       return (
-        <p className="empty-state">Vous n’avez pas encore déposé d’annonce.</p>
+        <p className="empty-state">{t("noMyListings")}</p>
       );
     }
 
@@ -286,12 +288,12 @@ export default function MyListings({
           <div className="my-listing-info">
             <span className="item-category">{listing.category}</span>
             <h3>{listing.name}</h3>
-            <p>Prix : {formatEuros(listing.price)}</p>
-            <p>Expédition : {formatEuros(listing.shippingCost)}</p>
+            <p>{t("priceLine", { amount: formatEuros(listing.price) })}</p>
+            <p>{t("shipping", { amount: formatEuros(listing.shippingCost) })}</p>
             <span
               className={`listing-status status-${listing.status.toLowerCase()}`}
             >
-              {statusLabels[listing.status]}
+              {t(statusKeys[listing.status])}
             </span>
             {listing.moderationReason && (
               <p className="moderation-reason">
@@ -301,18 +303,18 @@ export default function MyListings({
 
             {listing.status === "SOLD" ? (
               <p className="moderation-reason">
-                Cette annonce est vendue : elle n’est plus modifiable.
+                {t("soldLocked")}
               </p>
             ) : (
               <div className="my-listing-actions">
                 <button onClick={() => startEditing(listing)}>
-                  Modifier
+                  {t("edit")}
                 </button>
                 <button
                   className="delete-listing-button"
                   onClick={() => deleteListing(listing)}
                 >
-                  Supprimer
+                  {t("delete")}
                 </button>
               </div>
             )}
@@ -320,7 +322,7 @@ export default function MyListings({
             {editingId === listing.id && (
               <form className="my-listing-edit-form" onSubmit={saveListing}>
                 <label>
-                  <span>Titre</span>
+                  <span>{t("titleLabel")}</span>
                   <input
                     required
                     maxLength={120}
@@ -332,7 +334,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  <span>Description</span>
+                  <span>{t("descriptionTitle")}</span>
                   <textarea
                     required
                     maxLength={1000}
@@ -347,7 +349,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  <span>Catégorie</span>
+                  <span>{t("categoryLabel")}</span>
                   <select
                     value={editForm.category}
                     onChange={(event) =>
@@ -366,7 +368,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  <span>État</span>
+                  <span>{t("condition")}</span>
                   <select
                     value={editForm.condition}
                     onChange={(event) =>
@@ -376,15 +378,15 @@ export default function MyListings({
                       })
                     }
                   >
-                    <option value="new">Neuf</option>
-                    <option value="very_good">Très bon état</option>
-                    <option value="good">Bon état</option>
-                    <option value="used">État d’usage</option>
+                    <option value="new">{t("conditionNew")}</option>
+                    <option value="very_good">{t("conditionVeryGood")}</option>
+                    <option value="good">{t("conditionGood")}</option>
+                    <option value="used">{t("conditionUsed")}</option>
                   </select>
                 </label>
 
                 <label>
-                  <span>Prix (€)</span>
+                  <span>{t("priceEuro")}</span>
                   <input
                     required
                     type="number"
@@ -398,7 +400,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  <span>Frais d’expédition (€)</span>
+                  <span>{t("shippingEuro")}</span>
                   <input
                     required
                     type="number"
@@ -415,7 +417,7 @@ export default function MyListings({
                 </label>
 
                 <label>
-                  <span>Photo (facultative)</span>
+                  <span>{t("photoOptional")}</span>
                   <input
                     type="file"
                     accept={PHOTO_TYPES.join(",")}
@@ -426,18 +428,18 @@ export default function MyListings({
                 {photoError && <p role="alert">{photoError}</p>}
 
                 <div className="my-listing-actions">
-                  <button type="submit">Enregistrer</button>
+                  <button type="submit">{t("save")}</button>
                   {listing.hasPhoto && (
                     <button
                       type="button"
                       className="delete-listing-button"
                       onClick={() => deletePhotoOf(listing)}
                     >
-                      Retirer la photo
+                      {t("removePhoto")}
                     </button>
                   )}
                   <button type="button" onClick={stopEditing}>
-                    Annuler
+                    {t("cancel")}
                   </button>
                 </div>
               </form>
@@ -456,12 +458,12 @@ export default function MyListings({
       backdropClassName="modal-backdrop"
       dialogClassName="listing-modal my-listings-modal"
     >
-      <button className="modal-close" onClick={onClose} aria-label="Fermer">
+      <button className="modal-close" onClick={onClose} aria-label={t("close")}>
         ×
       </button>
 
-      <span className="eyebrow">MON ESPACE</span>
-      <h2 id="my-listings-title">Mes annonces</h2>
+      <span className="eyebrow">{t("mySpace")}</span>
+      <h2 id="my-listings-title">{t("myListings")}</h2>
 
       {message && <output>{message}</output>}
       {error && <p role="alert">{error}</p>}

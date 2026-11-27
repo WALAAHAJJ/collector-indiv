@@ -1,3 +1,4 @@
+import { tr } from "./i18n";
 /** Taille maximale acceptée par le serveur : 1 Mo. */
 export const MAX_PHOTO_BYTES = 1024 * 1024;
 
@@ -11,11 +12,11 @@ const SHRINK_FACTOR = 0.7;
 /** Message à afficher si la photo ne convient pas, ou `null` si elle convient. */
 export function photoProblem(file: File): string | null {
   if (!PHOTO_TYPES.includes(file.type)) {
-    return "Format non pris en charge : choisissez une photo JPEG, PNG ou WebP.";
+    return tr("photoFormatChoose");
   }
 
   if (file.size > MAX_PHOTO_BYTES) {
-    return "La photo dépasse 1 Mo : choisissez-en une plus légère.";
+    return tr("photoTooBig");
   }
 
   return null;

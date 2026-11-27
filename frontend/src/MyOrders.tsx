@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { localeOf, tr, useLanguage } from "./i18n";
 import Modal from "./Modal";
 import ReviewForm from "./ReviewForm";
 import Stars from "./Stars";
@@ -9,30 +10,25 @@ import {
   downloadReceipt,
   fetchPurchases,
   fetchSales,
-  orderStatusLabels,
+  orderStatusKeys,
   shipOrder,
   type Order,
 } from "./ordersApi";
 
 type Tab = "purchases" | "sales";
 
-const tabs: { id: Tab; label: string }[] = [
-  { id: "purchases", label: "Mes achats" },
-  { id: "sales", label: "Mes ventes" },
+const tabs: { id: Tab; key: "tabPurchases" | "tabSales" }[] = [
+  { id: "purchases", key: "tabPurchases" },
+  { id: "sales", key: "tabSales" },
 ];
 
-const emptyMessages: Record<Tab, string> = {
-  purchases: "Vous n’avez encore rien acheté.",
-  sales: "Vous n’avez encore rien vendu.",
-};
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR");
-}
+const emptyKeys = { purchases: "emptyPurchases", sales: "emptySales" } as const;
 
 type MyOrdersProps = Readonly<{ onClose: () => void }>;
 
 export default function MyOrders({ onClose }: MyOrdersProps) {
+  const { language, t } = useLanguage();
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString(localeOf(language));
   const [tab, setTab] = useState<Tab>("purchases");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +81,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
           setError(
             requestError instanceof Error
               ? requestError.message
-              : "Vos commandes sont momentanément indisponibles.",
+              : tr("errOrdersUnavailable"),
           );
         }
       })
@@ -119,7 +115,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
       setOrders((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (requestError: unknown) {
       setActionError(
-        requestError instanceof Error ? requestError.message : "Le suivi est momentanément indisponible.",
+        requestError instanceof Error ? requestError.message : t("errTrackDefault"),
       );
     } finally {
       setBusyOrderId(null);
@@ -133,7 +129,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     try {
       await downloadReceipt(order.id);
     } catch (requestError: unknown) {
-      setActionError(requestError instanceof Error ? requestError.message : "Le reçu est momentanément indisponible.");
+      setActionError(requestError instanceof Error ? requestError.message : t("errGeneric"));
     } finally {
       setBusyOrderId(null);
     }
@@ -145,7 +141,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     if (tab === "sales" && order.status === "PAID") {
       return (
         <button className="auth-submit order-action" type="button" disabled={busy} onClick={() => void advance(order, shipOrder)}>
-          Marquer comme expédiée
+          {t("markShipped")}
         </button>
       );
     }
@@ -153,7 +149,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     if (tab === "purchases" && order.status === "SHIPPED") {
       return (
         <button className="auth-submit order-action" type="button" disabled={busy} onClick={() => void advance(order, deliverOrder)}>
-          J’ai reçu mon colis
+          {t("receivedParcel")}
         </button>
       );
     }
@@ -172,19 +168,19 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     if (tab === "sales") {
       return written ? (
         <div className="my-review">
-          <span>Avis de l’acheteur</span>
+          <span>{t("buyerReview")}</span>
           <Stars value={written.rating} />
           {written.comment && <p>{written.comment}</p>}
         </div>
       ) : (
-        <p className="my-review-pending">Pas encore d’avis de l’acheteur.</p>
+        <p className="my-review-pending">{t("noBuyerReview")}</p>
       );
     }
 
     if (written) {
       return (
         <div className="my-review">
-          <span>Votre avis</span>
+          <span>{t("yourReview")}</span>
           <Stars value={written.rating} />
           {written.comment && <p>{written.comment}</p>}
         </div>
@@ -205,38 +201,38 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
         <h3>{order.listingName}</h3>
         <span className="order-date">{formatDate(order.createdAt)}</span>
         <span className={`order-status order-status-${order.status.toLowerCase()}`}>
-          {orderStatusLabels[order.status]}
+          {t(orderStatusKeys[order.status])}
         </span>
 
         <dl className="purchase-summary">
           <div>
-            <dt>Objet</dt>
+            <dt>{t("item")}</dt>
             <dd>{formatEuros(order.itemPrice)}</dd>
           </div>
           <div>
-            <dt>Expédition</dt>
+            <dt>{t("shippingShort")}</dt>
             <dd>{formatEuros(order.shippingCost)}</dd>
           </div>
 
           {tab === "purchases" ? (
             <>
               <div className="purchase-total">
-                <dt>Total payé</dt>
+                <dt>{t("totalPaid")}</dt>
                 <dd>{formatEuros(order.buyerTotal)}</dd>
               </div>
               <div>
-                <dt>Carte</dt>
+                <dt>{t("card")}</dt>
                 <dd>•••• {order.cardLast4}</dd>
               </div>
             </>
           ) : (
             <>
               <div>
-                <dt>Commission du site (5 %)</dt>
+                <dt>{t("commissionLine")}</dt>
                 <dd>− {formatEuros(order.commission)}</dd>
               </div>
               <div className="purchase-total">
-                <dt>Votre gain net</dt>
+                <dt>{t("netGain")}</dt>
                 <dd>{formatEuros(order.sellerNet)}</dd>
               </div>
             </>
@@ -246,7 +242,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
         {renderAction(order)}
         {tab === "purchases" && (
           <button className="order-receipt" type="button" disabled={busyOrderId === order.id} onClick={() => void receipt(order)}>
-            Télécharger le reçu (PDF)
+            {t("downloadReceipt")}
           </button>
         )}
         {renderReview(order)}
@@ -256,7 +252,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
 
   function renderOrders() {
     if (loading) {
-      return <p className="empty-state">Chargement de vos commandes…</p>;
+      return <p className="empty-state">{t("loadingOrders")}</p>;
     }
 
     if (error) {
@@ -264,7 +260,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
     }
 
     if (orders.length === 0) {
-      return <p className="empty-state">{emptyMessages[tab]}</p>;
+      return <p className="empty-state">{t(emptyKeys[tab])}</p>;
     }
 
     return (
@@ -282,14 +278,14 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
       backdropClassName="modal-backdrop"
       dialogClassName="listing-modal my-listings-modal"
     >
-      <button className="modal-close" type="button" onClick={onClose} aria-label="Fermer">
+      <button className="modal-close" type="button" onClick={onClose} aria-label={t("close")}>
         ×
       </button>
 
-      <span className="eyebrow">MON ESPACE</span>
-      <h2 id="my-orders-title">Mes commandes</h2>
+      <span className="eyebrow">{t("mySpace")}</span>
+      <h2 id="my-orders-title">{t("myOrders")}</h2>
 
-      <fieldset className="filters" aria-label="Type de commandes">
+      <fieldset className="filters" aria-label={t("orderTypes")}>
         {tabs.map((item) => (
           <button
             type="button"
@@ -298,7 +294,7 @@ export default function MyOrders({ onClose }: MyOrdersProps) {
             className={tab === item.id ? "filter selected" : "filter"}
             onClick={() => changeTab(item.id)}
           >
-            {item.label}
+            {t(item.key)}
           </button>
         ))}
       </fieldset>

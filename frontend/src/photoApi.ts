@@ -1,5 +1,6 @@
 import { photoUrl } from "./api";
 import { getToken } from "./auth";
+import { tr } from "./i18n";
 
 function authHeaders(): Record<string, string> {
   const token = getToken();
@@ -7,11 +8,11 @@ function authHeaders(): Record<string, string> {
 }
 
 function failure(status: number, fallback: string): Error {
-  if (status === 401) return new Error("Session expirée : reconnectez-vous.");
-  if (status === 403) return new Error("Vous ne pouvez pas modifier cette photo.");
-  if (status === 413) return new Error("La photo dépasse 1 Mo.");
+  if (status === 401) return new Error(tr("errSession"));
+  if (status === 403) return new Error(tr("errPhoto403"));
+  if (status === 413) return new Error(tr("errPhoto413"));
   if (status === 400) {
-    return new Error("Format non pris en charge : JPEG, PNG ou WebP.");
+    return new Error(tr("errPhotoFormat"));
   }
 
   return new Error(fallback);
@@ -29,7 +30,7 @@ export async function uploadPhoto(listingId: string, file: File): Promise<void> 
   });
 
   if (!response.ok) {
-    throw failure(response.status, "L’envoi de la photo a échoué.");
+    throw failure(response.status, tr("errPhotoSend"));
   }
 }
 
@@ -40,6 +41,6 @@ export async function removePhoto(listingId: string): Promise<void> {
   });
 
   if (!response.ok) {
-    throw failure(response.status, "La suppression de la photo a échoué.");
+    throw failure(response.status, tr("errPhotoDelete"));
   }
 }

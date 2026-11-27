@@ -1,3 +1,4 @@
+import { tr } from "./i18n";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -5,7 +6,7 @@ const MAX_SEARCH_LENGTH = 100;
 
 function assertUuid(value: string): string {
   if (!UUID_PATTERN.test(value)) {
-    throw new Error("Identifiant invalide.");
+    throw new Error(tr("errInvalidId"));
   }
 
   return value;
@@ -60,7 +61,7 @@ export type AdminStatus = (typeof ADMIN_STATUSES)[number];
 
 export function adminListUrl(status: AdminStatus): string {
   if (!ADMIN_STATUSES.includes(status)) {
-    throw new Error("Statut invalide.");
+    throw new Error(tr("errInvalidStatus"));
   }
 
   return `/api/admin/collectibles?status=${encodeURIComponent(status)}`;

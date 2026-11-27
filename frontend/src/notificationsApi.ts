@@ -1,4 +1,5 @@
 import { getToken } from "./auth";
+import { tr } from "./i18n";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -19,7 +20,7 @@ export const READ_ALL_URL = "/api/notifications/read-all";
 /** Adresse de marquage d'une notification ; l'identifiant est validé avant d'être collé dans l'adresse. */
 export function markReadUrl(id: string): string {
   if (!UUID_PATTERN.test(id)) {
-    throw new Error("Identifiant invalide.");
+    throw new Error(tr("errInvalidId"));
   }
 
   return `${NOTIFICATIONS_URL}/${encodeURIComponent(id)}/read`;
@@ -34,11 +35,11 @@ async function request(url: string, method = "GET"): Promise<Response> {
   const response = await fetch(url, { method, headers: authHeaders() });
 
   if (response.status === 401) {
-    throw new Error("Session expirée : reconnectez-vous.");
+    throw new Error(tr("errSession"));
   }
 
   if (!response.ok) {
-    throw new Error("Les notifications sont indisponibles.");
+    throw new Error(tr("errNotifications"));
   }
 
   return response;

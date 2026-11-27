@@ -1,4 +1,5 @@
 import { getToken } from "./auth";
+import { tr, type TextKey } from "./i18n";
 
 export type OrderStatus = "PAID" | "SHIPPED" | "DELIVERED" | "REFUNDED";
 
@@ -7,6 +8,14 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
   SHIPPED: "Expédiée",
   DELIVERED: "Reçue",
   REFUNDED: "Remboursée",
+};
+
+/** Clés de traduction des étapes d'une commande (l'affichage passe par t). */
+export const orderStatusKeys: Record<OrderStatus, TextKey> = {
+  PAID: "orderPaid",
+  SHIPPED: "orderShipped",
+  DELIVERED: "orderDelivered",
+  REFUNDED: "orderRefunded",
 };
 
 export type Order = {
@@ -56,19 +65,19 @@ function authHeaders(): Record<string, string> {
 export function purchaseErrorMessage(status: number): string {
   switch (status) {
     case 400:
-      return "Les informations de la carte sont invalides.";
+      return tr("errCardInfo");
     case 401:
-      return "Session expirée : reconnectez-vous.";
+      return tr("errSession");
     case 402:
-      return "Paiement refusé : numéro de carte invalide, carte expirée ou refusée par la banque. Aucun montant n’a été prélevé.";
+      return tr("errPay402");
     case 403:
-      return "Vous ne pouvez pas acheter votre propre annonce.";
+      return tr("errPay403");
     case 404:
-      return "Cette annonce n’est plus disponible.";
+      return tr("errPay404");
     case 409:
-      return "Cette annonce vient d’être vendue.";
+      return tr("errPay409");
     default:
-      return "Le paiement est momentanément indisponible. Réessayez plus tard.";
+      return tr("errPayDefault");
   }
 }
 
@@ -96,11 +105,11 @@ async function fetchOrders(url: string): Promise<Order[]> {
   const response = await fetch(url, { headers: authHeaders() });
 
   if (response.status === 401) {
-    throw new Error("Session expirée : reconnectez-vous.");
+    throw new Error(tr("errSession"));
   }
 
   if (!response.ok) {
-    throw new Error("Vos commandes sont momentanément indisponibles.");
+    throw new Error(tr("errOrdersUnavailable"));
   }
 
   const data: unknown = await response.json();
@@ -116,15 +125,15 @@ export const fetchSales = () => fetchOrders(SALES_URL);
 export function trackingErrorMessage(status: number): string {
   switch (status) {
     case 401:
-      return "Session expirée : reconnectez-vous.";
+      return tr("errSession");
     case 403:
-      return "Cette action n’est pas la vôtre : le vendeur expédie, l’acheteur confirme la réception.";
+      return tr("errTrack403");
     case 404:
-      return "Cette commande est introuvable.";
+      return tr("errOrderNotFound");
     case 409:
-      return "Cette commande a déjà changé d’étape. Actualisez la liste.";
+      return tr("errTrack409");
     default:
-      return "Le suivi de commande est momentanément indisponible. Réessayez plus tard.";
+      return tr("errTrackDefault");
   }
 }
 
@@ -166,8 +175,8 @@ export async function downloadReceipt(orderId: string): Promise<void> {
   if (!response.ok) {
     throw new Error(
       response.status === 401
-        ? "Session expirée : reconnectez-vous."
-        : `Le reçu est momentanément indisponible (erreur ${response.status}). Réessayez plus tard.`,
+        ? tr("errSession")
+        : tr("errReceipt", { status: response.status }),
     );
   }
 
@@ -190,15 +199,15 @@ export const fetchAdminOrders = () => fetchOrders(ADMIN_ORDERS_URL);
 export function refundErrorMessage(status: number): string {
   switch (status) {
     case 401:
-      return "Session expirée : reconnectez-vous.";
+      return tr("errSession");
     case 403:
-      return "Accès réservé aux administrateurs.";
+      return tr("errAdminOnly");
     case 404:
-      return "Cette commande est introuvable.";
+      return tr("errOrderNotFound");
     case 409:
-      return "Cette commande est déjà remboursée ou n’a pas de paiement à rembourser.";
+      return tr("errRefund409");
     default:
-      return "Le remboursement est momentanément indisponible. Réessayez plus tard.";
+      return tr("errRefundDefault");
   }
 }
 

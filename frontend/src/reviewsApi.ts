@@ -1,5 +1,6 @@
 import { MY_REVIEWS_URL, orderReviewUrl, sellerReviewsUrl } from "./api";
 import { getToken } from "./auth";
+import { tr } from "./i18n";
 
 export const MAX_COMMENT_LENGTH = 500;
 
@@ -87,17 +88,17 @@ export async function fetchMyReviews(): Promise<Review[]> {
 export function reviewErrorMessage(status: number): string {
   switch (status) {
     case 400:
-      return "La note doit être comprise entre 1 et 5 et le commentaire faire 500 caractères au plus.";
+      return tr("errReview400");
     case 401:
-      return "Session expirée : reconnectez-vous.";
+      return tr("errSession");
     case 403:
-      return "Seul l’acheteur peut noter le vendeur.";
+      return tr("errReview403");
     case 404:
-      return "Cette commande est introuvable.";
+      return tr("errOrderNotFound");
     case 409:
-      return "Vous avez déjà noté cette commande, ou elle n’est pas encore reçue.";
+      return tr("errReview409");
     default:
-      return "Les avis sont momentanément indisponibles. Réessayez plus tard.";
+      return tr("errReviewDefault");
   }
 }
 
