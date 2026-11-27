@@ -2,9 +2,6 @@ import type { Language } from "./i18n";
 import { englishInfoPages } from "./infoPagesEn";
 import type { InfoPageSlug } from "./route";
 
-/** Adresse de contact affichée sur le site : à remplacer par une vraie boîte avant une mise en ligne. */
-export const CONTACT_EMAIL = "contact@collector.example";
-
 export type InfoSection = {
   title: string;
   /** Paragraphes de texte. */
@@ -48,7 +45,7 @@ const howItWorks: InfoPageContent = {
       title: "Pour vendre",
       items: [
         "Créez un compte, puis « Déposer une annonce » : titre, description, catégorie, état, prix, frais d'expédition et photo.",
-        "Votre annonce est relue par un administrateur avant d'apparaître. Vous êtes prévenu dans la cloche, avec le motif si elle est refusée.",
+        "Votre annonce est contrôlée automatiquement avant d'apparaître (un administrateur la valide si son prix dépasse 5 000 €). Vous êtes prévenu dans la cloche, avec le motif si elle est refusée.",
         "Quand elle est vendue, vous recevez une notification avec votre gain net. L'annonce quitte le catalogue.",
         "Expédiez l'objet puis cliquez sur « Marquer comme expédiée » dans « Mes commandes », onglet « Mes ventes ». L'acheteur est prévenu.",
         "À la confirmation de réception, la vente est terminée et l'acheteur peut vous laisser un avis, visible sur toutes vos annonces.",
@@ -85,7 +82,7 @@ const faq: InfoPageContent = {
     },
     {
       title: "Pourquoi mon annonce n'apparaît-elle pas tout de suite ?",
-      text: ["Chaque annonce est relue par un administrateur. Vous recevez une notification quand elle est approuvée, ou refusée avec un motif, que vous pouvez corriger."],
+      text: ["Chaque annonce est contrôlée automatiquement, et validée par un administrateur au-delà de 5 000 €. Vous recevez une notification quand elle est approuvée, ou refusée avec un motif, que vous pouvez corriger."],
     },
     {
       title: "Puis-je modifier ou supprimer une annonce ?",
@@ -130,7 +127,7 @@ const cgu: InfoPageContent = {
     {
       title: "3. Annonces et modération",
       text: [
-        "Le vendeur décrit honnêtement l'objet, son état et ses frais d'expédition. Toute annonce est relue par un administrateur avant publication et peut être refusée avec un motif.",
+        "Le vendeur décrit honnêtement l'objet, son état et ses frais d'expédition. Toute annonce est contrôlée avant publication (par un administrateur au-delà de 5 000 €) et peut être refusée avec un motif.",
         "Une annonce vendue ne peut plus être modifiée ni supprimée.",
       ],
     },
@@ -174,8 +171,8 @@ const contact: InfoPageContent = {
   layout: "sections",
   sections: [
     {
-      title: "Écrire à l'équipe",
-      text: [`Un message à ${CONTACT_EMAIL}. Précisez le titre de l'annonce concernée, cela accélère la réponse.`],
+      title: "Pour une demande",
+      text: ["Indiquez toujours le titre de l'annonce concernée : cela accélère la réponse."],
     },
     {
       title: "Selon votre question",
@@ -196,7 +193,7 @@ export const INFO_PAGE_CONTENT: Record<InfoPageSlug, InfoPageContent> = {
   contact,
 };
 
-const ENGLISH_CONTENT = englishInfoPages(CONTACT_EMAIL);
+const ENGLISH_CONTENT = englishInfoPages();
 
 /** Contenu d'une page d'information dans la langue choisie. */
 export function infoContent(slug: InfoPageSlug, language: Language): InfoPageContent {
