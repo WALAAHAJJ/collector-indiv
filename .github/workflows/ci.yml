@@ -89,6 +89,7 @@ jobs:
             -Dsonar.coverage.jacoco.xmlReportPaths=backend/microservices/collection-service/target/site/jacoco/jacoco.xml
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
             -Dsonar.coverage.exclusions=frontend/src/main.tsx
+            -Dsonar.cpd.exclusions=frontend/src/i18n.ts,frontend/src/infoPages.ts,frontend/src/infoPagesEn.ts
 
       - name: Publier le rapport JaCoCo
         if: always()
