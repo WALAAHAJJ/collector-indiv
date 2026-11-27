@@ -5,18 +5,33 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    ignore:
+      # Spring Boot 4.2 a déplacé le code RabbitMQ hors du starter AMQP : on reste sur la 4.1
+      # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: "maven"
     directory: "/backend/microservices/notification-service"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    ignore:
+      # Spring Boot 4.2 a déplacé le code RabbitMQ hors du starter AMQP : on reste sur la 4.1
+      # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: "maven"
     directory: "/backend/microservices/payment-service"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    ignore:
+      # Spring Boot 4.2 a déplacé le code RabbitMQ hors du starter AMQP : on reste sur la 4.1
+      # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/frontend"
