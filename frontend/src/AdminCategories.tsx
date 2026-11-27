@@ -7,6 +7,7 @@ import {
   type Category,
   type CategoryArtName,
 } from "./categories";
+import { tr, useLanguage } from "./i18n";
 import ObjectArt from "./ObjectArt";
 
 type AdminCategoriesProps = Readonly<{
@@ -22,21 +23,22 @@ function authHeaders(): Record<string, string> {
 }
 
 function failureMessage(status: number, action: "create" | "delete"): string {
-  if (status === 401) return "Session expirée : reconnectez-vous.";
-  if (status === 403) return "Accès réservé aux administrateurs.";
+  if (status === 401) return tr("errSession");
+  if (status === 403) return tr("errAdminOnly");
   if (status === 409) {
     return action === "create"
-      ? "Cette catégorie existe déjà."
-      : "Impossible de supprimer : des annonces utilisent cette catégorie.";
+      ? tr("errCatExists")
+      : tr("errCatInUse");
   }
 
-  return "L’action a échoué. Réessayez.";
+  return tr("errActionFailed");
 }
 
 export default function AdminCategories({
   categories,
   onChange,
 }: AdminCategoriesProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [art, setArt] = useState<CategoryArtName>("OTHER");
   const [message, setMessage] = useState("");
@@ -64,7 +66,7 @@ export default function AdminCategories({
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "L’action a échoué. Réessayez.",
+          : tr("errActionFailed"),
       );
 
       return false;
@@ -78,7 +80,7 @@ export default function AdminCategories({
 
     if (trimmed === "") {
       setMessage("");
-      setError("Indiquez le nom de la catégorie.");
+      setError(t("errCatName"));
       return;
     }
 
@@ -90,7 +92,7 @@ export default function AdminCategories({
           body: JSON.stringify({ name: trimmed, art }),
         }),
       "create",
-      `Catégorie « ${trimmed} » créée.`,
+      t("catCreated", { name: trimmed }),
     );
 
     if (created) {
@@ -100,7 +102,7 @@ export default function AdminCategories({
   }
 
   async function remove(category: Category) {
-    if (!window.confirm(`Supprimer la catégorie « ${category.name} » ?`)) {
+    if (!window.confirm(t("confirmDeleteCat", { name: category.name }))) {
       return;
     }
 
@@ -111,18 +113,18 @@ export default function AdminCategories({
           headers: authHeaders(),
         }),
       "delete",
-      `Catégorie « ${category.name} » supprimée.`,
+      t("catDeleted", { name: category.name }),
     );
   }
 
   return (
-    <section aria-label="Catégories">
+    <section aria-label={t("sectionCategories")}>
       {message && <output>{message}</output>}
       {error && <p role="alert">{error}</p>}
 
       <form className="admin-category-form" onSubmit={create}>
         <label>
-          <span>Nom de la catégorie</span>
+          <span>{t("catName")}</span>
           <input
             required
             maxLength={MAX_NAME_LENGTH}
@@ -132,20 +134,20 @@ export default function AdminCategories({
         </label>
 
         <label>
-          <span>Illustration</span>
+          <span>{t("illustration")}</span>
           <select
             value={art}
             onChange={(event) => setArt(event.target.value as CategoryArtName)}
           >
             {ART_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {t(option.key)}
               </option>
             ))}
           </select>
         </label>
 
-        <button type="submit">Ajouter la catégorie</button>
+        <button type="submit">{t("addCategory")}</button>
       </form>
 
       <ul className="admin-category-list">
@@ -162,10 +164,10 @@ export default function AdminCategories({
                 <button
                   type="button"
                   className="delete-listing-button"
-                  aria-label={`Supprimer la catégorie ${category.name}`}
+                  aria-label={t("deleteCategory", { name: category.name })}
                   onClick={() => remove(category)}
                 >
-                  Supprimer
+                  {t("delete")}
                 </button>
               )}
             </li>

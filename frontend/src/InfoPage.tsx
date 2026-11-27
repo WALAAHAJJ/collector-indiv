@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { INFO_PAGE_CONTENT, type InfoSection } from "./infoPages";
+import { useLanguage } from "./i18n";
+import { infoContent, type InfoSection } from "./infoPages";
 import type { InfoPageSlug } from "./route";
 
 type InfoPageProps = Readonly<{ slug: InfoPageSlug }>;
@@ -27,7 +28,8 @@ function Paragraphs({ section }: Readonly<{ section: InfoSection }>) {
 }
 
 export default function InfoPage({ slug }: InfoPageProps) {
-  const page = INFO_PAGE_CONTENT[slug];
+  const { language, t } = useLanguage();
+  const page = infoContent(slug, language);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -43,7 +45,7 @@ export default function InfoPage({ slug }: InfoPageProps) {
   return (
     <article className="info-page">
       <a className="back-link" href="#catalogue">
-        ← Retour au catalogue
+        {t("backToCatalogue")}
       </a>
 
       <header className="info-header">

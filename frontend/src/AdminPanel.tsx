@@ -4,7 +4,8 @@ import { getToken } from "./auth";
 import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import { visualForLabel, type Category } from "./categories";
-import { statusLabels, type ListingStatus } from "./listingStatus";
+import { useLanguage, tr } from "./i18n";
+import { statusKeys, type ListingStatus } from "./listingStatus";
 import ListingPhoto from "./ListingPhoto";
 import Modal from "./Modal";
 import ObjectArt from "./ObjectArt";
@@ -29,17 +30,17 @@ type AdminPanelProps = Readonly<{
   onClose: () => void;
 }>;
 
-const tabs: { status: AdminStatus; label: string }[] = [
-  { status: "PENDING_REVIEW", label: "En attente" },
-  { status: "APPROVED", label: "Approuvées" },
-  { status: "REJECTED", label: "Refusées" },
-];
+const tabs = [
+  { status: "PENDING_REVIEW", key: "tabPending" },
+  { status: "APPROVED", key: "tabApproved" },
+  { status: "REJECTED", key: "tabRejected" },
+] as const;
 
-const emptyMessages: Record<AdminStatus, string> = {
-  PENDING_REVIEW: "Aucune annonce en attente de vérification.",
-  APPROVED: "Aucune annonce approuvée.",
-  REJECTED: "Aucune annonce refusée.",
-};
+const emptyKeys = {
+  PENDING_REVIEW: "emptyPending",
+  APPROVED: "emptyApproved",
+  REJECTED: "emptyRejected",
+} as const;
 
 function formatEuros(value: number): string {
   return `${Number(value).toFixed(2).replace(".", ",")} €`;
@@ -55,6 +56,7 @@ export default function AdminPanel({
   onCategoriesChange,
   onClose,
 }: AdminPanelProps) {
+  const { t } = useLanguage();
   const [section, setSection] = useState<"listings" | "categories" | "orders">(
     "listings",
   );
@@ -72,15 +74,15 @@ export default function AdminPanel({
     });
 
     if (response.status === 401) {
-      throw new Error("Session expirée : reconnectez-vous.");
+      throw new Error(tr("errSession"));
     }
 
     if (response.status === 403) {
-      throw new Error("Accès réservé aux administrateurs.");
+      throw new Error(tr("errAdminOnly"));
     }
 
     if (!response.ok) {
-      throw new Error("Impossible de charger les annonces.");
+      throw new Error(tr("errAdminLoad"));
     }
 
     return (await response.json()) as AdminListing[];
@@ -101,7 +103,7 @@ export default function AdminPanel({
           setError(
             requestError instanceof Error
               ? requestError.message
-              : "Une erreur est survenue.",
+              : tr("errGeneric"),
           );
         }
       })
@@ -135,11 +137,11 @@ export default function AdminPanel({
       const response = await request();
 
       if (response.status === 401) {
-        throw new Error("Session expirée : reconnectez-vous.");
+        throw new Error(tr("errSession"));
       }
 
       if (!response.ok) {
-        throw new Error("L’action a échoué. Réessayez.");
+        throw new Error(tr("errActionFailed"));
       }
 
       setListings(await loadListings());
@@ -164,7 +166,7 @@ export default function AdminPanel({
           method: "POST",
           headers: authHeaders(),
         }),
-      "Annonce approuvée.",
+      t("okApproved"),
     );
   }
 
@@ -172,7 +174,7 @@ export default function AdminPanel({
     event.preventDefault();
 
     if (reason.trim() === "") {
-      setError("Indiquez un motif de refus.");
+      setError(t("errRejectReason"));
       return Promise.resolve();
     }
 
@@ -183,12 +185,12 @@ export default function AdminPanel({
           headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({ reason: reason.trim() }),
         }),
-      "Annonce refusée.",
+      t("okRejected"),
     );
   }
 
   function remove(listing: AdminListing) {
-    if (!window.confirm(`Supprimer l’annonce « ${listing.name} » ?`)) {
+    if (!window.confirm(t("confirmDelete", { name: listing.name }))) {
       return Promise.resolve();
     }
 
@@ -198,18 +200,18 @@ export default function AdminPanel({
           method: "DELETE",
           headers: authHeaders(),
         }),
-      "Annonce supprimée.",
+      t("listingDeleted"),
     );
   }
 
   function renderListings() {
     if (loading) {
-      return <p className="empty-state">Chargement des annonces…</p>;
+      return <p className="empty-state">{t("loadingListings")}</p>;
     }
 
     if (listings.length === 0) {
       return error ? null : (
-        <p className="empty-state">{emptyMessages[status]}</p>
+        <p className="empty-state">{t(emptyKeys[status])}</p>
       );
     }
 
@@ -237,15 +239,15 @@ export default function AdminPanel({
                 <span className="item-category">{listing.category}</span>
                 <h3>{listing.name}</h3>
                 <p className="admin-owner">
-                  Vendeur : {listing.ownerId.slice(0, 8)}…
+                  {t("sellerLine", { id: listing.ownerId.slice(0, 8) })}
                 </p>
                 {listing.description && <p>{listing.description}</p>}
-                <p>Prix : {formatEuros(listing.price)}</p>
-                <p>Expédition : {formatEuros(listing.shippingCost)}</p>
+                <p>{t("priceLine", { amount: formatEuros(listing.price) })}</p>
+                <p>{t("shipping", { amount: formatEuros(listing.shippingCost) })}</p>
                 <span
                   className={`listing-status status-${listing.status.toLowerCase()}`}
                 >
-                  {statusLabels[listing.status]}
+                  {t(statusKeys[listing.status])}
                 </span>
                 {listing.moderationReason && (
                   <p className="moderation-reason">
@@ -256,7 +258,7 @@ export default function AdminPanel({
                 <div className="my-listing-actions">
                   {listing.status !== "APPROVED" && (
                     <button type="button" onClick={() => approve(listing)}>
-                      Approuver
+                      {t("approve")}
                     </button>
                   )}
                   {listing.status !== "REJECTED" && (
@@ -267,7 +269,7 @@ export default function AdminPanel({
                         setReason("");
                       }}
                     >
-                      Refuser
+                      {t("reject")}
                     </button>
                   )}
                   <button
@@ -275,7 +277,7 @@ export default function AdminPanel({
                     className="delete-listing-button"
                     onClick={() => remove(listing)}
                   >
-                    Supprimer
+                    {t("delete")}
                   </button>
                 </div>
 
@@ -285,7 +287,7 @@ export default function AdminPanel({
                     onSubmit={(event) => reject(event, listing)}
                   >
                     <label>
-                      <span>Motif du refus</span>
+                      <span>{t("rejectReason")}</span>
                       <input
                         required
                         maxLength={255}
@@ -295,9 +297,9 @@ export default function AdminPanel({
                     </label>
 
                     <div className="my-listing-actions">
-                      <button type="submit">Confirmer le refus</button>
+                      <button type="submit">{t("confirmReject")}</button>
                       <button type="button" onClick={() => setRejectingId(null)}>
-                        Annuler
+                        {t("cancel")}
                       </button>
                     </div>
                   </form>
@@ -313,7 +315,7 @@ export default function AdminPanel({
   function renderListingsSection() {
     return (
       <>
-      <fieldset className="filters" aria-label="Filtrer par statut">
+      <fieldset className="filters" aria-label={t("filterStatus")}>
         {tabs.map((tab) => (
           <button
             type="button"
@@ -322,7 +324,7 @@ export default function AdminPanel({
             className={status === tab.status ? "filter selected" : "filter"}
             onClick={() => changeStatus(tab.status)}
           >
-            {tab.label}
+            {t(tab.key)}
           </button>
         ))}
       </fieldset>
@@ -342,21 +344,21 @@ export default function AdminPanel({
       backdropClassName="modal-backdrop"
       dialogClassName="listing-modal my-listings-modal admin-modal"
     >
-      <button className="modal-close" onClick={onClose} aria-label="Fermer">
+      <button className="modal-close" onClick={onClose} aria-label={t("close")}>
         ×
       </button>
 
-      <span className="eyebrow">back-office</span>
-      <h2 id="admin-title">Administration</h2>
+      <span className="eyebrow">{t("backOffice")}</span>
+      <h2 id="admin-title">{t("adminTitle")}</h2>
 
-      <fieldset className="filters" aria-label="Section">
+      <fieldset className="filters" aria-label={t("sectionLabel")}>
         <button
           type="button"
           aria-pressed={section === "listings"}
           className={section === "listings" ? "filter selected" : "filter"}
           onClick={() => setSection("listings")}
         >
-          Annonces
+          {t("sectionListings")}
         </button>
         <button
           type="button"
@@ -364,7 +366,7 @@ export default function AdminPanel({
           className={section === "categories" ? "filter selected" : "filter"}
           onClick={() => setSection("categories")}
         >
-          Catégories
+          {t("sectionCategories")}
         </button>
         <button
           type="button"
@@ -372,7 +374,7 @@ export default function AdminPanel({
           className={section === "orders" ? "filter selected" : "filter"}
           onClick={() => setSection("orders")}
         >
-          Commandes
+          {t("sectionOrders")}
         </button>
       </fieldset>
 

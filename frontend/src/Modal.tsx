@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { useLanguage } from "./i18n";
 
 type ModalProps = Readonly<{
   onClose: () => void;
@@ -15,6 +16,8 @@ export default function Modal({
   dialogClassName,
   children,
 }: ModalProps) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -31,7 +34,7 @@ export default function Modal({
       <button
         type="button"
         className="backdrop-dismiss"
-        aria-label="Fermer en cliquant à l’extérieur"
+        aria-label={t("dismissOutside")}
         tabIndex={-1}
         onClick={onClose}
       />

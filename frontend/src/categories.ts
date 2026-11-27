@@ -1,3 +1,4 @@
+import type { TextKey } from "./i18n";
 import type { ArtKind } from "./ObjectArt";
 
 export type CategoryArtName = "STAMPS" | "COINS" | "POSTCARDS" | "FIGURINES" | "BOOKS" | "VINYLS" | "OTHER";
@@ -13,15 +14,15 @@ export type CategoryVisual = {
   tone: string;
 };
 
-export const ART_OPTIONS: { value: CategoryArtName; label: string }[] = [
-  { value: "STAMPS", label: "Timbre" },
-  { value: "COINS", label: "Pièce" },
-  { value: "POSTCARDS", label: "Cartes postales" },
-  { value: "FIGURINES", label: "Figurine" },
-  { value: "BOOKS", label: "Livre ancien" },
-  { value: "VINYLS", label: "Vinyle" },
-  { value: "OTHER", label: "Autre objet" },
-];
+export const ART_OPTIONS = [
+  { value: "STAMPS", label: "Timbre", key: "artStamp" },
+  { value: "COINS", label: "Pièce", key: "artCoin" },
+  { value: "POSTCARDS", label: "Cartes postales", key: "artPostcards" },
+  { value: "FIGURINES", label: "Figurine", key: "artFigurine" },
+  { value: "BOOKS", label: "Livre ancien", key: "artBook" },
+  { value: "VINYLS", label: "Vinyle", key: "artVinyl" },
+  { value: "OTHER", label: "Autre objet", key: "artOther" },
+] as const satisfies readonly { value: CategoryArtName; label: string; key: TextKey }[];
 
 const artVisuals: Record<CategoryArtName, CategoryVisual> = {
   STAMPS: { art: "stamps", tone: "sage" },

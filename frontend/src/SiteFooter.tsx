@@ -1,9 +1,9 @@
 import { useLanguage } from "./i18n";
-import { INFO_PAGE_CONTENT } from "./infoPages";
+import { infoContent } from "./infoPages";
 import { INFO_PAGES, infoHref } from "./route";
 
 export default function SiteFooter() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   return (
     <footer>
@@ -18,7 +18,7 @@ export default function SiteFooter() {
         <a href="#catalogue">{t("catalogue")}</a>
         {INFO_PAGES.map((slug) => (
           <a key={slug} href={infoHref(slug)}>
-            {INFO_PAGE_CONTENT[slug].label}
+            {infoContent(slug, language).label}
           </a>
         ))}
       </nav>

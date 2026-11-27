@@ -1,3 +1,5 @@
+import type { Language } from "./i18n";
+import { englishInfoPages } from "./infoPagesEn";
 import type { InfoPageSlug } from "./route";
 
 /** Adresse de contact affichée sur le site : à remplacer par une vraie boîte avant une mise en ligne. */
@@ -193,3 +195,10 @@ export const INFO_PAGE_CONTENT: Record<InfoPageSlug, InfoPageContent> = {
   cgu,
   contact,
 };
+
+const ENGLISH_CONTENT = englishInfoPages(CONTACT_EMAIL);
+
+/** Contenu d'une page d'information dans la langue choisie. */
+export function infoContent(slug: InfoPageSlug, language: Language): InfoPageContent {
+  return (language === "en" ? ENGLISH_CONTENT : INFO_PAGE_CONTENT)[slug];
+}

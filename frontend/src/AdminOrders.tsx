@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
+import { localeOf, tr, useLanguage } from "./i18n";
 import { formatEuros } from "./money";
-import { fetchAdminOrders, orderStatusLabels, refundOrder, type Order } from "./ordersApi";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR");
-}
+import { fetchAdminOrders, orderStatusKeys, refundOrder, type Order } from "./ordersApi";
 
 /** Back-office : toutes les commandes du site, avec le remboursement. */
 export default function AdminOrders() {
+  const { language, t } = useLanguage();
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString(localeOf(language));
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,7 +22,7 @@ export default function AdminOrders() {
       })
       .catch((requestError: unknown) => {
         if (!cancelled) {
-          setError(requestError instanceof Error ? requestError.message : "Les commandes sont indisponibles.");
+          setError(requestError instanceof Error ? requestError.message : tr("errAdminOrders"));
         }
       })
       .finally(() => {
@@ -36,7 +35,7 @@ export default function AdminOrders() {
   }, []);
 
   async function refund(order: Order) {
-    if (!window.confirm(`Rembourser la commande « ${order.listingName} » (${formatEuros(order.buyerTotal)}) ?`)) {
+    if (!window.confirm(t("confirmRefund", { name: order.listingName, amount: formatEuros(order.buyerTotal) }))) {
       return;
     }
 
@@ -47,16 +46,16 @@ export default function AdminOrders() {
     try {
       const updated = await refundOrder(order.id);
       setOrders((current) => current.map((item) => (item.id === updated.id ? updated : item)));
-      setMessage("Commande remboursée.");
+      setMessage(t("orderRefundedMsg"));
     } catch (requestError: unknown) {
-      setError(requestError instanceof Error ? requestError.message : "Le remboursement a échoué.");
+      setError(requestError instanceof Error ? requestError.message : t("errRefundFailed"));
     } finally {
       setBusyId(null);
     }
   }
 
   if (loading) {
-    return <p className="empty-state">Chargement des commandes…</p>;
+    return <p className="empty-state">{t("loadingAdminOrders")}</p>;
   }
 
   return (
@@ -65,7 +64,7 @@ export default function AdminOrders() {
       {error && <p role="alert">{error}</p>}
 
       {orders.length === 0 && !error ? (
-        <p className="empty-state">Aucune commande pour le moment.</p>
+        <p className="empty-state">{t("noOrders")}</p>
       ) : (
         <div className="orders-list">
           {orders.map((order) => (
@@ -73,20 +72,20 @@ export default function AdminOrders() {
               <h3>{order.listingName}</h3>
               <span className="order-date">{formatDate(order.createdAt)}</span>
               <span className={`order-status order-status-${order.status.toLowerCase()}`}>
-                {orderStatusLabels[order.status]}
+                {t(orderStatusKeys[order.status])}
               </span>
 
               <dl className="purchase-summary">
                 <div>
-                  <dt>Total payé</dt>
+                  <dt>{t("totalPaid")}</dt>
                   <dd>{formatEuros(order.buyerTotal)}</dd>
                 </div>
                 <div>
-                  <dt>Acheteur</dt>
+                  <dt>{t("buyer")}</dt>
                   <dd>{order.buyerId.slice(0, 8)}…</dd>
                 </div>
                 <div>
-                  <dt>Vendeur</dt>
+                  <dt>{t("seller")}</dt>
                   <dd>{order.sellerId.slice(0, 8)}…</dd>
                 </div>
               </dl>
@@ -98,7 +97,7 @@ export default function AdminOrders() {
                   disabled={busyId === order.id}
                   onClick={() => void refund(order)}
                 >
-                  Rembourser
+                  {t("refund")}
                 </button>
               )}
             </article>

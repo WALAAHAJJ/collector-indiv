@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { localeOf, useLanguage, type Language } from "./i18n";
 import {
   fetchNotifications,
   fetchUnreadCount,
@@ -10,16 +11,17 @@ import "./styles/notifications.css";
 
 const REFRESH_MS = 30_000;
 
-function formatDate(value: string): string {
+function formatDate(value: string, language: Language): string {
   const date = new Date(value);
 
   return Number.isNaN(date.getTime())
     ? ""
-    : date.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+    : date.toLocaleString(localeOf(language), { dateStyle: "short", timeStyle: "short" });
 }
 
 /** Cloche des notifications : compteur de non lues (actualisé toutes les 30 s) et liste déroulante. */
 export default function NotificationBell() {
+  const { language, t } = useLanguage();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
@@ -102,8 +104,8 @@ export default function NotificationBell() {
     }
   }
 
-  const plural = unread > 1 ? "s" : "";
-  const label = unread > 0 ? `Notifications, ${unread} non lue${plural}` : "Notifications";
+  const label =
+    unread > 0 ? t(unread > 1 ? "notificationsLabelMany" : "notificationsLabel", { count: unread }) : t("notifications");
 
   return (
     <div className="notification-bell" ref={container}>
@@ -133,16 +135,16 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <section className="notification-panel" aria-label="Vos notifications">
+        <section className="notification-panel" aria-label={t("yourNotifications")}>
           <header className="notification-panel-header">
-            <h2>Notifications</h2>
+            <h2>{t("notifications")}</h2>
             <button
               type="button"
               className="notification-read-all"
               onClick={() => void handleReadAll()}
               disabled={unread === 0}
             >
-              Tout marquer comme lu
+              {t("markAllRead")}
             </button>
           </header>
 
@@ -152,10 +154,10 @@ export default function NotificationBell() {
             </p>
           )}
 
-          {loading && <p className="notification-empty">Chargement…</p>}
+          {loading && <p className="notification-empty">{t("loadingShort")}</p>}
 
           {!loading && !error && items.length === 0 && (
-            <p className="notification-empty">Aucune notification pour le moment.</p>
+            <p className="notification-empty">{t("noNotifications")}</p>
           )}
 
           <ul className="notification-list">
@@ -172,8 +174,8 @@ export default function NotificationBell() {
                 >
                   <span className="notification-message">{item.message}</span>
                   <span className="notification-date">
-                    {formatDate(item.createdAt)}
-                    {!item.read && <span className="visually-hidden"> (non lue)</span>}
+                    {formatDate(item.createdAt, language)}
+                    {!item.read && <span className="visually-hidden">{t("unreadHidden")}</span>}
                   </span>
                 </button>
               </li>

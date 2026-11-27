@@ -278,13 +278,13 @@ function App() {
           className="sell-button buy-button"
           onClick={() => void login()}
         >
-          Se connecter pour acheter
+          {t("loginToBuy")}
         </button>
       );
     }
 
     if (sessionUser.id === listing.ownerId) {
-      return <p className="purchase-note">C’est votre annonce.</p>;
+      return <p className="purchase-note">{t("yourListing")}</p>;
     }
 
     return (
@@ -293,7 +293,7 @@ function App() {
         className="sell-button buy-button"
         onClick={() => setPurchaseTarget(listing)}
       >
-        Acheter
+        {t("buy")}
       </button>
     );
   }
@@ -390,7 +390,7 @@ function App() {
   return (
     <main className="app">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Collector, accueil">
+        <a className="brand" href="/" aria-label={t("brandLabel")}>
           <span className="brand-word">
             collector<span className="brand-dot">.</span>
           </span>
@@ -406,7 +406,7 @@ function App() {
           />
         </label>
 
-        <nav className="navigation" aria-label="Informations">
+        <nav className="navigation" aria-label={t("infoNav")}>
           <a
             className={route.name === "info" && route.slug === "comment-ca-marche" ? "info-link active" : "info-link"}
             aria-current={route.name === "info" && route.slug === "comment-ca-marche" ? "page" : undefined}
@@ -549,7 +549,7 @@ function App() {
         <span>★ {t("trustReviews")}</span>
       </div>
 
-      <nav className="category-tabs" aria-label="Navigation principale">
+      <nav className="category-tabs" aria-label={t("mainNav")}>
         <a
           className={catalogueActive ? "active" : undefined}
           aria-current={catalogueActive ? "page" : undefined}
