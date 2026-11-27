@@ -128,5 +128,5 @@ Cette liste évolue avec le projet. Rien ci-dessous n'est utilisé aujourd'hui.
 
 | Outil | Pour quoi faire |
 |---|---|
-| Réception des événements par les services | Service de notifications (fait : file `notification.listing-events`, liée à l'échange par `listing.*`, `order.paid`, `order.shipped` et `order.delivered`) ; plus tard, détection de fraude et prix modifié. |
+| Réception des événements par les services | Service de notifications (fait : file `notification.listing-events`, liée à l'échange par `listing.*`, `order.paid`, `order.shipped`, `order.delivered` et `order.refunded`) ; plus tard, détection de fraude et prix modifié. |
 | Prometheus et Grafana | Supervision : métriques et tableaux de bord. |

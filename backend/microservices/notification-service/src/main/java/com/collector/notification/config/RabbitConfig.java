@@ -33,6 +33,9 @@ public class RabbitConfig {
     /** L'acheteur a reçu : le vendeur doit en être prévenu. */
     public static final String DELIVERED_ROUTING_KEY = "order.delivered";
 
+    /** L'administrateur a remboursé la commande : l'acheteur doit en être prévenu. */
+    public static final String REFUNDED_ROUTING_KEY = "order.refunded";
+
     @Bean
     TopicExchange eventsExchange() {
         return new TopicExchange(EXCHANGE, true, false);
@@ -62,5 +65,10 @@ public class RabbitConfig {
     @Bean
     Binding deliveredEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
         return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(DELIVERED_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding refundedEventsBinding(Queue listingEventsQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(listingEventsQueue).to(eventsExchange).with(REFUNDED_ROUTING_KEY);
     }
 }

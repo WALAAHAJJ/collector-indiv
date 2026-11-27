@@ -49,6 +49,14 @@ class RabbitConfigTests {
     }
 
     @Test
+    void sameQueueAlsoReceivesRefunds() {
+        Binding refunded = config.refundedEventsBinding(config.listingEventsQueue(), config.eventsExchange());
+
+        assertEquals("order.refunded", refunded.getRoutingKey());
+        assertEquals("notification.listing-events", refunded.getDestination());
+    }
+
+    @Test
     void sameQueueAlsoReceivesShippingAndDelivery() {
         Binding shipped = config.shippedEventsBinding(config.listingEventsQueue(), config.eventsExchange());
         Binding delivered = config.deliveredEventsBinding(config.listingEventsQueue(), config.eventsExchange());

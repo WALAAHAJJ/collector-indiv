@@ -229,6 +229,7 @@ public class OrderService {
 
         order.markRefunded();
         orderRepository.save(order);
+        announce(order);
 
         if (notShippedYet) {
             collectibleRepository.findById(order.getListingId()).ifPresent(listing -> {

@@ -1,6 +1,8 @@
 package com.collector.collection.api;
 
+import com.collector.collection.domain.OrderStatus;
 import com.collector.collection.events.RecordingPublisherConfig;
+import com.collector.collection.events.RecordingPublisherConfig.RecordingPublisher;
 import com.collector.collection.payment.FakePaymentGateway;
 import com.collector.collection.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,9 @@ class ReceiptAndRefundTests {
 
     @Autowired
     private FakePaymentGateway payments;
+
+    @Autowired
+    private RecordingPublisher publisher;
 
     private final UUID seller = UUID.randomUUID();
     private final UUID buyer = UUID.randomUUID();
@@ -94,6 +99,20 @@ class ReceiptAndRefundTests {
         assertEquals(refundsBefore + 1, payments.refunded().size());
         mockMvc.perform(get("/api/collectibles/catalog/" + listingId))
                 .andExpect(jsonPath("$.status").value("APPROVED"));
+    }
+
+    @Test
+    void refundingAnOrderAnnouncesItToTheBuyer() throws Exception {
+        String listingId = flow.createListing(seller, "Montre");
+        String orderId = flow.buy(buyer, listingId);
+
+        mockMvc.perform(post("/api/admin/orders/" + orderId + "/refund").with(admin()))
+                .andExpect(status().isOk());
+
+        var steps = publisher.stepsOf(listingId);
+        assertEquals(1, steps.size());
+        assertEquals(OrderStatus.REFUNDED, steps.get(0).status());
+        assertEquals(buyer, steps.get(0).buyerId());
     }
 
     @Test

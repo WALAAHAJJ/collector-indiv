@@ -259,6 +259,17 @@ class ListingEventListenerTests {
     }
 
     @Test
+    void refundNotifiesTheBuyer() {
+        listener.onListingEvent(step("order.refunded", "Montre"));
+
+        Notification notification = onlyNotification();
+        assertEquals(buyer, notification.getUserId());
+        assertEquals(listing, notification.getListingId());
+        assertEquals(NotificationType.ORDER_REFUNDED, notification.getType());
+        assertTrue(notification.getMessage().contains("« Montre » a été remboursée"));
+    }
+
+    @Test
     void anOrderStepWithoutRecipientIsIgnored() {
         Message message = step("order.shipped", "Montre");
         message.getMessageProperties().getHeaders().remove("buyerId");

@@ -65,6 +65,15 @@ class RabbitOrderStatusEventPublisherTests {
     }
 
     @Test
+    void refundUsesTheRefundedKey() {
+        RecordingTemplate template = new RecordingTemplate();
+
+        new RabbitOrderStatusEventPublisher(template, true).publish(event(OrderStatus.REFUNDED));
+
+        assertEquals(List.of("order.refunded"), template.routingKeys);
+    }
+
+    @Test
     void thePaidStatusIsNotPublishedHere() {
         RecordingTemplate template = new RecordingTemplate();
 

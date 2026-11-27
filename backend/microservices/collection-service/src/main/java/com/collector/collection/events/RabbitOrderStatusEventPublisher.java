@@ -16,8 +16,8 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Publie l'expédition ({@code order.shipped}) et la réception ({@code order.delivered}) sur l'échange
- * des événements. Comme pour les ventes, la publication est « au mieux » : une commande déjà mise à jour
+ * Publie l'expédition ({@code order.shipped}), la réception ({@code order.delivered}) et le remboursement
+ * ({@code order.refunded}) sur l'échange des événements. Comme pour les ventes, la publication est « au mieux » : une commande déjà mise à jour
  * ne doit pas échouer parce que RabbitMQ est arrêté.
  *
  * <p>Le corps est le nom de l'annonce ; les identifiants de la commande, de l'annonce, de l'acheteur
@@ -28,6 +28,7 @@ public class RabbitOrderStatusEventPublisher implements OrderStatusEventPublishe
 
     public static final String SHIPPED_KEY = "order.shipped";
     public static final String DELIVERED_KEY = "order.delivered";
+    public static final String REFUNDED_KEY = "order.refunded";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitOrderStatusEventPublisher.class);
 
@@ -61,12 +62,13 @@ public class RabbitOrderStatusEventPublisher implements OrderStatusEventPublishe
         }
     }
 
-    /** PAID n'a pas de clé ici : le paiement est annoncé par {@code order.paid}. REFUNDED n'est pas annoncé. */
+    /** PAID n'a pas de clé ici : le paiement est annoncé par {@code order.paid}. le remboursement a la sienne. */
     static String routingKeyOf(OrderStatus status) {
         return switch (status) {
             case SHIPPED -> SHIPPED_KEY;
             case DELIVERED -> DELIVERED_KEY;
-            case PAID, REFUNDED -> null;
+            case REFUNDED -> REFUNDED_KEY;
+            case PAID -> null;
         };
     }
 

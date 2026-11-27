@@ -18,7 +18,8 @@ import java.util.UUID;
 /**
  * Transforme chaque événement en notification : une décision sur une annonce prévient son propriétaire,
  * une vente (clé {@code order.paid}) prévient le vendeur,
- * une expédition ({@code order.shipped}) prévient l'acheteur, une réception ({@code order.delivered}) le vendeur.
+ * une expédition ({@code order.shipped}) prévient l'acheteur, une réception ({@code order.delivered}) le vendeur,
+ * un remboursement ({@code order.refunded}) l'acheteur.
  *
  * <p>Le corps du message est le nom de l'annonce ; l'identifiant de l'annonce, celui du propriétaire,
  * le statut et l'éventuel motif sont dans les en-têtes (voir le service des annonces).
@@ -53,6 +54,8 @@ public class ListingEventListener {
                 handleOrderStep(message, "buyerId", NotificationType.ORDER_SHIPPED);
             } else if (RabbitConfig.DELIVERED_ROUTING_KEY.equals(routingKey)) {
                 handleOrderStep(message, "sellerId", NotificationType.ORDER_DELIVERED);
+            } else if (RabbitConfig.REFUNDED_ROUTING_KEY.equals(routingKey)) {
+                handleOrderStep(message, "buyerId", NotificationType.ORDER_REFUNDED);
             } else {
                 handle(message);
             }
@@ -104,6 +107,8 @@ public class ListingEventListener {
                     + " » a été expédiée. Dès que vous l'avez reçue, confirmez-le dans Mes commandes > Mes achats.";
             case ORDER_DELIVERED -> "L'acheteur a confirmé la réception de « " + listingName
                     + " ». La vente est terminée : il peut maintenant vous laisser un avis.";
+            case ORDER_REFUNDED -> "Votre commande « " + listingName
+                    + " » a été remboursée : le montant est recrédité sur votre carte.";
             default -> throw new IllegalArgumentException("pas une étape de commande : " + type);
         };
 
@@ -145,7 +150,7 @@ public class ListingEventListener {
             case LISTING_PENDING_REVIEW ->
                     "Votre annonce « " + listingName + " » est en attente de validation par un administrateur.";
             case ORDER_SOLD, ORDER_PAID -> throw new IllegalArgumentException("une vente se rédige avec saleText");
-            case ORDER_SHIPPED, ORDER_DELIVERED ->
+            case ORDER_SHIPPED, ORDER_DELIVERED, ORDER_REFUNDED ->
                     throw new IllegalArgumentException("une étape de commande se rédige avec orderStepText");
         };
 
