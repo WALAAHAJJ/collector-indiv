@@ -27,7 +27,7 @@ export function englishInfoPages(): Record<InfoPageSlug, InfoPageContent> {
           title: "To sell",
           items: [
             "Create an account, then “Post a listing”: title, description, category, condition, price, shipping cost and photo.",
-            "Your listing is reviewed by an administrator before it appears. You are notified in the bell, with the reason if it is refused.",
+            "Your listing is checked automatically before it appears (an administrator validates it above €5,000). You are notified in the bell, with the reason if it is refused.",
             "When it is sold, you receive a notification with your net earnings. The listing leaves the catalogue.",
             "Ship the item then click “Mark as shipped” in “My orders”, “My sales” tab. The buyer is notified.",
             "Once receipt is confirmed, the sale is complete and the buyer can leave you a review, visible on all your listings.",
@@ -63,7 +63,7 @@ export function englishInfoPages(): Record<InfoPageSlug, InfoPageContent> {
         },
         {
           title: "Why does my listing not appear right away?",
-          text: ["Every listing is reviewed by an administrator. You receive a notification when it is approved, or refused with a reason that you can fix."],
+          text: ["Every listing is checked automatically, and validated by an administrator above €5,000. You receive a notification when it is approved, or refused with a reason that you can fix."],
         },
         {
           title: "Can I edit or delete a listing?",
@@ -107,7 +107,7 @@ export function englishInfoPages(): Record<InfoPageSlug, InfoPageContent> {
         {
           title: "3. Listings and moderation",
           text: [
-            "The seller describes the item, its condition and shipping costs honestly. Every listing is reviewed by an administrator before publication and may be refused with a reason.",
+            "The seller describes the item, its condition and shipping costs honestly. Every listing is checked before publication (by an administrator above €5,000) and may be refused with a reason.",
             "A sold listing can no longer be edited or deleted.",
           ],
         },
