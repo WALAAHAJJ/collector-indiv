@@ -2,7 +2,7 @@ import type { InfoPageContent } from "./infoPages";
 import type { InfoPageSlug } from "./route";
 
 /** Version anglaise des pages d'information ; le français reste la référence (infoPages.ts). */
-export function englishInfoPages(contactEmail: string): Record<InfoPageSlug, InfoPageContent> {
+export function englishInfoPages(): Record<InfoPageSlug, InfoPageContent> {
   return {
     "comment-ca-marche": {
       slug: "comment-ca-marche",
@@ -150,8 +150,8 @@ export function englishInfoPages(contactEmail: string): Record<InfoPageSlug, Inf
       layout: "sections",
       sections: [
         {
-          title: "Write to the team",
-          text: [`A message to ${contactEmail}. Mention the title of the listing concerned, it speeds up the answer.`],
+          title: "For a request",
+          text: ["Always mention the title of the listing concerned: it speeds up the answer."],
         },
         {
           title: "Depending on your question",

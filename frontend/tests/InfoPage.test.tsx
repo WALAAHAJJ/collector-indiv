@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import InfoPage from "../src/InfoPage";
-import { CONTACT_EMAIL, INFO_PAGE_CONTENT } from "../src/infoPages";
+import { INFO_PAGE_CONTENT } from "../src/infoPages";
 import { INFO_PAGES } from "../src/route";
 
 beforeEach(() => {
@@ -53,10 +53,10 @@ describe("InfoPage", () => {
     expect(screen.getByRole("heading", { name: "5. Paiement" })).toBeInTheDocument();
   });
 
-  it("indique l'adresse de contact", () => {
+  it("explique comment formuler une demande", () => {
     render(<InfoPage slug="contact" />);
 
-    expect(screen.getByText(new RegExp(CONTACT_EMAIL))).toBeInTheDocument();
+    expect(screen.getByText(/titre de l'annonce concernée/)).toBeInTheDocument();
   });
 
   it("remonte en haut de la page et met à jour le titre de l'onglet", () => {

@@ -2,9 +2,6 @@ import type { Language } from "./i18n";
 import { englishInfoPages } from "./infoPagesEn";
 import type { InfoPageSlug } from "./route";
 
-/** Adresse de contact affichée sur le site : à remplacer par une vraie boîte avant une mise en ligne. */
-export const CONTACT_EMAIL = "contact@collector.example";
-
 export type InfoSection = {
   title: string;
   /** Paragraphes de texte. */
@@ -174,8 +171,8 @@ const contact: InfoPageContent = {
   layout: "sections",
   sections: [
     {
-      title: "Écrire à l'équipe",
-      text: [`Un message à ${CONTACT_EMAIL}. Précisez le titre de l'annonce concernée, cela accélère la réponse.`],
+      title: "Pour une demande",
+      text: ["Indiquez toujours le titre de l'annonce concernée : cela accélère la réponse."],
     },
     {
       title: "Selon votre question",
@@ -196,7 +193,7 @@ export const INFO_PAGE_CONTENT: Record<InfoPageSlug, InfoPageContent> = {
   contact,
 };
 
-const ENGLISH_CONTENT = englishInfoPages(CONTACT_EMAIL);
+const ENGLISH_CONTENT = englishInfoPages();
 
 /** Contenu d'une page d'information dans la langue choisie. */
 export function infoContent(slug: InfoPageSlug, language: Language): InfoPageContent {
