@@ -10,6 +10,9 @@ updates:
       # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # Le wrapper télécharge Maven au build : une version pas encore publiée sur Maven Central
+      # casse la construction des images. La version du wrapper se change à la main.
+      - dependency-name: "org.apache.maven:apache-maven"
 
   - package-ecosystem: "maven"
     directory: "/backend/microservices/notification-service"
@@ -21,6 +24,9 @@ updates:
       # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # Le wrapper télécharge Maven au build : une version pas encore publiée sur Maven Central
+      # casse la construction des images. La version du wrapper se change à la main.
+      - dependency-name: "org.apache.maven:apache-maven"
 
   - package-ecosystem: "maven"
     directory: "/backend/microservices/payment-service"
@@ -32,6 +38,9 @@ updates:
       # tant que le code n'est pas migré, et on ne reçoit que les correctifs (4.1.x).
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # Le wrapper télécharge Maven au build : une version pas encore publiée sur Maven Central
+      # casse la construction des images. La version du wrapper se change à la main.
+      - dependency-name: "org.apache.maven:apache-maven"
 
   - package-ecosystem: "npm"
     directory: "/frontend"
