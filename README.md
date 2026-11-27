@@ -6,9 +6,11 @@ Collector met en relation des particuliers qui veulent vendre ou trouver des tim
 
 | Pour les acheteurs | Pour les vendeurs | Pour l'équipe Collector |
 |---|---|---|
-| Un catalogue à parcourir par catégorie, avec recherche, tri, filtres de prix et d'état, favoris | Un dépôt d'annonce en quelques clics, avec photo, et un suivi de chaque vente | Une modération automatique des annonces et un espace d'administration |
-| Un paiement par carte (carte de test : aucun argent ne bouge), traité par son propre service et le suivi de la commande, de l'achat à la réception | Une commission claire de 5 %, avec le gain net affiché pour chaque vente | Les catégories et les annonces gérées depuis le site |
-| Les avis des autres acheteurs sur chaque vendeur | Des notifications à chaque vente, expédition et réception | Une plateforme sécurisée et testée en continu |
+| Un catalogue à parcourir par catégorie, avec recherche, tri, filtres de prix et d'état, favoris, et un onglet « Nouveautés » pour les dernières annonces | Un dépôt d'annonce en quelques clics, avec photo, et un suivi de chaque vente | Une modération automatique des annonces et un espace d'administration |
+| Un paiement par carte (carte de test : aucun argent ne bouge), traité par son propre service et le suivi de la commande, de l'achat à la réception, avec un reçu PDF à télécharger | Une commission claire de 5 %, avec le gain net affiché pour chaque vente | Les catégories, les annonces et les remboursements gérés depuis le site |
+| Les avis des autres acheteurs et une page publique pour chaque vendeur, avec ses annonces | Des notifications à chaque vente, expédition et réception | Une plateforme sécurisée et testée en continu |
+
+Le site est disponible en **français et en anglais** (choix mémorisé). La session reste ouverte cinq minutes après un rechargement de la page, et un compte laissé sans activité pendant 15 minutes est déconnecté après avertissement.
 
 Le détail de chaque fonctionnalité est dans [docs/fonctionnalites.md](docs/fonctionnalites.md) et la liste des routes dans [docs/api.md](docs/api.md).
 
@@ -26,7 +28,7 @@ Le détail de chaque fonctionnalité est dans [docs/fonctionnalites.md](docs/fon
 ```
 
 - **frontend** : React, TypeScript, Vite.
-- **collection-service** : annonces, modération, commandes. Spring Boot 4, Java 21.
+- **collection-service** : annonces, modération, commandes. Spring Boot 4.1, Java 21.
 - **notification-service** : notifications de chaque utilisateur, alimentées par les événements RabbitMQ.
 - **payment-service** : paiement par carte (contrôles, trace de chaque tentative, remboursement), appelé par les commandes avec le jeton de l'acheteur.
 - **Keycloak** : comptes, connexion, rôles, jetons. Chaque service vérifie la signature du jeton.
@@ -53,7 +55,8 @@ npm run dev                     # http://localhost:5173
 ### Sur Kubernetes
 
 Les mêmes services sont décrits pour Kubernetes dans [`k8s/`](k8s/README.md) (déploiements, bases avec volumes,
-sondes de santé, mise à l'échelle).
+sondes de santé, mise à l'échelle) ; la CI valide ces fichiers à chaque push. Ne pas lancer Docker Compose et le
+cluster en même temps : ils se partagent les mêmes ports locaux.
 
 ## Tests et qualité
 
@@ -71,6 +74,7 @@ cd frontend && npm run test:coverage && npm run lint && npm run build
 - Authentification déléguée à Keycloak (SSO avec PKCE, jetons de 5 minutes, blocage après 5 échecs).
 - API sans état : seuls le catalogue et les fiches d'annonces approuvées ou vendues sont publics.
 - Propriétaire contrôlé côté serveur sur toute écriture ; identifiants validés avant de construire une adresse d'API.
+- Déconnexion automatique après 15 minutes d'inactivité ; jetons gardés seulement cinq minutes si la page est rechargée.
 - Secrets hors du dépôt (`.env` non versionné), conteneurs sans privilèges.
 
 Démarche complète (risques, détection, incidents) : [docs/securite.md](docs/securite.md).
